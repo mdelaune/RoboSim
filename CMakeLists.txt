@@ -23,6 +23,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(RoboSim
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        edit.h edit.cpp edit.ui
+        sim.h sim.cpp sim.ui
+        report.h report.cpp report.ui
+        house.h house.cpp
+        vacuum.h vacuum.cpp
+        rundata.h rundata.cpp
+        Files.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET RoboSim APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

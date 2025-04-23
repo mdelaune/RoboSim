@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file>Images/chair.png</file>
+        <file>Images/chest.png</file>
+        <file>Images/cutpile.png</file>
+        <file>Images/door.png</file>
+        <file>Images/frieze.png</file>
+        <file>Images/hardfloor.png</file>
+        <file>Images/looppile.png</file>
+        <file>Images/lshape.png</file>
+        <file>Images/rectangle.png</file>
+        <file>Images/square.png</file>
+        <file>Images/table.png</file>
+    </qresource>
+    <qresource prefix="/Default">
+        <file>default_plan.json</file>
+    </qresource>
+</RCC>
