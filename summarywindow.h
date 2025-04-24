@@ -1,28 +1,28 @@
-#ifndef SUMMARY_H
-#define SUMMARY_H
+#ifndef SUMMARYWINDOW_H
+#define SUMMARYWINDOW_H
 
-#include <QWidget>
+#include <QMainWindow>
+#include <QList>
 #include "rundata.h"
 
 namespace Ui {
-class summary;
+class SummaryWindow;
 }
 
-class summary : public QWidget
+class SummaryWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit summary(QWidget *parent = nullptr);
-    ~summary();
-
+    explicit SummaryWindow(QWidget *parent = nullptr);
+    ~SummaryWindow();
     void setupSceneFromFiles();
     void updateText();
 
-private:
-    Ui::summary *ui;
 
-    QList<RunData> reports;
+private:
+    Ui::SummaryWindow *ui;
+    QList<RunData> data;
     QStringList file_names;
 
     int getNumRuns();
@@ -38,4 +38,4 @@ private:
 
 };
 
-#endif // SUMMARY_H
+#endif // SUMMARYWINDOW_H

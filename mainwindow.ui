@@ -39,7 +39,7 @@
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -73,7 +73,7 @@ background-color: rgb(223, 238, 255)</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -103,7 +103,7 @@ background-color: rgb(223, 238, 255)</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -133,7 +133,7 @@ background-color: rgb(223, 238, 255)</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -161,7 +161,7 @@ background-color: rgb(223, 238, 255)</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>

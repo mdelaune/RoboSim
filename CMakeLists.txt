@@ -25,6 +25,10 @@ set(PROJECT_SOURCES
         house.h house.cpp
         report.h report.cpp report.ui
         menu.h menu.cpp
+        rundata.h rundata.cpp
+        dragdrop.h dragdrop.cpp
+        settingswindow.h settingswindow.cpp settingswindow.ui
+        vacuumwindow.h vacuumwindow.cpp vacuumwindow.ui
         Files.qrc
 )
 

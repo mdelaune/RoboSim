@@ -1,13 +1,18 @@
+<<<<<<< HEAD:report.cpp
 #include "report.h"
 #include "ui_report.h"
 
 #include <QFileDialog>
 #include <cmath> // for floor function
+=======
+#include "rundata.h"
+>>>>>>> origin/main:rundata.cpp
 
 #include <QDebug>
 #include <QFileDialog>
 #include <QRegularExpression>
 
+<<<<<<< HEAD:report.cpp
 QString getTimeString(QStringList time){
     return time[0] + ":" + time[1] + "." + time[2];
 }
@@ -31,6 +36,17 @@ RunData::RunData() {}
 // }
 
 void RunData::setEnd(){
+=======
+Run::Run(){}
+
+QString Run::getTimeString(QStringList time){
+    return time[0] + ":" + time[1] + "." + time[2];
+}
+
+RunData::RunData(){}
+
+void RunData::setEndValues(){
+>>>>>>> origin/main:rundata.cpp
     bool ok;
     int sHour = sTime[0].toInt(&ok, 10);
     int sMin = sTime[1].toInt(&ok, 10);
@@ -110,6 +126,7 @@ void RunData::setEnd(){
     eDate.append(QString::number(eMon));
     eDate.append(QString::number(eDay));
     eDate.append(QString::number(eYear));
+<<<<<<< HEAD:report.cpp
 
     // totalRuntime[0] = QString::number(rHour);
     // totalRuntime[1] = QString::number(rMin);
@@ -117,6 +134,15 @@ void RunData::setEnd(){
 
 }
 
+=======
+
+    totalRuntime.append(QString::number(rHour));
+    totalRuntime.append(QString::number(rMin));
+    totalRuntime.append(QString::number(rSec));
+}
+
+
+>>>>>>> origin/main:rundata.cpp
 void RunData::parseFile(QString file_name){
     QFile file(file_name);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -139,6 +165,7 @@ void RunData::parseFile(QString file_name){
     bool ok;
     id = filedata[0][0];
 
+<<<<<<< HEAD:report.cpp
     sTime.append(filedata[1][0]); //.toFloat(&ok) * 60;
     sTime.append(filedata[1][1]); //.toFloat(&ok);
     sTime.append(filedata[1][2]); //.toFloat(&ok)/100;
@@ -148,16 +175,35 @@ void RunData::parseFile(QString file_name){
     sDate.append(filedata[1][5]); //.toInt(&ok));
 
     totalSF = (filedata[2][0] + "." + filedata[2][1]); //.toFloat(&ok);
+=======
+    sTime.append(filedata[1][0]);
+    sTime.append(filedata[1][1]);
+    sTime.append(filedata[1][2]);
+
+    sDate.append(filedata[1][3]);
+    sDate.append(filedata[1][4]);
+    sDate.append(filedata[1][5]);
+
+    QString totalString = filedata[2][0] + "." + filedata[2][1];
+    totalSF = totalString;
+>>>>>>> origin/main:rundata.cpp
 
     for (int i = 3; i < 7; i++){
         Run run;
         run.alg = filedata[i][0];
 
         if (filedata[i][1] != "0"){
+<<<<<<< HEAD:report.cpp
             run.time.append(filedata[i][1]);
             run.time.append(filedata[i][2]);
             run.time.append(filedata[i][3]);
 
+=======
+            qDebug() << filedata[i][1];
+            run.time.append(filedata[i][1]);
+            run.time.append(filedata[i][2]);
+            run.time.append(filedata[i][3]);
+>>>>>>> origin/main:rundata.cpp
             run.coverSF = filedata[i][4] + "." + filedata[i][5];
             run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
             run.exists = true;
@@ -297,3 +343,4 @@ void report::on_wallfollowAlg_clicked()
     selectedAlg = "wallfollow";
     updateText();
 }
+

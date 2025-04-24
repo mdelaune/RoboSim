@@ -2,10 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "edit.h"
-#include "sim.h"
-#include "report.h"
-#include "summary.h"
+#include "editwindow.h"
+#include "simwindow.h"
+#include "reportwindow.h"
+#include "summarywindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -31,10 +31,10 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    edit *editWin;
-    sim *simWin;
-    report *repWin;
-    summary *sumWin;
+    EditWindow *editWin;
+    SimWindow *simWin;
+    ReportWindow *repWin;
+    SummaryWindow *sumWin;
 
 };
 #endif // MAINWINDOW_H

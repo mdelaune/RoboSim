@@ -37,7 +37,7 @@ void MainWindow::on_loadRep_clicked()
     // simWin = new SimWindow(this);
     // simWin->show();
 
-    repWin = new report(this);
+    repWin = new ReportWindow(this);
     repWin->setupSceneFromFile();
     //reportWin->mw = this;
     repWin->showMaximized();
@@ -52,5 +52,6 @@ void MainWindow::on_sumRep_clicked()
 
 void MainWindow::on_runSim_clicked()
 {
-
+    simWin = new SimWindow(this);
+    simWin->show();
 }
