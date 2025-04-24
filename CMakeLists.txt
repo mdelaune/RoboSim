@@ -30,7 +30,6 @@ set(PROJECT_SOURCES
         rundata.h rundata.cpp
         dragdrop.h dragdrop.cpp
         settingswindow.h settingswindow.cpp settingswindow.ui
-        simwidget.h simwidget.cpp simwidget.ui
         vacuumwindow.h vacuumwindow.cpp vacuumwindow.ui
         Files.qrc
 )
