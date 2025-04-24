@@ -51,8 +51,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>470</y>
+      <x>80</x>
+      <y>480</y>
       <width>621</width>
       <height>301</height>
      </rect>
@@ -459,7 +459,7 @@ border-radius: 6px;</string>
     <property name="geometry">
      <rect>
       <x>390</x>
-      <y>180</y>
+      <y>150</y>
       <width>341</width>
       <height>241</height>
      </rect>
@@ -812,8 +812,8 @@ border-radius: 6px;</string>
    <widget class="QFrame" name="simKey">
     <property name="geometry">
      <rect>
-      <x>930</x>
-      <y>90</y>
+      <x>770</x>
+      <y>100</y>
       <width>321</width>
       <height>681</height>
      </rect>
