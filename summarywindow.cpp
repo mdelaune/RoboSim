@@ -97,7 +97,7 @@ QList<int> SummaryWindow::getMostCovRun(){
     bool ok;
 
     for (int i = 1; i < data.size(); i++){
-        for (int j = 1; j<4; j++){
+        for (int j = 1; j<data[i].runs.size(); j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].coverSF.toFloat(&ok) > data[m].runs[n].coverSF.toFloat(&ok)){
                     m = i;
@@ -117,7 +117,7 @@ QList<int> SummaryWindow::getLeastCovRun(){
     bool ok;
 
     for (int i = 1; i < data.size(); i++){
-        for (int j = 1; j<4; j++){
+        for (int j = 1; j<data[i].runs.size(); j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].coverSF.toFloat(&ok) < data[m].runs[n].coverSF.toFloat(&ok)){
                     m = i;
@@ -163,8 +163,10 @@ float SummaryWindow::getAvgCover(){
 
     for (int i = 0; i < data.size(); i++){
         for (int j = 0; j < data[i].runs.size(); j++){
-            coverAvg += data[i].runs[j].coverSF.toFloat(&ok);
-            count++;
+            if (data[i].runs[j].exists){
+                coverAvg += data[i].runs[j].coverSF.toFloat(&ok);
+                count++;
+            }
         }
     }
 
@@ -177,8 +179,10 @@ float SummaryWindow::getAvgPerCl(){
 
     for (int i = 0; i < data.size(); i++){
         for (int j = 0; j < data[i].runs.size(); j++){
-            perAvg += data[i].runs[j].coverPer.toFloat(&ok);
-            count++;
+            if (data[i].runs[j].exists){
+                perAvg += data[i].runs[j].coverPer.toFloat(&ok);
+                count++;
+            }
         }
     }
 
@@ -187,6 +191,7 @@ float SummaryWindow::getAvgPerCl(){
 
 void SummaryWindow::updateText(){
 
+    ui->Title->setText("Floorplan " + data[0].id + " Summary");
     ui->id->setText(data[0].id);
     ui->totalSF->setText(data[0].totalSF);
     ui->numSims->setText(QString::number(data.size()));
@@ -209,7 +214,18 @@ void SummaryWindow::updateText(){
 
     QList<int> leastCover = getLeastCovRun();
     ui->simLC->setText(QString::number(leastCover[0]));
-    ui->algLC->setText(QString::number(leastCover[1]));
+    if (data[leastCover[0]].runs[leastCover[1]].alg == "random"){
+        ui->algLC->setText("Random");
+    }
+    if (data[leastCover[0]].runs[leastCover[1]].alg == "spiral"){
+        ui->algLC->setText("Spiral");
+    }
+    if (data[leastCover[0]].runs[leastCover[1]].alg == "snaking"){
+        ui->algLC->setText("Snaking");
+    }
+    if (data[leastCover[0]].runs[leastCover[1]].alg == "wallfollow"){
+        ui->algLC->setText("Wall Follow");
+    }
     ui->valueLC->setText(data[leastCover[0]].runs[leastCover[1]].coverSF);
 
 
@@ -217,6 +233,13 @@ void SummaryWindow::updateText(){
     ui->avgTime->setText(QString::number(at[0]) + ":" + QString::number(at[1]) + "." + QString::number(at[2]));
     ui->avgCover->setText(QString::number(getAvgCover()));
     ui->avgPerCl->setText(QString::number(getAvgPerCl())+"%");
+
+    QStringList keyString;
+    for (int i = 0; i < data.size(); i++){
+        keyString.append(QString::number(i) + "-> " + data[i].sDate[0] + "/" + data[i].sDate[1] + "/" + data[i].sDate[2]);
+    }
+
+    ui->key->setText(keyString.join("\n"));
 
     this->show();
 }

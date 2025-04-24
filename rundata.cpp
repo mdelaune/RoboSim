@@ -85,17 +85,17 @@ void RunData::setEndValues(){
         eDay =1;
     }
 
-    eTime[0] = QString::number(eHour);
-    eTime[1] = QString::number(eMin);
-    eTime[2] = QString::number(eSec);
+    eTime.append(QString::number(eHour));
+    eTime.append(QString::number(eMin));
+    eTime.append(QString::number(eSec));
 
-    eDate[0] = QString::number(eMon);
-    eDate[1] = QString::number(eDay);
-    eDate[2] = QString::number(eYear);
+    eDate.append(QString::number(eMon));
+    eDate.append(QString::number(eDay));
+    eDate.append(QString::number(eYear));
 
-    totalRuntime[0] = QString::number(rHour);
-    totalRuntime[1] = QString::number(rMin);
-    totalRuntime[2] = QString::number(rSec);
+    totalRuntime.append(QString::number(rHour));
+    totalRuntime.append(QString::number(rMin));
+    totalRuntime.append(QString::number(rSec));
 }
 
 
@@ -122,25 +122,26 @@ void RunData::parseFile(QString file_name){
     //qDebug() << filedata[0];
     id = filedata[0][0];
 
-    sTime[0] = filedata[1][0];
-    sTime[1] = filedata[1][1];
-    sTime[2] = filedata[1][2];
+    sTime.append(filedata[1][0]);
+    sTime.append(filedata[1][1]);
+    sTime.append(filedata[1][2]);
 
-    sDate[0] = filedata[1][3];
-    sDate[1] = filedata[1][4];
-    sDate[2] = filedata[1][5];
+    sDate.append(filedata[1][3]);
+    sDate.append(filedata[1][4]);
+    sDate.append(filedata[1][5]);
 
     QString totalString = filedata[2][0] + "." + filedata[2][1];
-    totalSF = totalString; //.toFloat(&ok);
+    totalSF = totalString;
 
     for (int i = 3; i < 7; i++){
         Run run;
         run.alg = filedata[i][0];
 
         if (filedata[i][1] != "0"){
-            run.time[0] = filedata[i][1];
-            run.time[1] = filedata[i][2];
-            run.time[2] = filedata[i][3];
+            qDebug() << filedata[i][1];
+            run.time.append(filedata[i][1]);
+            run.time.append(filedata[i][2]);
+            run.time.append(filedata[i][3]);
             run.coverSF = filedata[i][4] + "." + filedata[i][5];
             run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
             run.exists = true;
