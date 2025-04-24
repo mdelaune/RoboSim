@@ -1,10 +1,11 @@
 #ifndef REPORT_H
 #define REPORT_H
 
-#include <QWidget>
-#include <QGraphicsScene>
+#include <QString>
+#include <QList>
+#include "run.h"
 
-class Run
+class Report
 {
 public:
     Run();
@@ -43,9 +44,8 @@ public:
     void getEnd();
 
 private:
-    void setEnd();
-};
-
+    void setEndValues();
+}
 
 namespace Ui {
 class report;

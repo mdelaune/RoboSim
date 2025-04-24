@@ -23,12 +23,10 @@ public:
 
 private slots:
     void on_createFP_clicked();
-
-    void on_loadFP_clicked();
-
     void on_loadRep_clicked();
-
+    void on_loadFP_clicked();
     void on_sumRep_clicked();
+    void on_runSim_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -1,8 +1,4 @@
 #include "report.h"
-#include "ui_report.h"
-
-#include <QFileDialog>
-#include <cmath> // for floor function
 
 #include <QDebug>
 #include <QFileDialog>
@@ -15,7 +11,12 @@ QString Run::getTimeString(QStringList time){
 
 RunData::RunData() {}
 
-void RunData::setEnd(){
+void RunData::setEnd()
+Report::Report() {
+
+}
+
+void Report::setEndValues(){
     bool ok;
     int sHour = sTime[0].toInt(&ok, 10);
     int sMin = sTime[1].toInt(&ok, 10);
@@ -27,9 +28,9 @@ void RunData::setEnd(){
 
     for (int i = 0; i <4; i++){
         if (runs[i].exists == true){
-            rHour += runs[i].time[0].toInt(&ok, 10);
-            rMin += runs[i].time[1].toInt(&ok, 10);
-            rSec += runs[i].time[2].toInt(&ok, 10);
+            rHour += runs[i].runtime[0].toInt(&ok, 10);
+            rMin += runs[i].runtime[1].toInt(&ok, 10);
+            rSec += runs[i].runtime[2].toInt(&ok, 10);
         }
     }
 
@@ -88,21 +89,21 @@ void RunData::setEnd(){
         eDay =1;
     }
 
-    eTime.append(QString::number(eHour));
-    eTime.append(QString::number(eMin));
-    eTime.append(QString::number(eSec));
+    eTime[0] = QString::number(eHour);
+    eTime[1] = QString::number(eMin);
+    eTime[2] = QString::number(eSec);
 
-    eDate.append(QString::number(eMon));
-    eDate.append(QString::number(eDay));
-    eDate.append(QString::number(eYear));
+    eDate[0] = QString::number(eMon);
+    eDate[1] = QString::number(eDay);
+    eDate[2] = QString::number(eYear);
 
-    // totalRuntime[0] = QString::number(rHour);
-    // totalRuntime[1] = QString::number(rMin);
-    // totalRuntime[2] = QString::number(rSec);
-
+    totalRuntime[0] = QString::number(rHour);
+    totalRuntime[1] = QString::number(rMin);
+    totalRuntime[2] = QString::number(rSec);
 }
 
-void RunData::parseFile(QString file_name){
+
+void Report::parseFile(QString file_name){
     QFile file(file_name);
     if (!file.open(QIODevice::ReadOnly)) {
         qDebug() << "Failed to open file";
@@ -122,29 +123,32 @@ void RunData::parseFile(QString file_name){
     }
 
     bool ok;
+    //qDebug() << filedata[0];
     id = filedata[0][0];
 
-    sTime.append(filedata[1][0]); //.toFloat(&ok) * 60;
-    sTime.append(filedata[1][1]); //.toFloat(&ok);
-    sTime.append(filedata[1][2]); //.toFloat(&ok)/100;
+    sTime[0] = filedata[1][0];
+    sTime[1] = filedata[1][1];
+    sTime[2] = filedata[1][2];
 
-    sDate.append(filedata[1][3]); //.toInt(&ok));
-    sDate.append(filedata[1][4]); //.toInt(&ok));
-    sDate.append(filedata[1][5]); //.toInt(&ok));
+    sDate[0] = filedata[1][3];
+    sDate[1] = filedata[1][4];
+    sDate[2] = filedata[1][5];
 
-    totalSF = (filedata[2][0] + "." + filedata[2][1]); //.toFloat(&ok);
+    QString totalString = filedata[2][0] + "." + filedata[2][1];
+    totalsf = totalString.toFloat(&ok);
 
     for (int i = 3; i < 7; i++){
         Run run;
         run.alg = filedata[i][0];
 
         if (filedata[i][1] != "0"){
-            run.time.append(filedata[i][1]);
-            run.time.append(filedata[i][2]);
-            run.time.append(filedata[i][3]);
-
-            run.coverSF = filedata[i][4] + "." + filedata[i][5];
-            run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
+            run.runtime[0] = filedata[i][1];
+            run.runtime[1] = filedata[i][2];
+            run.runtime[2] = filedata[i][3];
+            QString coverString = filedata[i][4] + "." + filedata[i][5];
+            qDebug() << coverString;
+            run.coversf = coverString.toFloat(&ok);
+            run.coverPer = run.coversf/totalsf;
             run.exists = true;
         }
         else{
@@ -153,10 +157,10 @@ void RunData::parseFile(QString file_name){
 
         runs.append(run);
     }
-    setEnd();
-    file.close();
-}
 
+    file.close();
+    setEndValues();
+}
 
 
 report::report(QWidget *parent)
