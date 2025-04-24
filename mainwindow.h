@@ -2,11 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "editwindow.h"
-#include "simwindow.h"
-#include "reportwindow.h"
-#include "summarywindow.h"
-#include "settingswindow.h"
+#include "edit.h"
+#include "sim.h"
+#include "report.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -24,17 +22,16 @@ public:
 
 private slots:
     void on_createFP_clicked();
-    void on_loadRep_clicked();
+
     void on_loadFP_clicked();
+
+    void on_loadRep_clicked();
+
     void on_sumRep_clicked();
-    void on_runSim_clicked();
 
 private:
     Ui::MainWindow *ui;
-    EditWindow *editWin;
-    SimWindow *simWin;
-    ReportWindow *reportWin;
-    SummaryWindow *sumWin;
-    SettingsWindow* settingsWin;
-};
+    edit *editWin;
+    sim *simWin;
+    report *repWin;};
 #endif // MAINWINDOW_H
