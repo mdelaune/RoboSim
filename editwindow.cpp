@@ -105,6 +105,9 @@ void EditWindow::setupToolButtons()
     //connect(ui->btn_lShapeRoom, &QToolButton::clicked, edit, &FloorPlan::addLRoom);
     connect(ui->btn_door, &QToolButton::clicked, edit, &Draw::addDoor);
 
+    connect(ui->btn_clear, &QPushButton::clicked, house, &House::clear);
+    connect(ui->btn_delete, &QPushButton::clicked, house, &House::deleteItem);
+
     connect(ui->btn_Chest, &QToolButton::clicked, edit, &Draw::addChest);
     connect(ui->btn_Table, &QToolButton::clicked, edit, &Draw::addTable);
     connect(ui->btn_Chair, &QToolButton::clicked, edit, &Draw::addChair);
