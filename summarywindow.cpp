@@ -36,7 +36,7 @@ QList<int> SummaryWindow::getShortestRun(){
     int m = 0;
     int n = 0;
     for (int i = 0; i < data.size(); i++){
-        for (int j = 0; j<4; j++){
+        for (int j = 1; j<4; j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].time[0] < data[m].runs[n].time[0]){
                     m = i;
@@ -66,7 +66,7 @@ QList<int> SummaryWindow::getLongestRun(){
     int m = 0;
     int n = 0;
     for (int i = 0; i < data.size(); i++){
-        for (int j = 0; j<4; j++){
+        for (int j = 1; j<4; j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].time[0] > data[m].runs[n].time[0]){
                     m = i;
@@ -96,7 +96,7 @@ QList<int> SummaryWindow::getMostCovRun(){
     int n = 0;
     bool ok;
 
-    for (int i = 1; i < data.size(); i++){
+    for (int i = 0; i < data.size(); i++){
         for (int j = 1; j<data[i].runs.size(); j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].coverSF.toFloat(&ok) > data[m].runs[n].coverSF.toFloat(&ok)){
@@ -116,16 +116,12 @@ QList<int> SummaryWindow::getLeastCovRun(){
     int n = 0;
     bool ok;
 
-
-    for (int i = 1; i < data.size(); i++){
+    for (int i = 0; i < data.size(); i++){
         for (int j = 1; j<data[i].runs.size(); j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].coverSF.toFloat(&ok) < data[m].runs[n].coverSF.toFloat(&ok)){
-                    qDebug() << data[i].runs[j].coverSF;
-                    qDebug() << data[m].runs[n].coverSF;
                     m = i;
                     n = j;
-                    qDebug() << data[m].runs[n].coverSF;
                 }
             }
         }
