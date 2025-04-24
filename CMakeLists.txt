@@ -19,18 +19,15 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
-        editwindow.h editwindow.cpp editwindow.ui
+        editwindow.cpp editwindow.h editwindow.ui
         draw.h draw.cpp
-        simwindow.h simwindow.cpp simwindow.ui
         vacuum.h vacuum.cpp
         house.h house.cpp
-        reportwindow.h reportwindow.cpp reportwindow.ui
-        summarywindow.h summarywindow.cpp summarywindow.ui
+        simwindow.cpp simwindow.h simwindow.ui
         menu.h menu.cpp
         rundata.h rundata.cpp
         dragdrop.h dragdrop.cpp
-        settingswindow.h settingswindow.cpp settingswindow.ui
-        vacuumwindow.h vacuumwindow.cpp vacuumwindow.ui
+        reportwindow.cpp reportwindow.h reportwindow.ui
         Files.qrc
 )
 

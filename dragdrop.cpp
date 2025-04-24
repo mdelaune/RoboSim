@@ -1,5 +1,18 @@
 #include "dragdrop.h"
 
+template<typename T>
+T* findParent(QObject* obj)
+{
+    while (obj) {
+        T* result = qobject_cast<T*>(obj);
+        if (result)
+            return result;
+        obj = obj->parent();
+    }
+
+    return nullptr;
+}
+
 DragDoor::DragDoor(QGraphicsLineItem *doorLine,
                    QGraphicsLineItem *entryLine,
                    QGraphicsScene *scene,
@@ -45,7 +58,22 @@ void DragDoor::updateSelectionStyle()
     }
 }
 
-DragObstruction::DragObstruction(const QRectF &body, QRectF *legs)
+QPointF DragDoor::getOrigin() const
+{
+    // The origin is at the scene position of the group
+    return scenePos();
+}
+
+void DragDoor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
+
+
+
+    QGraphicsItemGroup::mouseReleaseEvent(event);
+}
+
+DragObstruction::DragObstruction(const QRectF &body, QRectF *legs, House *house, Obstruction *obstruction)
     : m_body(body)
 {
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
@@ -58,12 +86,14 @@ DragObstruction::DragObstruction(const QRectF &body, QRectF *legs)
     }
 }
 
-DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay)
+DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay, House *house, Obstruction *obstruction)
     : m_body(body), m_overlay(overlay)
 {
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
     setCursor(QCursor(Qt::OpenHandCursor));
     isChest = true;
+    m_house = house;
+    m_obstruction = obstruction;
 }
 
 QRectF DragObstruction::boundingRect() const
@@ -72,9 +102,9 @@ QRectF DragObstruction::boundingRect() const
 
     if(!isChest)
     {
-        for(const QRectF &leg : m_legs)
+        for(int i = 0; i < m_legs.size(); i++)
         {
-            bounds = bounds.united(leg);
+            bounds = bounds.united(m_legs[i]);
         }
     }
     else
@@ -118,39 +148,34 @@ void DragObstruction::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+    // Handle mouse move events for the obstruction
     QGraphicsItem::mouseMoveEvent(event);
-
-    QList<QGraphicsItem *> collisions = scene()->collidingItems(this);
-    for (QGraphicsItem *item : collisions)
-    {
-        if (item == this) continue;
-
-        // Check if the item is another DragObstruction
-        DragObstruction *other = dynamic_cast<DragObstruction *>(item);
-        if (other)
-        {
-            // Revert position on collision
-            setPos(m_startPos);
-            return;
-        }
-    }
-
-    // No collision — accept move
-    m_startPos = pos();
 }
 
 void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
+
+    QRectF localRect = m_body;
+    QRectF sceneRect = mapToScene(localRect).boundingRect();
+
+    if (m_house) {
+        m_obstruction->set_topLeft(sceneRect.topLeft());
+        m_obstruction->set_bottomRight(sceneRect.bottomRight());
+    }
+
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
-DragRoom::DragRoom(const QRectF &rect, QGraphicsScene *scene)
+DragRoom::DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room *room, long id)
     : QGraphicsRectItem(rect)
 {
     setupDraggable(this);
     setBrush(QColor(200, 200, 255, 100));
     setPen(QPen(Qt::black, 2));
+    m_id = id;
+    m_house = house;
+    m_room = room;
 }
 
 void DragRoom::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -225,14 +250,20 @@ void DragRoom::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void DragRoom::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
+void DragRoom::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (m_currentHandle != None)
         setCursor(Qt::OpenHandCursor);
-    else
-        handleMouseRelease(event, this);
+
+    QRectF rect = this->rect(); // in item (local) coordinates
+    QPolygonF scenePolygon = this->mapToScene(rect); // maps each corner
+    QRectF sceneRect = scenePolygon.boundingRect();
+
+    // Find and update the corresponding Room in the House
+    if (m_house) {
+        m_room->set_topLeft(sceneRect.topLeft());
+        m_room->set_bottomRight(sceneRect.bottomRight());
+    }
 
     m_currentHandle = None;
     QGraphicsRectItem::mouseReleaseEvent(event);
 }
-

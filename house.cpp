@@ -62,6 +62,14 @@ Obstruction::Obstruction(bool isChest) : m_top_left(-50, 20), m_bottom_right(50,
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = isChest;
     get_floorCoverage();
+
+    if(isChest)
+    {
+        set_legs(0);
+    } else {
+        set_legs(10);
+    }
+
 }
 
 Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest)
@@ -71,6 +79,12 @@ Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest)
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = isChest;
     get_floorCoverage();
+    if(m_isChest)
+    {
+        set_legs(0);
+    } else {
+        set_legs(10);
+    }
 }
 
 Obstruction::Obstruction(QJsonObject room)
@@ -80,6 +94,12 @@ Obstruction::Obstruction(QJsonObject room)
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = room.value("is_chest").toBool();
     get_floorCoverage();
+    if(m_isChest)
+    {
+        set_legs(0);
+    } else {
+        set_legs(10);
+    }
 }
 
 QPointF Obstruction::get_topLeft()
@@ -145,11 +165,15 @@ void Obstruction::set_legs(int size)
 void Obstruction::set_topLeft(QPointF top_left)
 {
     m_top_left = top_left;
+    m_rect = QRectF(m_top_left, m_bottom_right);
+    set_legs(10);
 }
 
 void Obstruction::set_bottomRight(QPointF bottom_right)
 {
     m_bottom_right = bottom_right;
+    m_rect = QRectF(m_top_left, m_bottom_right);
+    set_legs(10);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -209,22 +233,27 @@ QString Room::get_shape()
 
 void Room::set_topLeft(QPointF top_left)
 {
+    qDebug() << "top left " << m_top_left;
     m_top_left = top_left;
+    m_rectRoom = QRectF(m_top_left, m_bottom_right).normalized();
 }
 
 void Room::set_bottomRight(QPointF bottom_right)
 {
+    qDebug() << "bottom right " << m_bottom_right;
     m_bottom_right = bottom_right;
+    m_rectRoom = QRectF(m_top_left, m_bottom_right).normalized();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------
-
+House* House::instance = nullptr;
 House::House(QGraphicsScene *scene)
 {
     m_scene = scene;
     wall_pen.setWidth(4);
     obstruct_pen.setWidth(3);
+    instance = this;
     loadPlan(defaultPlanLocation);
 }
 
@@ -232,7 +261,7 @@ void House::drawRooms()
 {
     for(int i = 0; i < rooms.size(); i++)
     {
-        DragRoom *rect_item = new DragRoom(rooms[i].get_rectRoom(), m_scene);
+        DragRoom *rect_item = new DragRoom(rooms[i].get_rectRoom(), m_scene, this, &rooms[i], rooms[i].getId());
         rect_item->setPen(wall_pen);
 
         rect_item->setData(0, rooms[i].getId());
@@ -261,14 +290,14 @@ void House::drawObstructions()
     {
         if(obstructions[i].get_isChest())
         {
-            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_overlay());
+            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_overlay(), this, &obstructions[i]);
             m_scene->addItem(item);
             item->setZValue(1);        }
         else
         {
             obstructions[i].set_legs(10);
 
-            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_legs());
+            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_legs(), this, &obstructions[i]);
             m_scene->addItem(item);
             item->setZValue(1);
         }
@@ -478,31 +507,36 @@ void House::clear()
 
 void House::deleteItem()
 {
-    QList<QGraphicsItem *> selectedItems = m_scene->selectedItems();
+    QList<QGraphicsItem*> selectedItems = m_scene->selectedItems();
 
-    for (QGraphicsItem *item : selectedItems)
-    {
-        QString type = item->data(1).toString();
-        int id = item->data(0).toInt();
+    for (auto it = selectedItems.begin(); it != selectedItems.end(); ) {
+        QGraphicsItem* item = *it;
 
-        if (type == "room") {
-            for (int i = 0; i < rooms.size(); ++i) {
-                if (rooms[i].getId() == id) {
-                    rooms.remove(i);
+        if (item->data(1) == "room") {
+            int id = item->data(0).toInt();
+
+            for (auto roomIt = rooms.begin(); roomIt != rooms.end(); ++roomIt) {
+                if (roomIt->getId() == id) {
+                    qDebug() << "Found and deleting from vector, ID:" << roomIt->getId();
+                    rooms.erase(roomIt);
                     break;
                 }
             }
-        } else if (type == "obstruction") {
-            for (int i = 0; i < obstructions.size(); ++i) {
-                if (obstructions[i].getId() == id) {
-                    obstructions.remove(i);
+        } else if (item->data(1) == "door") {
+            int id = item->data(0).toInt();
+            for (auto doorIt = doors.begin(); doorIt != doors.end(); ++doorIt) {
+                if (doorIt->getId() == id) {
+                    qDebug() << "Found and deleting from vector, ID:" << doorIt->getId();
+                    doors.erase(doorIt);
                     break;
                 }
             }
-        } else if (type == "door") {
-            for (int i = 0; i < doors.size(); ++i) {
-                if (doors[i].getId() == id) {
-                    doors.remove(i);
+        } else if (item->data(1) == "obstruction") {
+            int id = item->data(0).toInt();
+            for (auto obstructionIt = obstructions.begin(); obstructionIt != obstructions.end(); ++obstructionIt) {
+                if (obstructionIt->getId() == id) {
+                    qDebug() << "Found and deleting from vector, ID:" << obstructionIt->getId();
+                    obstructions.erase(obstructionIt);
                     break;
                 }
             }
@@ -510,9 +544,9 @@ void House::deleteItem()
 
         m_scene->removeItem(item);
         delete item;
+        it = selectedItems.erase(it); //erase returns the next valid iterator
     }
 
     m_scene->update(m_scene->sceneRect());
-
     qDebug() << "DELETE";
 }

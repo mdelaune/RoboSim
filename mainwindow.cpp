@@ -46,9 +46,7 @@ void MainWindow::on_loadRep_clicked()
 
 void MainWindow::on_sumRep_clicked()
 {
-    sumWin = new SummaryWindow(this);
-    sumWin->setupSceneFromFiles();
-    sumWin->showMaximized();
+
 }
 
 
@@ -57,4 +55,3 @@ void MainWindow::on_runSim_clicked()
     simWin = new SimWindow(this);
     simWin->show();
 }
-

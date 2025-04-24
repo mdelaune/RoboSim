@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include "settingswindow.h"
-#include "vacuumwindow.h"
+//#include "vacuumwindow.h"
 
 namespace Ui {
 class SimWindow;
@@ -20,7 +20,7 @@ public:
 
 private:
     Ui::SimWindow *ui;
-    VacuumWindow *vacWin;
+    //VacuumWindow *vacWin;
 };
 
 #endif // SIMWINDOW_H

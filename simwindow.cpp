@@ -23,10 +23,10 @@ void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whisk
     qDebug() << "Whisker Efficiency:" << whiskerEfficiency;
     qDebug() << "Speed:" << speed;
 
-    vacWin = new VacuumWindow(this);
-    vacWin->vacuum->setSelectedAlgs(selectedAlgorithms);
-    vacWin->vacuum->setBatteryLife(batteryLife);
-    vacWin->vacuum->setEfficiency(vacuumEfficiency, whiskerEfficiency);
-    vacWin->vacuum->setSpeed(speed);
-    vacWin->show();
+    // vacWin = new VacuumWindow(this);
+    // vacWin->vacuum->setSelectedAlgs(selectedAlgorithms);
+    // vacWin->vacuum->setBatteryLife(batteryLife);
+    // vacWin->vacuum->setEfficiency(vacuumEfficiency, whiskerEfficiency);
+    // vacWin->vacuum->setSpeed(speed);
+    // vacWin->show();
 }

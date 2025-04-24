@@ -156,4 +156,3 @@ void RunData::parseFile(QString file_name){
     file.close();
     setEndValues();
 }
-
