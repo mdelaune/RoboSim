@@ -1,0 +1,69 @@
+{
+    "doors": [
+        {
+            "x": 0,
+            "y": 0
+        },
+        {
+            "x": -200,
+            "y": 0
+        },
+        {
+            "x": 150,
+            "y": 0
+        }
+    ],
+    "obstructions": [
+        {
+            "is_chest": true,
+            "x_bottomRight": 350,
+            "x_topLeft": 250,
+            "y_bottomRight": 40,
+            "y_topLeft": 0
+        },
+        {
+            "is_chest": true,
+            "x_bottomRight": -350,
+            "x_topLeft": -250,
+            "y_bottomRight": -40,
+            "y_topLeft": 0
+        },
+        {
+            "is_chest": false,
+            "x_bottomRight": -210,
+            "x_topLeft": -350,
+            "y_bottomRight": 180,
+            "y_topLeft": 100
+        }
+    ],
+    "rooms": [
+        {
+            "shape": "rectangle",
+            "x_bottomRight": 400,
+            "x_topLeft": -400,
+            "y_bottomRight": 0,
+            "y_topLeft": 300
+        },
+        {
+            "shape": "rectangle",
+            "x_bottomRight": -100,
+            "x_topLeft": -400,
+            "y_bottomRight": -400,
+            "y_topLeft": 0
+        },
+        {
+            "shape": "rectangle",
+            "x_bottomRight": 100,
+            "x_topLeft": -100,
+            "y_bottomRight": -400,
+            "y_topLeft": 0
+        },
+        {
+            "shape": "rectangle",
+            "x_bottomRight": 400,
+            "x_topLeft": 100,
+            "y_bottomRight": -400,
+            "y_topLeft": 0
+        }
+    ]
+}
