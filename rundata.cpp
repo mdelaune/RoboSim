@@ -10,6 +10,8 @@ QString Run::getTimeString(QStringList time){
     return time[0] + ":" + time[1] + "." + time[2];
 }
 
+RunData::RunData(){}
+
 void RunData::setEndValues(){
     bool ok;
     int sHour = sTime[0].toInt(&ok, 10);

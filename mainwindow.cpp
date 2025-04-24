@@ -52,9 +52,9 @@ void MainWindow::on_sumRep_clicked()
 }
 
 
-// void MainWindow::on_runSim_clicked()
-// {
-//     settingsWin = new SettingsWindow(this);
-//     settingsWin->show();
-// }
+void MainWindow::on_runSim_clicked()
+{
+    simWin = new SimWindow(this);
+    simWin->show();
+}
 
