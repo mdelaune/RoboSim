@@ -110,8 +110,11 @@ private:
 
 class House : public QObject
 {
+    Q_OBJECT
 public:
     House(QGraphicsScene *scene);
+
+    static House* instance;
     void loadPlan(QString plan);
 
     void addRoom(Room room);
@@ -141,6 +144,16 @@ public:
 
     void setRoomFillColor(QColor color, Qt::BrushStyle style);
 
+    void updateRoomGeometry(int id, QPointF topLeft, QPointF bottomRight);
+    void updateDoorPosition(int id, QPointF newOrigin);
+    void updateObstructionPosition(int id, QPointF topLeft, QPointF bottomRight);
+
+    QVector<Room> rooms;
+    QVector<Door> doors;
+    QVector<Obstruction> obstructions;
+
+    Room* getRoomById(long id);
+
 private:
     void loadRooms(QJsonArray roomsArray);
     void loadDoors(QJsonArray doorsArray);
@@ -152,9 +165,7 @@ private:
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = "../../default_plan.json";
 
-    QVector<Room> rooms;
-    QVector<Door> doors;
-    QVector<Obstruction> obstructions;
+
 
     int scene_object_id = 1;
 };

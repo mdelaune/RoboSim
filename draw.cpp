@@ -26,33 +26,53 @@ void Draw::addRectRoom()
 
 void Draw::addRoom(Room& room)
 {
-    DragRoom *roomItem = new DragRoom(room.get_rectRoom(), m_scene);
+    // Add room to house first to get an ID
+    m_house->addRoom(room);
+    int roomId = room.getId();
+
+    DragRoom *roomItem = new DragRoom(room.get_rectRoom(), m_scene, m_house, &room, room.getId());
     roomItem->setPen(m_house->wall_pen);
     roomItem->setZValue(0);
+
+    // Store the ID in the item for later reference
+    roomItem->setData(0, roomId);
+    roomItem->setData(1, "room");
+
     m_scene->addItem(roomItem);
-    m_house->addRoom(room);
     m_house->setRoomFillColor(QColor(196, 164, 132, 127), Qt::CrossPattern);
     m_scene->update(m_scene->sceneRect());
 
-    qDebug() << "ADDED " << room.get_shape() << " ROOM";
+    qDebug() << "ADDED " << room.get_shape() << " ROOM with ID:" << roomId;
 }
 
 void Draw::addDoor()
 {
+    // Add door to house first to get an ID
+    m_house->addDoor(door);
+    int doorId = door.getId();
+
     QGraphicsLineItem *doorLine = new QGraphicsLineItem(door.get_door());
     QGraphicsLineItem *entryLine = new QGraphicsLineItem(door.get_entry());
 
     DragDoor *doorItem = new DragDoor(doorLine, entryLine, m_scene);
+
+    // Store the ID in the item
+    doorItem->setData(0, doorId);
+    doorItem->setData(1, "door");
+
     m_scene->addItem(doorItem);
     m_scene->update(m_scene->sceneRect());
 
-    qDebug() << "DOOR";
+    qDebug() << "DOOR added with ID:" << doorId;
 }
 
 void Draw::addFurniture(Obstruction& item, QString name)
 {
-    DragObstruction *dragItem;
+    // Add obstruction to house first to get an ID
+    m_house->addObstruction(item);
+    int obstructionId = item.getId();
 
+    DragObstruction *dragItem;
     if (item.get_isChest()) {
         dragItem = new DragObstruction(item.get_rect(), item.get_overlay());
     } else {
@@ -61,12 +81,15 @@ void Draw::addFurniture(Obstruction& item, QString name)
         dragItem = new DragObstruction(mutableItem.get_rect(), mutableItem.get_legs());
     }
 
+    // Store the ID in the item
+    dragItem->setData(0, obstructionId);
+    dragItem->setData(1, "obstruction");
+
     m_scene->addItem(dragItem);
     dragItem->setZValue(1);
-    m_house->addObstruction(item);
     m_scene->update(m_scene->sceneRect());
 
-    qDebug() << name;
+    qDebug() << name << "added with ID:" << obstructionId;
 }
 
 void Draw::addChest()
