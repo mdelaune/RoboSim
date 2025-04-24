@@ -193,8 +193,7 @@ void report::updateText(){
 
     QPixmap map(":/Images/Images/HeatMapEx");
     ui->heatMap->setScene(new QGraphicsScene(this));
-    ui->heatMap->fitInView(ui->hescene->itemsBoundingRect(), Qt::KeepAspectRatio);
-    ui->heatMap->scene()->fitInView(addPixmap(map));
+    ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
 
     QString sDateText = data->sDate[0] +"/" + data->sDate[1]+ "/" + data->sDate[2];//QString::number(data->sDate[0]) + "/" + QString::number(data->sDate[1]) + "/" + QString::number(data->sDate[2]);
     ui->startDate->setText(sDateText);
