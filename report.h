@@ -1,76 +1,33 @@
 #ifndef REPORT_H
 #define REPORT_H
 
-#include <QWidget>
-#include <QGraphicsScene>
+#include <QString>
+#include <QList>
+#include "run.h"
 
-class Run
+class Report
 {
 public:
-    Run();
-    QString alg;
-    bool exists;
-
-    QStringList time;
-
-    QString coverSF;
-    QString coverPer;
-
-
-};
-
-class RunData
-{
-public:
-    RunData();
-
+    Report();
+    // QString file_name;
     void parseFile(QString file_name);
 
     QString id;
-
-    QStringList sTime; // in minutes
-    QStringList sDate;
-
-    QStringList eTime;
-    QStringList eDate;
-
-    QStringList runTime;
-    QString totalSF;
-
+    QString sTime[3];
+    QString sDate[3];
+    QString eTime[3];
+    QString eDate[3];
+    QString totalRuntime[3];
+    // QString runtime[3];
+    float totalsf;
+    // QString coversf[2];
+    // QString algorithms[4];
+    // QString perCleaned[4];
     QList<Run> runs;
-    //QString getTimeString(float time);
-    void getEnd();
 
 private:
-    void setEnd();
-};
+    void setEndValues();
 
-
-namespace Ui {
-class report;
-}
-
-class report : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit report(QWidget *parent = nullptr);
-    ~report();
-    QString file_name;
-    void setupSceneFromFile();
-    void updateText();
-    QString selectedAlg;
-
-private slots:
-    void on_randomAlg_clicked();
-    void on_spiralAlg_clicked();
-    void on_snakingAlg_clicked();
-    void on_wallfollowAlg_clicked();
-
-private:
-    Ui::report *ui;
-    RunData *data;
 };
 
 #endif // REPORT_H

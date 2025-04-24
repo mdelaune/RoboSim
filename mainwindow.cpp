@@ -1,42 +1,60 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPalette>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-
 }
 
 void MainWindow::on_createFP_clicked()
 {
-    // editWin = new edit(this);
+    editWin = new EditWindow(this); // Create edit window object
+    editWin->setupScene();          // Setup scene with default floorplan
+    editWin->showMaximized();
 }
-
 
 void MainWindow::on_loadFP_clicked()
 {
-
+    editWin = new EditWindow(this); // Create edit window object
+    editWin->setupSceneFromFile();  // Setup scene with user selected floorplan
+    editWin->showMaximized();
 }
-
 
 void MainWindow::on_loadRep_clicked()
 {
-    repWin = new report(this);
-    repWin->setupSceneFromFile();
-    repWin->show();
+    // simWin = new SimWindow(this);
+    // simWin->show();
 
+    reportWin = new ReportWindow(this);
+    reportWin->setupSceneFromFile();
+    //reportWin->mw = this;
+    reportWin->showMaximized();
+    //QString report_fname = QFileDialog::getOpenFileName(this, "Select Report File", "C://", "Text (*.txt)");
 }
-
 
 void MainWindow::on_sumRep_clicked()
 {
+    sumWin = new SummaryWindow(this);
+    sumWin->setupSceneFromFiles();
+    sumWin->showMaximized();
+}
 
+
+void MainWindow::on_runSim_clicked()
+{
+    settingsWin = new SettingsWindow(this);
+    settingsWin->show();
 }
 
