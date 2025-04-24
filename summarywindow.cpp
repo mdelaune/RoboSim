@@ -22,9 +22,9 @@ SummaryWindow::~SummaryWindow()
 int SummaryWindow::getNumRuns(){
     int num=0;
 
-    for (int i = 0; i < reports.size(); i++){
+    for (int i = 0; i < data.size(); i++){
         for (int j = 0; j < 4; j++){
-            if (reports[i].runs[j].exists){
+            if (data[i].runs[j].exists){
                 num++;
             }
         }
@@ -35,20 +35,20 @@ int SummaryWindow::getNumRuns(){
 QList<int> SummaryWindow::getShortestRun(){
     int m = 0;
     int n = 0;
-    for (int i = 0; i < reports.size(); i++){
+    for (int i = 0; i < data.size(); i++){
         for (int j = 0; j<4; j++){
-            if (reports[i].runs[j].exists){
-                if (reports[i].runs[j].runtime[0] < reports[m].runs[n].runtime[0]){
+            if (data[i].runs[j].exists){
+                if (data[i].runs[j].time[0] < data[m].runs[n].time[0]){
                     m = i;
                     n = j;
                 }
-                else if (reports[i].runs[j].runtime[0] == reports[m].runs[n].runtime[0]){
-                    if (reports[i].runs[j].runtime[1] < reports[m].runs[n].runtime[1]){
+                else if (data[i].runs[j].time[0] == data[m].runs[n].time[0]){
+                    if (data[i].runs[j].time[1] < data[m].runs[n].time[1]){
                         m = i;
                         n = j;
                     }
-                    else if (reports[i].runs[j].runtime[1] == reports[m].runs[n].runtime[1]){
-                        if (reports[i].runs[j].runtime[2] < reports[m].runs[n].runtime[2]){
+                    else if (data[i].runs[j].time[1] == data[m].runs[n].time[1]){
+                        if (data[i].runs[j].time[2] < data[m].runs[n].time[2]){
                            m = i;
                            n = j;
                         }
@@ -65,20 +65,20 @@ QList<int> SummaryWindow::getShortestRun(){
 QList<int> SummaryWindow::getLongestRun(){
     int m = 0;
     int n = 0;
-    for (int i = 0; i < reports.size(); i++){
+    for (int i = 0; i < data.size(); i++){
         for (int j = 0; j<4; j++){
-            if (reports[i].runs[j].exists){
-                if (reports[i].runs[j].runtime[0] > reports[m].runs[n].runtime[0]){
+            if (data[i].runs[j].exists){
+                if (data[i].runs[j].time[0] > data[m].runs[n].time[0]){
                     m = i;
                     n = j;
                 }
-                else if (reports[i].runs[j].runtime[0] == reports[m].runs[n].runtime[0]){
-                    if (reports[i].runs[j].runtime[1] > reports[m].runs[n].runtime[1]){
+                else if (data[i].runs[j].time[0] == data[m].runs[n].time[0]){
+                    if (data[i].runs[j].time[1] > data[m].runs[n].time[1]){
                         m = i;
                         n = j;
                     }
-                    else if (reports[i].runs[j].runtime[1] == reports[m].runs[n].runtime[1]){
-                        if (reports[i].runs[j].runtime[2] > reports[m].runs[n].runtime[2]){
+                    else if (data[i].runs[j].time[1] == data[m].runs[n].time[1]){
+                        if (data[i].runs[j].time[2] > data[m].runs[n].time[2]){
                             m = i;
                             n = j;
                         }
@@ -94,11 +94,12 @@ QList<int> SummaryWindow::getLongestRun(){
 QList<int> SummaryWindow::getMostCovRun(){
     int m = 0;
     int n = 0;
+    bool ok;
 
-    for (int i = 1; i < reports.size(); i++){
+    for (int i = 1; i < data.size(); i++){
         for (int j = 1; j<4; j++){
-            if (reports[i].runs[j].exists){
-                if (reports[i].runs[j].coversf > reports[m].runs[n].coversf){
+            if (data[i].runs[j].exists){
+                if (data[i].runs[j].coverSF.toFloat(&ok) > data[m].runs[n].coverSF.toFloat(&ok)){
                     m = i;
                     n = j;
                 }
@@ -113,11 +114,12 @@ QList<int> SummaryWindow::getMostCovRun(){
 QList<int> SummaryWindow::getLeastCovRun(){
     int m = 0;
     int n = 0;
+    bool ok;
 
-    for (int i = 1; i < reports.size(); i++){
+    for (int i = 1; i < data.size(); i++){
         for (int j = 1; j<4; j++){
-            if (reports[i].runs[j].exists){
-                if (reports[i].runs[j].coversf < reports[m].runs[n].coversf){
+            if (data[i].runs[j].exists){
+                if (data[i].runs[j].coverSF.toFloat(&ok) < data[m].runs[n].coverSF.toFloat(&ok)){
                     m = i;
                     n = j;
                 }
@@ -133,15 +135,15 @@ QList<int> SummaryWindow::getAvgTime(){
     QList<int> timeAvg = {0,0,0};
     bool ok;
 
-    for (int i = 0; i < reports.size(); i++){
-        timeAvg[0] += reports[i].totalRuntime[0].toInt(&ok);
-        timeAvg[1] += reports[i].totalRuntime[1].toInt(&ok);
-        timeAvg[2] += reports[i].totalRuntime[2].toInt(&ok);
+    for (int i = 0; i < data.size(); i++){
+        timeAvg[0] += data[i].totalRuntime[0].toInt(&ok);
+        timeAvg[1] += data[i].totalRuntime[1].toInt(&ok);
+        timeAvg[2] += data[i].totalRuntime[2].toInt(&ok);
     }
 
-    timeAvg[0] /= reports.size();
-    timeAvg[1] /= reports.size();
-    timeAvg[2] /= reports.size();
+    timeAvg[0] /= data.size();
+    timeAvg[1] /= data.size();
+    timeAvg[2] /= data.size();
 
     if (timeAvg[2] > 59){
         timeAvg[1] +=1;
@@ -157,10 +159,11 @@ QList<int> SummaryWindow::getAvgTime(){
 float SummaryWindow::getAvgCover(){
     float coverAvg = 0;
     int count = 0;
+    bool ok;
 
-    for (int i = 0; i < reports.size(); i++){
-        for (int j = 0; j < reports[i].runs.size(); j++){
-            coverAvg += reports[i].runs[j].coversf;
+    for (int i = 0; i < data.size(); i++){
+        for (int j = 0; j < data[i].runs.size(); j++){
+            coverAvg += data[i].runs[j].coverSF.toFloat(&ok);
             count++;
         }
     }
@@ -170,10 +173,11 @@ float SummaryWindow::getAvgCover(){
 float SummaryWindow::getAvgPerCl(){
     float perAvg = 0;
     int count = 0;
+    bool ok;
 
-    for (int i = 0; i < reports.size(); i++){
-        for (int j = 0; j < reports[i].runs.size(); j++){
-            perAvg += reports[i].runs[j].coverPer;
+    for (int i = 0; i < data.size(); i++){
+        for (int j = 0; j < data[i].runs.size(); j++){
+            perAvg += data[i].runs[j].coverPer.toFloat(&ok);
             count++;
         }
     }
@@ -183,30 +187,30 @@ float SummaryWindow::getAvgPerCl(){
 
 void SummaryWindow::updateText(){
 
-    ui->id->setText(reports[0].id);
-    ui->totalSF->setText(QString::number(reports[0].totalsf));
-    ui->numSims->setText(QString::number(reports.size()));
+    ui->id->setText(data[0].id);
+    ui->totalSF->setText(data[0].totalSF);
+    ui->numSims->setText(QString::number(data.size()));
     ui->numRuns->setText(QString::number(getNumRuns()));
 
     QList<int> shortRun = getShortestRun();
     ui->simSR->setText(QString::number(shortRun[0]));
     ui->algSR->setText(QString::number(shortRun[1]));
-    ui->valueSR->setText(reports[shortRun[0]].runs[shortRun[1]].getRuntimeString());
+    ui->valueSR->setText(data[shortRun[0]].runs[shortRun[1]].getTimeString(data[shortRun[0]].runs[shortRun[1]].time));
 
     QList<int> longRun = getLongestRun();
     ui->simLR->setText(QString::number(longRun[0]));
     ui->algLR->setText(QString::number(longRun[1]));
-    ui->valueLR->setText(reports[longRun[0]].runs[longRun[1]].getRuntimeString());
+    ui->valueLR->setText(data[longRun[0]].runs[longRun[1]].getTimeString(data[longRun[0]].runs[longRun[1]].time));
 
     QList<int> mostCover = getMostCovRun();
     ui->simMC->setText(QString::number(mostCover[0]));
     ui->algMC->setText(QString::number(mostCover[1]));
-    ui->valueMC->setText(QString::number(reports[mostCover[0]].runs[mostCover[1]].coversf));
+    ui->valueMC->setText(data[mostCover[0]].runs[mostCover[1]].coverSF);
 
     QList<int> leastCover = getLeastCovRun();
     ui->simLC->setText(QString::number(leastCover[0]));
     ui->algLC->setText(QString::number(leastCover[1]));
-    ui->valueLC->setText(QString::number(reports[leastCover[0]].runs[leastCover[1]].coversf));
+    ui->valueLC->setText(data[leastCover[0]].runs[leastCover[1]].coverSF);
 
 
     QList<int> at = getAvgTime();
@@ -222,9 +226,9 @@ void SummaryWindow::setupSceneFromFiles(){
     file_names = QFileDialog::getOpenFileNames(this, "Select Floorplans to Summarize", "C://", "text (*.txt)");
 
     for (int i = 0; i < file_names.size(); i++){
-        Report rep;
+        RunData rep;
         rep.parseFile(file_names[i]);
-        reports.append(rep);
+        data.append(rep);
     }
 
     updateText();

@@ -37,24 +37,24 @@ void MainWindow::on_loadRep_clicked()
     // simWin = new SimWindow(this);
     // simWin->show();
 
-    reportWin = new ReportWindow(this);
-    reportWin->setupSceneFromFile();
+    repWin = new ReportWindow(this);
+    repWin->setupSceneFromFile();
     //reportWin->mw = this;
-    reportWin->showMaximized();
+    repWin->showMaximized();
     //QString report_fname = QFileDialog::getOpenFileName(this, "Select Report File", "C://", "Text (*.txt)");
 }
 
 void MainWindow::on_sumRep_clicked()
 {
-    sumWin = new summary(this);
+    sumWin = new SummaryWindow(this);
     sumWin->setupSceneFromFiles();
     sumWin->showMaximized();
 }
 
 
-void MainWindow::on_runSim_clicked()
-{
-    settingsWin = new SettingsWindow(this);
-    settingsWin->show();
-}
+// void MainWindow::on_runSim_clicked()
+// {
+//     settingsWin = new SettingsWindow(this);
+//     settingsWin->show();
+// }
 

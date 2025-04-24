@@ -27,8 +27,8 @@ set(PROJECT_SOURCES
         reportwindow.h reportwindow.cpp reportwindow.ui
         summarywindow.h summarywindow.cpp summarywindow.ui
         menu.h menu.cpp
-        report.h report.cpp
-        run.h run.cpp
+        rundata.h rundata.cpp
+
         settingswindow.h settingswindow.cpp settingswindow.ui
         simwidget.h simwidget.cpp simwidget.ui
         vacuumwindow.h vacuumwindow.cpp vacuumwindow.ui

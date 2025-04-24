@@ -23,151 +23,6 @@
    <widget class="QPushButton" name="createFP">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>60</y>
-      <width>1351</width>
-      <height>771</height>
-     </rect>
-    </property>
-    <widget class="QPushButton" name="loadRep">
-     <property name="geometry">
-      <rect>
-       <x>700</x>
-       <y>70</y>
-       <width>241</width>
-       <height>201</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Corbel</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border: 6px rgb(0, 67,133);
-border-radius: 12px;
-background-color: rgb(223, 238, 255)</string>
-     </property>
-     <property name="text">
-      <string>	Load Saved Report     </string>
-     </property>
-     <property name="icon">
-      <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="createFP">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>70</y>
-       <width>251</width>
-       <height>201</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Corbel</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border: 6px rgb(0, 67,133);
-border-radius: 12px;
-background-color: rgb(223, 238, 255)</string>
-     </property>
-     <property name="text">
-      <string>Create New Floorplan
-(From Default)</string>
-     </property>
-     <property name="icon">
-      <iconset theme="QIcon::ThemeIcon::ListAdd"/>
-     </property>
-     <property name="autoDefault">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="runSim">
-     <property name="geometry">
-      <rect>
-       <x>370</x>
-       <y>380</y>
-       <width>531</width>
-       <height>211</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Corbel</family>
-       <pointsize>22</pointsize>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border: 6px rgb(0, 67,133);
-border-radius: 12px;
-background-color: rgb(223, 238, 255)</string>
-     </property>
-     <property name="text">
-      <string>RUN SIMULATION</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="sumRep">
-     <property name="geometry">
-      <rect>
-       <x>1040</x>
-       <y>70</y>
-       <width>251</width>
-       <height>201</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Corbel</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border: 6px rgb(0, 67,133);
-border-radius: 12px;
-background-color: rgb(223, 238, 255)</string>
-     </property>
-     <property name="text">
-      <string>	Summarize Reports     </string>
-     </property>
-     <property name="icon">
-      <iconset theme="QIcon::ThemeIcon::DocumentPrintPreview"/>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="loadFP">
-     <property name="geometry">
-      <rect>
-       <x>350</x>
-       <y>70</y>
-       <width>251</width>
-       <height>201</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Corbel</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border: 6px rgb(0, 67,133);
       <x>60</x>
       <y>110</y>
       <width>301</width>
@@ -184,7 +39,7 @@ background-color: rgb(223, 238, 255)</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -218,7 +73,7 @@ background-color: rgb(223, 238, 255)</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -248,7 +103,7 @@ background-color: rgb(223, 238, 255)</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -278,7 +133,7 @@ background-color: rgb(223, 238, 255)</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>
@@ -306,7 +161,7 @@ background-color: rgb(223, 238, 255)</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133); 
+     <string notr="true">border: 6px rgb(0, 67,133);
 border-radius: 12px;
 background-color: rgb(223, 238, 255)</string>
     </property>

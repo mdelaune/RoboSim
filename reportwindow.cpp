@@ -12,7 +12,7 @@ ReportWindow::ReportWindow(QWidget *parent)
     , ui(new Ui::ReportWindow)
 {
     ui->setupUi(this);
-    report = new Report();
+    data = new RunData();
 }
 
 ReportWindow::~ReportWindow()
@@ -21,66 +21,48 @@ ReportWindow::~ReportWindow()
 }
 
 void ReportWindow::updateText(){
-    QString idText = "Floorplan ID: " + report->id;
+    QString idText = "Floorplan ID: " + data->id;
     ui->floorplanID->setText(idText);
 
-    QString sDateText = report->sDate[0] + "/" + report->sDate[1] + "/" + report->sDate[2];
+    QPixmap map(":/Images/Images/HeatMapEx");
+    ui->heatMap->setScene(new QGraphicsScene(this));
+    ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
+
+    QString sDateText = data->sDate[0] +"/" + data->sDate[1]+ "/" + data->sDate[2];//QString::number(data->sDate[0]) + "/" + QString::number(data->sDate[1]) + "/" + QString::number(data->sDate[2]);
     ui->startDate->setText(sDateText);
 
-    QString sTimeText = report->sTime[0] + ":" + report->sTime[1] + "." + report->sTime[2];
+    QString sTimeText = data->sTime[0] + ":" + data->sTime[1] + "." + data->sTime[2]; //TimegetTimeString(data->sTime);
     ui->startTime->setText(sTimeText);
 
-    QString eDateText = report->eDate[0] + "/" + report->eDate[1] + "/" + report->eDate[2];
+    QString eDateText = data->eDate[0] +"/" + data->eDate[1]+ "/" + data->eDate[2]; //QString::number(data->eDate[0]) + "/" + QString::number(data->eDate[1]) + "/" + QString::number(data->eDate[2]);
     ui->endDate->setText(eDateText);
 
-    QString eTimeText = report->eTime[0] + ":" + report->eTime[1] + "." + report->eTime[2];
+    QString eTimeText = data->eTime[0] + ":" + data->eTime[1] + "." + data->eTime[2]; //data->getTimeString(data->eTime);
     ui->endTime->setText(eTimeText);
 
-
-
-    QString tsfText = QString::number(report->totalsf);
+    QString tsfText = data->totalSF;
     ui->totalSqFt->setText(tsfText);
 
 
     if (selectedAlg == "random"){
-        QString rTimeText = report->runs[0].runtime[0] + ":" + report->runs[0].runtime[1] + "." + report->runs[0].runtime[2];
-        ui->runTime->setText(rTimeText);
-
-        QString csfText = QString::number(report->runs[0].coversf);
-        ui->coverSqFt->setText(csfText);
-
-        QString perCleanText = QString::number(report->runs[0].coverPer) + " %";
-        ui->perCleaned->setText(perCleanText);
+        ui->runTime->setText(data->runs[0].getTimeString(data->runs[0].time));
+        ui->coverSqFt->setText(data->runs[0].coverSF);
+        ui->perCleaned->setText(data->runs[0].coverPer + " %");
     }
     else if (selectedAlg == "spiral"){
-        QString rTimeText = report->runs[1].runtime[0] + ":" + report->runs[1].runtime[1] + "." + report->runs[1].runtime[2];
-        ui->runTime->setText(rTimeText);
-
-        QString csfText = QString::number(report->runs[1].coversf);
-        ui->coverSqFt->setText(csfText);
-
-        QString perCleanText = QString::number(report->runs[1].coverPer) + " %";
-        ui->perCleaned->setText(perCleanText);
+        ui->runTime->setText(data->runs[1].getTimeString(data->runs[1].time));
+        ui->coverSqFt->setText(data->runs[1].coverSF);
+        ui->perCleaned->setText(data->runs[1].coverPer + " %");
     }
     else if (selectedAlg == "snaking"){
-        QString rTimeText = report->runs[2].runtime[0] + ":" + report->runs[2].runtime[1] + "." + report->runs[2].runtime[2];
-        ui->runTime->setText(rTimeText);
-
-        QString csfText = QString::number(report->runs[2].coversf);
-        ui->coverSqFt->setText(csfText);
-
-        QString perCleanText = QString::number(report->runs[2].coverPer) + " %";
-        ui->perCleaned->setText(perCleanText);
+        ui->runTime->setText(data->runs[2].getTimeString(data->runs[2].time));
+        ui->coverSqFt->setText(data->runs[2].coverSF);
+        ui->perCleaned->setText(data->runs[2].coverPer + " %");
     }
     else if (selectedAlg == "wallfollow"){
-        QString rTimeText = report->runs[3].runtime[0] + ":" + report->runs[3].runtime[1] + "." + report->runs[3].runtime[2];
-        ui->runTime->setText(rTimeText);
-
-        QString csfText = QString::number(report->runs[3].coversf);
-        ui->coverSqFt->setText(csfText);
-
-        QString perCleanText = QString::number(report->runs[3].coverPer) + " %";
-        ui->perCleaned->setText(perCleanText);
+        ui->runTime->setText(data->runs[3].getTimeString(data->runs[3].time));
+        ui->coverSqFt->setText(data->runs[3].coverSF);
+        ui->perCleaned->setText(data->runs[3].coverPer + " %");
     }
     this->show();
     //this->showMaximized();
@@ -89,37 +71,36 @@ void ReportWindow::updateText(){
 
 void ReportWindow::setupSceneFromFile(){
     file_name = QFileDialog::getOpenFileName(this, "Select Floorplan File", "C://", "text (*.txt)");
-    report->parseFile(file_name);
+    data->parseFile(file_name);
 
-    if (!report->runs[0].exists){
+    if (!data->runs[0].exists){
         ui->randomAlg->setEnabled(0);
     }
     else{
         ui->randomAlg->setEnabled(1);
     }
 
-    if (!report->runs[1].exists){
+    if (!data->runs[1].exists){
         ui->spiralAlg->setEnabled(0);
     }
     else{
         ui->spiralAlg->setEnabled(1);
     }
 
-    if (!report->runs[2].exists){
+    if (!data->runs[2].exists){
         ui->snakingAlg->setEnabled(0);
     }
     else{
         ui->snakingAlg->setEnabled(1);
     }
 
-    if (!report->runs[3].exists){
+    if (!data->runs[3].exists){
         ui->wallfollowAlg->setEnabled(0);
     }
     else{
         ui->wallfollowAlg->setEnabled(1);
     }
-
-    void updateText();
+    updateText();
 }
 
 
@@ -149,10 +130,4 @@ void ReportWindow::on_wallFollowAlg_clicked()
     selectedAlg = "wallfollow";
     updateText();
 }
-
-
-// void ReportWindow::on_homeButton_clicked()
-// {
-//     mw->showMaximized;
-// }
 

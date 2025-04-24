@@ -2,7 +2,7 @@
 #define SUMMARY_H
 
 #include <QWidget>
-#include "report.h"
+#include "rundata.h"
 
 namespace Ui {
 class summary;

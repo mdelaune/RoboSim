@@ -1,7 +1,7 @@
 #ifndef REPORTWINDOW_H
 #define REPORTWINDOW_H
 
-#include "report.h"
+#include "rundata.h"
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QString>
@@ -36,7 +36,7 @@ private slots:
 
 private:
     Ui::ReportWindow *ui;
-    Report *report;
+    RunData *data;
 };
 
 #endif // REPORTWINDOW_H

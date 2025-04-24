@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QList>
-#include "report.h"
+#include "rundata.h"
 
 namespace Ui {
 class SummaryWindow;
@@ -22,7 +22,7 @@ public:
 
 private:
     Ui::SummaryWindow *ui;
-    QList<Report> reports;
+    QList<RunData> data;
     QStringList file_names;
 
     int getNumRuns();
