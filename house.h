@@ -163,7 +163,7 @@ private:
     long id;
 
     QGraphicsScene *m_scene;
-    QString defaultPlanLocation = "../../default_plan.json";
+    QString defaultPlanLocation = ":/Default/default_plan.json";
 
 
 

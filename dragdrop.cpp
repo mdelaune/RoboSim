@@ -94,6 +94,8 @@ DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay, Hous
     isChest = true;
     m_house = house;
     m_obstruction = obstruction;
+
+
 }
 
 QRectF DragObstruction::boundingRect() const
@@ -159,10 +161,19 @@ void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QRectF localRect = m_body;
     QRectF sceneRect = mapToScene(localRect).boundingRect();
 
-    if (m_house) {
-        m_obstruction->set_topLeft(sceneRect.topLeft());
-        m_obstruction->set_bottomRight(sceneRect.bottomRight());
-    }
+    // if (m_house && m_obstruction) {
+    //     m_obstruction->set_topLeft(sceneRect.topLeft());
+    //     m_obstruction->set_bottomRight(sceneRect.bottomRight());
+
+    //     // If this is a table, update our leg positions based on the new obstruction legs
+    //     if (!isChest) {
+    //         QRectF* updatedLegs = m_obstruction->get_legs();
+    //         m_legs.clear();
+    //         for(int i = 0; i < 4; i++) {
+    //             m_legs.append(updatedLegs[i]);
+    //         }
+    //     }
+    // }
 
     QGraphicsItem::mouseReleaseEvent(event);
 }
