@@ -5,6 +5,7 @@
 #include "edit.h"
 #include "sim.h"
 #include "report.h"
+#include "summary.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,16 +23,18 @@ public:
 
 private slots:
     void on_createFP_clicked();
-
-    void on_loadFP_clicked();
-
     void on_loadRep_clicked();
-
+    void on_loadFP_clicked();
     void on_sumRep_clicked();
+    void on_runSim_clicked();
 
 private:
     Ui::MainWindow *ui;
+
     edit *editWin;
     sim *simWin;
-    report *repWin;};
+    report *repWin;
+    summary *sumWin;
+
+};
 #endif // MAINWINDOW_H
