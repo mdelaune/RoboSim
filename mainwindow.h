@@ -5,6 +5,7 @@
 // #include "edit.h"
 #include "sim.h"
 #include "report.h"
+#include "summary.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -35,6 +36,7 @@ private:
     // edit *editWin;
     sim *simWin;
     report *repWin;
+    summary *sumWin;
 
 };
 #endif // MAINWINDOW_H

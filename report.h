@@ -16,6 +16,8 @@ public:
     QString coverSF;
     QString coverPer;
 
+    QString getTimeString(QStringList time);
+
 
 };
 
@@ -34,11 +36,10 @@ public:
     QStringList eTime;
     QStringList eDate;
 
-    QStringList runTime;
+    //QStringList runTime;
     QString totalSF;
 
     QList<Run> runs;
-    //QString getTimeString(float time);
     void getEnd();
 
 private:
@@ -61,6 +62,8 @@ public:
     void setupSceneFromFile();
     void updateText();
     QString selectedAlg;
+
+
 
 private slots:
     void on_randomAlg_clicked();

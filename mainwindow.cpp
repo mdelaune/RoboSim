@@ -37,6 +37,8 @@ void MainWindow::on_loadRep_clicked()
 
 void MainWindow::on_sumRep_clicked()
 {
-
+    sumWin = new summary(this);
+    sumWin->setupSceneFromFiles();
+    sumWin->show();
 }
 

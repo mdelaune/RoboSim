@@ -8,27 +8,12 @@
 #include <QFileDialog>
 #include <QRegularExpression>
 
-QString getTimeString(QStringList time){
+Run::Run(){}
+QString Run::getTimeString(QStringList time){
     return time[0] + ":" + time[1] + "." + time[2];
 }
 
-Run::Run(){}
-
-
-
 RunData::RunData() {}
-
-// QString RunData::getTimeString(float time){
-//     int hour = floor(time/60);
-//     int min = time - hour*60;
-//     int sec = int(time) % 60;
-//     return QString::number(hour) + ":" + QString::number(min) + "." + QString::number(sec);
-// }
-
-// void RunData::g(){
-//     eDate = sDate;
-
-// }
 
 void RunData::setEnd(){
     bool ok;
@@ -187,6 +172,8 @@ report::~report()
     delete ui;
 }
 
+
+
 void report::updateText(){
     QString idText = "Floorplan ID: " + data->id;
     ui->floorplanID->setText(idText);
@@ -212,22 +199,22 @@ void report::updateText(){
 
 
     if (selectedAlg == "random"){
-        ui->runTime->setText(getTimeString(data->runs[0].time));
+        ui->runTime->setText(data->runs[0].getTimeString(data->runs[0].time));
         ui->coverSqFt->setText(data->runs[0].coverSF);
         ui->perCleaned->setText(data->runs[0].coverPer + " %");
     }
     else if (selectedAlg == "spiral"){
-        ui->runTime->setText(getTimeString(data->runs[1].time));
+        ui->runTime->setText(data->runs[1].getTimeString(data->runs[1].time));
         ui->coverSqFt->setText(data->runs[1].coverSF);
         ui->perCleaned->setText(data->runs[1].coverPer + " %");
     }
     else if (selectedAlg == "snaking"){
-        ui->runTime->setText(getTimeString(data->runs[2].time));
+        ui->runTime->setText(data->runs[2].getTimeString(data->runs[2].time));
         ui->coverSqFt->setText(data->runs[2].coverSF);
         ui->perCleaned->setText(data->runs[2].coverPer + " %");
     }
     else if (selectedAlg == "wallfollow"){
-        ui->runTime->setText(getTimeString(data->runs[3].time));
+        ui->runTime->setText(data->runs[3].getTimeString(data->runs[3].time));
         ui->coverSqFt->setText(data->runs[3].coverSF);
         ui->perCleaned->setText(data->runs[3].coverPer + " %");
     }
