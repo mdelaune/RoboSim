@@ -2,7 +2,7 @@
 #include "ui_edit.h"
 
 edit::edit(QWidget *parent)
-    : QWidget(parent)
+    : QMainWindow(parent)
     , ui(new Ui::edit)
 {
     ui->setupUi(this);

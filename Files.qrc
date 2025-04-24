@@ -11,6 +11,7 @@
         <file>Images/rectangle.png</file>
         <file>Images/square.png</file>
         <file>Images/table.png</file>
+        <file>Images/HeatMapEx</file>
     </qresource>
     <qresource prefix="/Default">
         <file>default_plan.json</file>

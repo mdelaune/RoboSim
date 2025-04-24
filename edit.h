@@ -1,13 +1,13 @@
 #ifndef EDIT_H
 #define EDIT_H
 
-#include <QWidget>
+#include <QMainWindow>
 
 namespace Ui {
 class edit;
 }
 
-class edit : public QWidget
+class edit : public QMainWindow
 {
     Q_OBJECT
 
