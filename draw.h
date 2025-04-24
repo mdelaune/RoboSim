@@ -14,7 +14,7 @@ public:
     void addSquareRoom();
     void addRectRoom();
     void addDoor();
-    void addFurniture(Obstruction& item, QString name);
+    void addFurniture(Obstruction *item, QString name);
     void addChest();
     void addTable();
     void addChair();

@@ -20,14 +20,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_createFP_clicked()
 {
-    editWin = new edit(this); // Create edit window object
+    editWin = new EditWindow(this); // Create edit window object
     editWin->setupScene();          // Setup scene with default floorplan
     editWin->showMaximized();
 }
 
 void MainWindow::on_loadFP_clicked()
 {
-    editWin = new edit(this); // Create edit window object
+    editWin = new EditWindow(this); // Create edit window object
     editWin->setupSceneFromFile();  // Setup scene with user selected floorplan
     editWin->showMaximized();
 }

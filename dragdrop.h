@@ -71,8 +71,8 @@ private:
 class DragObstruction : public QGraphicsItem, protected DragBase
 {
 public:
-    DragObstruction(const QRectF &body, QRectF *legs);
-    DragObstruction(const QRectF &body, const QRectF &overlay);
+    DragObstruction(const QRectF &body, QRectF *legs, House *house, Obstruction *obstruction);
+    DragObstruction(const QRectF &body, const QRectF &overlay, House *house, Obstruction *obstruction);
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
@@ -88,6 +88,8 @@ private:
     QRectF m_overlay;
     bool isChest;
     QPointF m_startPos;
+    House *m_house;
+    Obstruction *m_obstruction;
 };
 
 class DragRoom : public QObject, public QGraphicsRectItem, protected DragBase

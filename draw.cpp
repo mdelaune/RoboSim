@@ -66,19 +66,18 @@ void Draw::addDoor()
     qDebug() << "DOOR added with ID:" << doorId;
 }
 
-void Draw::addFurniture(Obstruction& item, QString name)
+void Draw::addFurniture(Obstruction *item, QString name)
 {
     // Add obstruction to house first to get an ID
     m_house->addObstruction(item);
-    int obstructionId = item.getId();
+    int obstructionId = item->getId();
 
-    DragObstruction *dragItem;
-    if (item.get_isChest()) {
-        dragItem = new DragObstruction(item.get_rect(), item.get_overlay());
+DragObstruction *dragItem;
+    if (item->get_isChest()) {
+
+        dragItem = new DragObstruction(item->get_rect(), item->get_overlay(), m_house, item);
     } else {
-        Obstruction mutableItem = item;
-        mutableItem.set_legs(10);
-        dragItem = new DragObstruction(mutableItem.get_rect(), mutableItem.get_legs());
+        dragItem = new DragObstruction(item->get_rect(), item->get_legs(), m_house, item);
     }
 
     // Store the ID in the item
@@ -94,17 +93,17 @@ void Draw::addFurniture(Obstruction& item, QString name)
 
 void Draw::addChest()
 {
-    addFurniture(chest, "CHEST");
+    addFurniture(&chest, "CHEST");
 }
 
 void Draw::addTable()
 {
-    addFurniture(table, "TABLE");
+    addFurniture(&table, "TABLE");
 }
 
 void Draw::addChair()
 {
-    addFurniture(chair, "CHAIR");
+    addFurniture(&chair, "CHAIR");
 }
 
 void Draw::changeFlooring()

@@ -73,7 +73,7 @@ void DragDoor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItemGroup::mouseReleaseEvent(event);
 }
 
-DragObstruction::DragObstruction(const QRectF &body, QRectF *legs)
+DragObstruction::DragObstruction(const QRectF &body, QRectF *legs, House *house, Obstruction *obstruction)
     : m_body(body)
 {
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
@@ -86,12 +86,14 @@ DragObstruction::DragObstruction(const QRectF &body, QRectF *legs)
     }
 }
 
-DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay)
+DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay, House *house, Obstruction *obstruction)
     : m_body(body), m_overlay(overlay)
 {
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
     setCursor(QCursor(Qt::OpenHandCursor));
     isChest = true;
+    m_house = house;
+    m_obstruction = obstruction;
 }
 
 QRectF DragObstruction::boundingRect() const
@@ -100,9 +102,9 @@ QRectF DragObstruction::boundingRect() const
 
     if(!isChest)
     {
-        for(const QRectF &leg : m_legs)
+        for(int i = 0; i < m_legs.size(); i++)
         {
-            bounds = bounds.united(leg);
+            bounds = bounds.united(m_legs[i]);
         }
     }
     else
@@ -154,7 +156,13 @@ void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
 
+    QRectF localRect = m_body;
+    QRectF sceneRect = mapToScene(localRect).boundingRect();
 
+    if (m_house) {
+        m_obstruction->set_topLeft(sceneRect.topLeft());
+        m_obstruction->set_bottomRight(sceneRect.bottomRight());
+    }
 
     QGraphicsItem::mouseReleaseEvent(event);
 }

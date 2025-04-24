@@ -62,6 +62,14 @@ Obstruction::Obstruction(bool isChest) : m_top_left(-50, 20), m_bottom_right(50,
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = isChest;
     get_floorCoverage();
+
+    if(isChest)
+    {
+        set_legs(0);
+    } else {
+        set_legs(10);
+    }
+
 }
 
 Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest)
@@ -71,6 +79,12 @@ Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest)
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = isChest;
     get_floorCoverage();
+    if(m_isChest)
+    {
+        set_legs(0);
+    } else {
+        set_legs(10);
+    }
 }
 
 Obstruction::Obstruction(QJsonObject room)
@@ -80,6 +94,12 @@ Obstruction::Obstruction(QJsonObject room)
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = room.value("is_chest").toBool();
     get_floorCoverage();
+    if(m_isChest)
+    {
+        set_legs(0);
+    } else {
+        set_legs(10);
+    }
 }
 
 QPointF Obstruction::get_topLeft()
@@ -145,11 +165,15 @@ void Obstruction::set_legs(int size)
 void Obstruction::set_topLeft(QPointF top_left)
 {
     m_top_left = top_left;
+    m_rect = QRectF(m_top_left, m_bottom_right);
+    set_legs(10);
 }
 
 void Obstruction::set_bottomRight(QPointF bottom_right)
 {
     m_bottom_right = bottom_right;
+    m_rect = QRectF(m_top_left, m_bottom_right);
+    set_legs(10);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -266,14 +290,14 @@ void House::drawObstructions()
     {
         if(obstructions[i].get_isChest())
         {
-            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_overlay());
+            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_overlay(), this, &obstructions[i]);
             m_scene->addItem(item);
             item->setZValue(1);        }
         else
         {
             obstructions[i].set_legs(10);
 
-            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_legs());
+            DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_legs(), this, &obstructions[i]);
             m_scene->addItem(item);
             item->setZValue(1);
         }

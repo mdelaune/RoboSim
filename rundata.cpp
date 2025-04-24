@@ -1,42 +1,9 @@
-<<<<<<< HEAD:report.cpp
-#include "report.h"
-#include "ui_report.h"
-
-#include <QFileDialog>
-#include <cmath> // for floor function
-=======
 #include "rundata.h"
->>>>>>> origin/main:rundata.cpp
 
 #include <QDebug>
 #include <QFileDialog>
 #include <QRegularExpression>
 
-<<<<<<< HEAD:report.cpp
-QString getTimeString(QStringList time){
-    return time[0] + ":" + time[1] + "." + time[2];
-}
-
-Run::Run(){}
-
-
-
-RunData::RunData() {}
-
-// QString RunData::getTimeString(float time){
-//     int hour = floor(time/60);
-//     int min = time - hour*60;
-//     int sec = int(time) % 60;
-//     return QString::number(hour) + ":" + QString::number(min) + "." + QString::number(sec);
-// }
-
-// void RunData::g(){
-//     eDate = sDate;
-
-// }
-
-void RunData::setEnd(){
-=======
 Run::Run(){}
 
 QString Run::getTimeString(QStringList time){
@@ -46,7 +13,6 @@ QString Run::getTimeString(QStringList time){
 RunData::RunData(){}
 
 void RunData::setEndValues(){
->>>>>>> origin/main:rundata.cpp
     bool ok;
     int sHour = sTime[0].toInt(&ok, 10);
     int sMin = sTime[1].toInt(&ok, 10);
@@ -126,15 +92,6 @@ void RunData::setEndValues(){
     eDate.append(QString::number(eMon));
     eDate.append(QString::number(eDay));
     eDate.append(QString::number(eYear));
-<<<<<<< HEAD:report.cpp
-
-    // totalRuntime[0] = QString::number(rHour);
-    // totalRuntime[1] = QString::number(rMin);
-    // totalRuntime[2] = QString::number(rSec);
-
-}
-
-=======
 
     totalRuntime.append(QString::number(rHour));
     totalRuntime.append(QString::number(rMin));
@@ -142,7 +99,6 @@ void RunData::setEndValues(){
 }
 
 
->>>>>>> origin/main:rundata.cpp
 void RunData::parseFile(QString file_name){
     QFile file(file_name);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -163,19 +119,9 @@ void RunData::parseFile(QString file_name){
     }
 
     bool ok;
+    //qDebug() << filedata[0];
     id = filedata[0][0];
 
-<<<<<<< HEAD:report.cpp
-    sTime.append(filedata[1][0]); //.toFloat(&ok) * 60;
-    sTime.append(filedata[1][1]); //.toFloat(&ok);
-    sTime.append(filedata[1][2]); //.toFloat(&ok)/100;
-
-    sDate.append(filedata[1][3]); //.toInt(&ok));
-    sDate.append(filedata[1][4]); //.toInt(&ok));
-    sDate.append(filedata[1][5]); //.toInt(&ok));
-
-    totalSF = (filedata[2][0] + "." + filedata[2][1]); //.toFloat(&ok);
-=======
     sTime.append(filedata[1][0]);
     sTime.append(filedata[1][1]);
     sTime.append(filedata[1][2]);
@@ -186,24 +132,16 @@ void RunData::parseFile(QString file_name){
 
     QString totalString = filedata[2][0] + "." + filedata[2][1];
     totalSF = totalString;
->>>>>>> origin/main:rundata.cpp
 
     for (int i = 3; i < 7; i++){
         Run run;
         run.alg = filedata[i][0];
 
         if (filedata[i][1] != "0"){
-<<<<<<< HEAD:report.cpp
-            run.time.append(filedata[i][1]);
-            run.time.append(filedata[i][2]);
-            run.time.append(filedata[i][3]);
-
-=======
             qDebug() << filedata[i][1];
             run.time.append(filedata[i][1]);
             run.time.append(filedata[i][2]);
             run.time.append(filedata[i][3]);
->>>>>>> origin/main:rundata.cpp
             run.coverSF = filedata[i][4] + "." + filedata[i][5];
             run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
             run.exists = true;
@@ -214,133 +152,7 @@ void RunData::parseFile(QString file_name){
 
         runs.append(run);
     }
-    setEnd();
+
     file.close();
+    setEndValues();
 }
-
-
-
-report::report(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::report)
-{
-    ui->setupUi(this);
-    data = new RunData();
-}
-
-report::~report()
-{
-    delete ui;
-}
-
-void report::updateText(){
-    QString idText = "Floorplan ID: " + data->id;
-    ui->floorplanID->setText(idText);
-
-    QPixmap map(":/Images/Images/HeatMapEx");
-    ui->heatMap->setScene(new QGraphicsScene(this));
-    ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
-
-    QString sDateText = data->sDate[0] +"/" + data->sDate[1]+ "/" + data->sDate[2];//QString::number(data->sDate[0]) + "/" + QString::number(data->sDate[1]) + "/" + QString::number(data->sDate[2]);
-    ui->startDate->setText(sDateText);
-
-    QString sTimeText = data->sTime[0] + ":" + data->sTime[1] + "." + data->sTime[2]; //TimegetTimeString(data->sTime);
-    ui->startTime->setText(sTimeText);
-
-    QString eDateText = data->eDate[0] +"/" + data->eDate[1]+ "/" + data->eDate[2]; //QString::number(data->eDate[0]) + "/" + QString::number(data->eDate[1]) + "/" + QString::number(data->eDate[2]);
-    ui->endDate->setText(eDateText);
-
-    QString eTimeText = data->eTime[0] + ":" + data->eTime[1] + "." + data->eTime[2]; //data->getTimeString(data->eTime);
-    ui->endTime->setText(eTimeText);
-
-    QString tsfText = data->totalSF;
-    ui->totalSqFt->setText(tsfText);
-
-
-    if (selectedAlg == "random"){
-        ui->runTime->setText(getTimeString(data->runs[0].time));
-        ui->coverSqFt->setText(data->runs[0].coverSF);
-        ui->perCleaned->setText(data->runs[0].coverPer + " %");
-    }
-    else if (selectedAlg == "spiral"){
-        ui->runTime->setText(getTimeString(data->runs[1].time));
-        ui->coverSqFt->setText(data->runs[1].coverSF);
-        ui->perCleaned->setText(data->runs[1].coverPer + " %");
-    }
-    else if (selectedAlg == "snaking"){
-        ui->runTime->setText(getTimeString(data->runs[2].time));
-        ui->coverSqFt->setText(data->runs[2].coverSF);
-        ui->perCleaned->setText(data->runs[2].coverPer + " %");
-    }
-    else if (selectedAlg == "wallfollow"){
-        ui->runTime->setText(getTimeString(data->runs[3].time));
-        ui->coverSqFt->setText(data->runs[3].coverSF);
-        ui->perCleaned->setText(data->runs[3].coverPer + " %");
-    }
-    this->show();
-    //this->showMaximized();
-}
-
-
-void report::setupSceneFromFile(){
-    file_name = QFileDialog::getOpenFileName(this, "Select Floorplan File", "C://", "text (*.txt)");
-    data->parseFile(file_name);
-
-    if (!data->runs[0].exists){
-        ui->randomAlg->setEnabled(0);
-    }
-    else{
-        ui->randomAlg->setEnabled(1);
-    }
-
-    if (!data->runs[1].exists){
-        ui->spiralAlg->setEnabled(0);
-    }
-    else{
-        ui->spiralAlg->setEnabled(1);
-    }
-
-    if (!data->runs[2].exists){
-        ui->snakingAlg->setEnabled(0);
-    }
-    else{
-        ui->snakingAlg->setEnabled(1);
-    }
-
-    if (!data->runs[3].exists){
-        ui->wallfollowAlg->setEnabled(0);
-    }
-    else{
-        ui->wallfollowAlg->setEnabled(1);
-    }
-    updateText();
-}
-
-
-void report::on_randomAlg_clicked()
-{
-    selectedAlg = "random";
-    updateText();
-}
-
-
-void report::on_spiralAlg_clicked()
-{
-    selectedAlg = "spiral";
-    updateText();
-}
-
-
-void report::on_snakingAlg_clicked()
-{
-    selectedAlg = "snaking";
-    updateText();
-}
-
-
-void report::on_wallfollowAlg_clicked()
-{
-    selectedAlg = "wallfollow";
-    updateText();
-}
-
