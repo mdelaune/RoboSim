@@ -19,7 +19,12 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(149, 181, 219);</string>
+   <string notr="true">background-color: rgb(149, 181, 219);
+
+border-width: 4px;
+border-color: rgb(255, 255, 255);
+border-width: 4px;
+border-color: rgb(255, 255, 255);</string>
   </property>
   <property name="documentMode">
    <bool>false</bool>
@@ -34,6 +39,16 @@
       <height>791</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <family>Verdana</family>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-radius: 6px;
+border-width: 4px;
+border-color: rgb(255, 255, 255);</string>
+    </property>
     <property name="frameShape">
      <enum>QFrame::Shape::StyledPanel</enum>
     </property>
@@ -43,11 +58,16 @@
     <widget class="QFrame" name="frame_2">
      <property name="geometry">
       <rect>
-       <x>560</x>
+       <x>460</x>
        <y>120</y>
-       <width>361</width>
+       <width>461</width>
        <height>181</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Verdana</family>
+      </font>
      </property>
      <property name="styleSheet">
       <string notr="true">background-color: rgb(200, 227, 238);
@@ -62,14 +82,15 @@ border-radius: 6px;</string>
      <widget class="QLabel" name="totalLabel_3">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>90</x>
         <y>130</y>
-        <width>91</width>
+        <width>131</width>
         <height>21</height>
        </rect>
       </property>
       <property name="font">
        <font>
+        <family>Verdana</family>
         <pointsize>12</pointsize>
        </font>
       </property>
@@ -83,7 +104,7 @@ border-radius: 6px;</string>
      <widget class="QTextEdit" name="coverSqFt">
       <property name="geometry">
        <rect>
-        <x>170</x>
+        <x>240</x>
         <y>70</y>
         <width>161</width>
         <height>41</height>
@@ -91,7 +112,7 @@ border-radius: 6px;</string>
       </property>
       <property name="font">
        <font>
-        <family>Cambria Math</family>
+        <family>Verdana</family>
         <pointsize>14</pointsize>
        </font>
       </property>
@@ -118,21 +139,22 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cambria Math'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
      <widget class="QLabel" name="totalLabel_2">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>80</y>
-        <width>141</width>
+        <width>181</width>
         <height>21</height>
        </rect>
       </property>
       <property name="font">
        <font>
+        <family>Verdana</family>
         <pointsize>12</pointsize>
        </font>
       </property>
@@ -146,7 +168,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <widget class="QTextEdit" name="perCleaned">
       <property name="geometry">
        <rect>
-        <x>170</x>
+        <x>240</x>
         <y>120</y>
         <width>161</width>
         <height>41</height>
@@ -154,7 +176,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </property>
       <property name="font">
        <font>
-        <family>Cambria Math</family>
+        <family>Verdana</family>
         <pointsize>14</pointsize>
        </font>
       </property>
@@ -181,14 +203,14 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cambria Math'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
      <widget class="QLabel" name="runLabel">
       <property name="geometry">
        <rect>
-        <x>70</x>
+        <x>140</x>
         <y>30</y>
         <width>91</width>
         <height>20</height>
@@ -196,6 +218,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </property>
       <property name="font">
        <font>
+        <family>Verdana</family>
         <pointsize>12</pointsize>
        </font>
       </property>
@@ -209,7 +232,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <widget class="QTextEdit" name="runTime">
       <property name="geometry">
        <rect>
-        <x>170</x>
+        <x>240</x>
         <y>20</y>
         <width>161</width>
         <height>41</height>
@@ -217,7 +240,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </property>
       <property name="font">
        <font>
-        <family>Cambria Math</family>
+        <family>Verdana</family>
         <pointsize>14</pointsize>
        </font>
       </property>
@@ -244,7 +267,7 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cambria Math'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
@@ -264,8 +287,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <height>401</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Verdana</family>
+      </font>
+     </property>
      <property name="styleSheet">
-      <string notr="true">background-color: rgb(220, 250, 250);</string>
+      <string notr="true">QGraphicsView{
+border-width: 6px;
+border-color: rgb(0,0,0);
+border-style: solid;
+}</string>
      </property>
      <property name="lineWidth">
       <number>3</number>
@@ -283,7 +315,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </property>
     <property name="font">
      <font>
-      <family>Corbel</family>
+      <family>Verdana</family>
       <pointsize>18</pointsize>
       <bold>true</bold>
      </font>
@@ -299,7 +331,7 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Corbel'; font-size:18pt; font-weight:700; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:18pt; font-weight:700; font-style:normal;&quot;&gt;
 &lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:14pt;&quot;&gt;Floorplan ID: &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
@@ -311,6 +343,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <width>351</width>
       <height>221</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Verdana</family>
+     </font>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(200, 227, 238);
@@ -333,7 +370,7 @@ border-radius: 6px;</string>
      </property>
      <property name="font">
       <font>
-       <family>Corbel</family>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
        <bold>true</bold>
       </font>
@@ -356,7 +393,7 @@ border-radius: 6px;</string>
      </property>
      <property name="font">
       <font>
-       <family>Corbel</family>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -375,7 +412,7 @@ border-radius: 6px;</string>
      </property>
      <property name="font">
       <font>
-       <family>Corbel</family>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -394,7 +431,7 @@ border-radius: 6px;</string>
      </property>
      <property name="font">
       <font>
-       <family>Corbel</family>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -413,7 +450,7 @@ border-radius: 6px;</string>
      </property>
      <property name="font">
       <font>
-       <family>Corbel</family>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -432,7 +469,7 @@ border-radius: 6px;</string>
      </property>
      <property name="font">
       <font>
-       <family>Corbel</family>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -446,13 +483,20 @@ border-radius: 6px;</string>
      <rect>
       <x>60</x>
       <y>430</y>
-      <width>351</width>
-      <height>221</height>
+      <width>401</width>
+      <height>251</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Verdana</family>
+     </font>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(200, 227, 238);
-border-radius: 6px;</string>
+border-radius: 6px;
+border-width: 4px;
+border-color: rgb(255, 255, 255);</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::Shape::StyledPanel</enum>
@@ -471,7 +515,7 @@ border-radius: 6px;</string>
      </property>
      <property name="font">
       <font>
-       <family>Cambria Math</family>
+       <family>Verdana</family>
        <pointsize>14</pointsize>
       </font>
      </property>
@@ -498,7 +542,7 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cambria Math'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
@@ -513,6 +557,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -534,6 +579,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -555,7 +601,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
-       <family>Cambria Math</family>
+       <family>Verdana</family>
        <pointsize>14</pointsize>
       </font>
      </property>
@@ -582,7 +628,7 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cambria Math'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
@@ -597,12 +643,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
-       <family>Cambria Math</family>
+       <family>Verdana</family>
        <pointsize>14</pointsize>
       </font>
      </property>
      <property name="styleSheet">
       <string notr="true">background-color: rgb(220, 250, 250);
+QTextEdit{
+	border-radius: 6px;
+	border-width: 4px;
+	border-color: rgb(255, 255, 255);
+}
 </string>
      </property>
      <property name="frameShadow">
@@ -624,7 +675,7 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cambria Math'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
@@ -639,7 +690,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
-       <family>Cambria Math</family>
+       <family>Verdana</family>
        <pointsize>14</pointsize>
       </font>
      </property>
@@ -671,6 +722,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -692,6 +744,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -705,14 +758,15 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <widget class="QLabel" name="totalLabel">
      <property name="geometry">
       <rect>
-       <x>50</x>
+       <x>20</x>
        <y>170</y>
-       <width>101</width>
+       <width>131</width>
        <height>21</height>
       </rect>
      </property>
      <property name="font">
       <font>
+       <family>Verdana</family>
        <pointsize>12</pointsize>
       </font>
      </property>
@@ -734,7 +788,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="font">
       <font>
-       <family>Cambria Math</family>
+       <family>Verdana</family>
        <pointsize>14</pointsize>
       </font>
      </property>
@@ -761,7 +815,7 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cambria Math'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Verdana'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
