@@ -2,289 +2,345 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>1600</width>
-    <height>900</height>
-   </rect>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(149, 181, 219);</string>
+   <string notr="true">background-color: rgba(53, 143, 128, 1);</string>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="createFP">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>100</y>
-      <width>351</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Verdana</family>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{
-	background: rgba(187, 222, 251, 1);
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LayoutDirection::LeftToRight</enum>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>64</number>
+      </property>
+      <property name="leftMargin">
+       <number>64</number>
+      </property>
+      <property name="topMargin">
+       <number>64</number>
+      </property>
+      <property name="rightMargin">
+       <number>64</number>
+      </property>
+      <property name="bottomMargin">
+       <number>64</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="createFP">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Verdana</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(100, 181, 246, 1);
+	background: rgba(103, 185, 154, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 </string>
-    </property>
-    <property name="text">
-     <string>Create New Floorplan
+          </property>
+          <property name="text">
+           <string>Create New Floorplan
 (From Default)</string>
-    </property>
-    <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::ListAdd"/>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>40</width>
-      <height>40</height>
-     </size>
-    </property>
-    <property name="autoDefault">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="loadFP">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>100</y>
-      <width>351</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Verdana</family>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{
-	background: rgba(187, 222, 251, 1);
+          </property>
+          <property name="icon">
+           <iconset theme="QIcon::ThemeIcon::ListAdd"/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Policy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>64</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="loadFP">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Verdana</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(100, 181, 246, 1);
+	background: rgba(103, 185, 154, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 </string>
-    </property>
-    <property name="text">
-     <string>	Load Saved Floorplan</string>
-    </property>
-    <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>40</width>
-      <height>40</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="loadRep">
-    <property name="geometry">
-     <rect>
-      <x>830</x>
-      <y>100</y>
-      <width>351</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Verdana</family>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{
-	background: rgba(187, 222, 251, 1);
+          </property>
+          <property name="text">
+           <string>	Load Saved Floorplan</string>
+          </property>
+          <property name="icon">
+           <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="runSim">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Verdana</family>
+          <pointsize>14</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(100, 181, 246, 1);
+	background: rgba(103, 185, 154, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 </string>
-    </property>
-    <property name="text">
-     <string>	Load Saved Report     </string>
-    </property>
-    <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>40</width>
-      <height>40</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="sumRep">
-    <property name="geometry">
-     <rect>
-      <x>830</x>
-      <y>330</y>
-      <width>351</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Verdana</family>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{
-	background: rgba(187, 222, 251, 1);
+        </property>
+        <property name="text">
+         <string>RUN SIMULATION</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="loadRep">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Verdana</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(100, 181, 246, 1);
+	background: rgba(103, 185, 154, 1);
 	border-width: 4px;
 	border-style: solid;
-	border-radius: 6px;
-	border-color: rgba(100, 181, 246, 1);
-	color: rgba(13, 71, 161, 1);
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
 }
 </string>
-    </property>
-    <property name="text">
-     <string>	Summarize Reports     </string>
-    </property>
-    <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::DocumentPrintPreview"/>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>40</width>
-      <height>40</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="runSim">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>330</y>
-      <width>561</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Verdana</family>
-      <pointsize>14</pointsize>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">border: 6px rgb(0, 67,133);
-border-radius: 12px;
-background-color: rgb(223, 238, 255)</string>
-    </property>
-    <property name="text">
-     <string>RUN SIMULATION</string>
-    </property>
-   </widget>
+          </property>
+          <property name="text">
+           <string>	Load Saved Report     </string>
+          </property>
+          <property name="icon">
+           <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Policy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>64</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="sumRep">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Verdana</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QPushButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
+          </property>
+          <property name="text">
+           <string>	Summarize Reports     </string>
+          </property>
+          <property name="icon">
+           <iconset theme="QIcon::ThemeIcon::DocumentPrintPreview"/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1600</width>
+     <width>1220</width>
      <height>26</height>
     </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background: rgba(120, 198, 163, 1);</string>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Home</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuEdit_2">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuEdit_2"/>
-   <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>
