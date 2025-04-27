@@ -94,5 +94,20 @@ void Menu::menuRedo()
 
 void Menu::menuAbout()
 {
+    QMessageBox aboutBox;
+    aboutBox.setWindowTitle("About");
+    aboutBox.setIcon(QMessageBox::Information);
+    aboutBox.setText("<h3>Clean Sweep</h3>");
+    aboutBox.setInformativeText(
+        "Version 1.0<br><br>"
+        "A robot vacuum simulation.<br><br>"
+        "Authors: <br>"
+        "Maddie Delaune<br>"
+        "Allan Benjume<br>"
+        "Quinton Pouncy<br>"
+        "Vasilisa Douglas<br>"
+        );
+    aboutBox.setStandardButtons(QMessageBox::Ok);
+    aboutBox.exec();
     qDebug() << "ABOUT";
 }
