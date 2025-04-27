@@ -51,6 +51,7 @@
         {
             "shape": "rectangle",
             "is_chest": true,
+            "type": "chest",
             "x_topLeft": 250,
             "y_topLeft": 0,
             "x_bottomRight": 350,
@@ -59,6 +60,7 @@
         {
             "shape": "rectangle",
             "is_chest": true,
+            "type": "chest",
             "x_topLeft": -250,
             "y_topLeft": 0,
             "x_bottomRight": -350,
@@ -67,6 +69,7 @@
         {
             "shape": "rectangle",
             "is_chest": false,
+            "type": "table",
             "x_topLeft": -350,
             "y_topLeft": 100,
             "x_bottomRight": -210,

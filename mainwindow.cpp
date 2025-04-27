@@ -34,19 +34,18 @@ void MainWindow::on_loadFP_clicked()
 
 void MainWindow::on_loadRep_clicked()
 {
-    // simWin = new SimWindow(this);
-    // simWin->show();
+
 
     repWin = new ReportWindow(this);
     repWin->setupSceneFromFile();
-    //reportWin->mw = this;
     repWin->showMaximized();
-    //QString report_fname = QFileDialog::getOpenFileName(this, "Select Report File", "C://", "Text (*.txt)");
 }
 
 void MainWindow::on_sumRep_clicked()
 {
-
+    sumWin = new SummaryWindow(this);
+    sumWin->setupSceneFromFiles();
+    sumWin->showMaximized();
 }
 
 

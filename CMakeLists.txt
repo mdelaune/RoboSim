@@ -28,6 +28,7 @@ set(PROJECT_SOURCES
         rundata.h rundata.cpp
         dragdrop.h dragdrop.cpp
         reportwindow.cpp reportwindow.h reportwindow.ui
+        summarywindow.cpp summarywindow.h summarywindow.ui
         Files.qrc
 )
 

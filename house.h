@@ -43,8 +43,8 @@ private:
 class Obstruction
 {
 public:
-    Obstruction(bool isChest);
-    Obstruction(QPointF top_left, QPointF bottom_right, bool isChest);
+    Obstruction(bool isChest, QString type);
+    Obstruction(QPointF top_left, QPointF bottom_right, bool isChest, QString type);
     Obstruction(QJsonObject obstruction);
 
     QPointF get_topLeft();
@@ -54,7 +54,11 @@ public:
     bool get_isChest();
     float get_floorCoverage();
     QRectF* get_legs();
-    void set_legs(int radius);
+    void set_legsRadius(int radius);
+    void set_legs(QRectF *legs);
+
+    QString get_type(); // New getter
+    void set_type(QString& type);
 
     void set_topLeft(QPointF top_left);
     void set_bottomRight(QPointF bottom_right);
@@ -69,10 +73,11 @@ private:
     QRectF m_floorOverlay;
 
     bool m_isChest;
+    QString m_type;
 
     float floorCoverage;
 
-    QRectF legs[4];
+    QRectF m_legs[4];
     int m_id;
 };
 
@@ -164,8 +169,6 @@ private:
 
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
-
-
 
     int scene_object_id = 1;
 };
