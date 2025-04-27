@@ -112,17 +112,21 @@ void Draw::changeFlooring()
     if(sender()->objectName() == "btn_hardFloor")
     {
         m_house->setRoomFillColor(QColor(196, 164, 132, 127), Qt::CrossPattern);
+        m_house->flooring = "Hard";
     }
     else if(sender()->objectName() == "btn_loopPile")
     {
         m_house->setRoomFillColor(QColor(50, 50, 255, 127), Qt::Dense7Pattern);
+        m_house->flooring = "Loop Pile";
     }
     else if(sender()->objectName() == "btn_cutPile")
     {
         m_house->setRoomFillColor(QColor(200, 0, 0, 127), Qt::Dense6Pattern);
+        m_house->flooring = "Cut Pile";
     }
     else if(sender()->objectName() == "btn_friezeCut")
     {
         m_house->setRoomFillColor(QColor(255, 255, 200, 127), Qt::Dense5Pattern);
+        m_house->flooring = "Frieze Cut";
     }
 }
