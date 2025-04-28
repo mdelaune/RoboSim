@@ -1,138 +1,85 @@
 #ifndef VACUUM_H
 #define VACUUM_H
 
-//#include <QObject>
-#include <QTimer>
-#include <QPointF>
-#include <QString>
-#include <QGraphicsScene>
-#include <QRectF>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsScene>
+#include <QPointF>
+#include <QBrush>
 #include <QStringList>
-#include <QSet>
-//#include <QHash>
-#include <QGraphicsRectItem>
+#include "houseparser.h"
 
-class Vacuum : public QObject {
-    Q_OBJECT
-
+class Vacuum
+{
 public:
-    explicit Vacuum(QGraphicsScene *scene, QObject *parent = nullptr);
+    Vacuum(QGraphicsScene* scene);
 
-    // Settings
-    void setSpeed(double inchesPerSecond);
+    // Setters
     void setBatteryLife(int minutes);
-    void setPathingAlgorithm(const QString &algorithm);
+    void setVacuumEfficiency(int vacuumEff);
+    void setWhiskerEfficiency(int whiskerEff);
+    void setSpeed(int inchesPerSecond);
+    void setPathingAlgorithms(const QStringList &algorithms);  // Changed to accept a list of algorithms
+    void setVacuumPosition(double x, double y);
     void setFloorType(const QString &type);
-    void setEfficiency(double vacuumEff, double whiskerEff);
-    void setRoomAndDoor(const QRectF &room, const QRectF &door);
-    void setSpeedMultiplier(int multiplier);
-    void setObstacles(const QList<QGraphicsRectItem*>& obs);
-    void rotateVacuum(double angleDelta);
-    void advanceToNextAlgorithm();
-    void runTimedAlgorithms();
 
-    // Simulation control
-    void start();
-    void stop();
 
     // Getters
     int getBatteryLife() const;
-    double getSpeed() const;
-    QString getPathingAlgorithm() const;
+    int getVacuumEfficiency() const;
+    int getWhiskerEfficiency() const;
+    int getSpeed() const;
+    QStringList getPathingAlgorithms() const;  // Returns a list of algorithms
+    QGraphicsEllipseItem* getGraphic() const;
     QPointF getCurrentPosition() const;
-    QGraphicsEllipseItem* getVacuumItem() const;
-    double getCoveragePercent(int roomWidth, int roomHeight, const QList<QGraphicsRectItem*>& obstacles) const;
 
-    //QHash<QPoint, int> cellVisitCount;
-    QPointF lastTrailPoint;
-    QString snakingMode;
-    int snakingStepCounter;
+    // test; will be removed.
+    void move(const QList<QRectF>& rooms, const QList<Obstruction2>& obstructions, const QList<QPointF>& doors, int multiplier);
 
-
-    void setSelectedAlgs(QStringList selection);
-
-signals:
-    void batteryDepleted();
-
-private slots:
-    void tick();
+    // signals:
+    //     void positionUpdated(QPointF newPos);
+    //     void batteryDepleted();
+    void enableAutomaticSwitching();
 
 private:
-    QStringList selectedAlgs;
-    QGraphicsScene *scene;
-    QTimer movementTimer;
-    QGraphicsEllipseItem *vacuumItem;
+    const double diameter = 12.8;
+    //const double whiskerWidth = 13.5;
+    //const double vacuumWidth = 5.8;
 
-    double speed;
     int batteryLife;
-    int remainingBattery;
-    QString floorType;
-    QString pathingAlgorithm;
-
-    QPointF currentPosition;
+    int vacuumEfficiency;
+    int whiskerEfficiency;
+    int speed;
+    QStringList pathingAlgorithms;
+    QGraphicsEllipseItem *vacuumGraphic;
     QPointF velocity;
-
-    double cleaningEfficiency;
-    double whiskerEfficiency;
-
-    bool stoppedByUser;
-
-    // Pathing control
-    bool movingRight;
-    int wallDirection;
-    double spiralAngle;
-    double spiralRadius;
-    bool spiraling = true;
-    bool wallFollowing = false;
-    int wallFollowCounter = 0;
-    bool snakingDown = true;
-    double baseCleaningEfficiency = 0.9;
-    double baseWhiskerEfficiency = 0.3;
-
-
-    double currentRotation = 0.0;
-    QPointF snakeTarget;
-    bool snakingInitialized = false;
-
+    QPointF currentPosition;
+    double spiralAngle = 0.0;
+    double spiralRadius = 1.0;
+    bool checkBounds(const QPointF &newPosition, const QList<QPointF> &doors);
+    QGraphicsScene* scene = nullptr;
     QRectF roomRect;
-    QRectF doorRect;
+    QPointF lastTrailPoint;
 
-    // Obstacle info
-    QList<QGraphicsRectItem*> obstacles;
+    int currentRoomIndex = -1;
+    QString floorType = "Hard";
+    bool movingDown = true;
+    bool movingRight = true;
+    int currentZoneX = 0; // NEW
+    int currentZoneY = 0;
+    bool movingUpward = false;
 
-    // Trail tracking
-    QSet<QPoint> cleanedCells;
-    int cellSize = 10;
+    int currentAlgorithmIndex = 0; // 🔥 NEW: which algorithm is currently active
+    int algorithmSwitchTimer = 0;   // 🔥 NEW: how many frames passed
+    const int switchInterval = 30 * 60;
 
-    // Pathing algorithms
-    void moveRandomly();
-    void moveSnaking();
-    void moveWallFollowing();
-    void moveBounce();
-    void moveSpiral();
-    void onRunAllClicked(); // For the Run All Algorithms button
-
-
-    // Collision/update
-    void handleWallCollision();
-    void updatePosition();
-    bool checkBounds(const QPointF &newPosition);
-
-    // Algorithm completion tracking
-    QStringList allAlgorithms;
-    QSet<QString> completedAlgorithms;
-
-    int algorithmTickCount = 0;     // Tick counter for the current algorithm
-    int maxAlgorithmTicks = 0;
-        // Time limit in ticks for each algorithm
-    bool timedExecutionEnabled = false;
-    int speedMultiplier = 1;  // Default is 1x
-    int globalTickCount = 0;
-    int maxGlobalTicks = 36000; // 10 minutes at 60 FPS
+    bool autoSwitchingEnabled = false;
 
 
+    QMap<QPair<int, int>, int> trailHeatmap;
+
+    QColor interpolateColor(QColor startColor, QColor endColor, double t);
 
 };
 
 #endif // VACUUM_H
+
