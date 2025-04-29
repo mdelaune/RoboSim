@@ -192,6 +192,10 @@ private:
     int total_area;
 
     QString floor_covering = "hard_floor";
+
+    QList<QRectF> getRooms() const;
+    QList<Obstruction> getObstructions() const;
+    QList<QPointF> getDoors() const;
 };
 
 #endif // HOUSE_H

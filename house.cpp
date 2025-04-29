@@ -4,6 +4,7 @@
 
 #include "house.h"
 #include "dragdrop.h"
+#include "houseparser.h"
 
 #include <QRandomGenerator>
 
@@ -867,3 +868,9 @@ bool House::validateNoRoomIntersections()
 
     return true;
 }
+//QList<Obstruction2> Obstruction::getObstructions() const {
+//    return obstructions;
+//}
+//QList<Obstruction2> Obstruction::getObstructions() const {
+ //   return obstructions;
+//}

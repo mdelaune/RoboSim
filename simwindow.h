@@ -40,6 +40,11 @@ private:
     Vacuum *vacuum;
     QTimer *simulationTimer;
     int simulationSpeedMultiplier;
+
+
+    QList<QRectF> rooms;
+    QList<Obstruction2> obstructions;
+    QList<QPointF> doors;
 };
 
 #endif // SIMWINDOW_H
