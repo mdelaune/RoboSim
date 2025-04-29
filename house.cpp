@@ -453,7 +453,9 @@ void House::loadPlan(QString plan)
     floorplan_name = plan;
 
     QJsonObject root = doc.object();
+    id = root.value("ID").toString();
     floor_covering = root.value("flooring").toString();
+
 
     QJsonArray roomsArray = root.value("rooms").toArray();
     loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
@@ -522,6 +524,7 @@ QJsonDocument House::toJson()
 
     QJsonObject root
         {
+            {"ID", id},
             {"flooring", floor_covering},
             {"doors", doorsArray},
             {"obstructions", obstructionsArray},
