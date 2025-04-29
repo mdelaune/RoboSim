@@ -147,13 +147,16 @@ public:
     QPen wall_pen;
     QPen obstruct_pen;
 
-    void setRoomFillColor(QColor color, Qt::BrushStyle style);
+    void setRoomFillColor(QString flooring);
 
     void updateRoomGeometry(int id, QPointF topLeft, QPointF bottomRight);
     void updateDoorPosition(int id, QPointF newOrigin);
     void updateObstructionPosition(int id, QPointF topLeft, QPointF bottomRight);
 
     int getTotalArea();
+
+    QString getFloorCovering();
+    void setFloorCovering(QString flooring);
 
     QVector<Room> rooms;
     QVector<Door> doors;
@@ -185,6 +188,8 @@ private:
 
     int scene_object_id = 1;
     int total_area;
+
+    QString floor_covering = "hard_floor";
 };
 
 #endif // HOUSE_H

@@ -48,7 +48,7 @@ void Draw::addRoom(Room room)
     roomItem->setData(1, "room");
 
     m_scene->addItem(roomItem);
-    m_house->setRoomFillColor(QColor(196, 164, 132, 127), Qt::CrossPattern);
+    m_house->setRoomFillColor(m_house->getFloorCovering());
     m_scene->update(m_scene->sceneRect());
 
     qDebug() << "ADDED " << room.get_shape() << " ROOM with ID:" << room.getId();
@@ -131,22 +131,22 @@ void Draw::changeFlooring()
     qDebug() << sender()->objectName();
     if(sender()->objectName() == "btn_hardFloor")
     {
-        m_house->setRoomFillColor(QColor(196, 164, 132, 127), Qt::CrossPattern);
-        m_house->flooring = "Hard";
+        m_house->setRoomFillColor("hard_floor");
+        m_house->setFloorCovering("hard_floor");
     }
     else if(sender()->objectName() == "btn_loopPile")
     {
-        m_house->setRoomFillColor(QColor(50, 50, 255, 127), Qt::Dense7Pattern);
-        m_house->flooring = "Loop Pile";
+        m_house->setRoomFillColor("loop_pile");
+        m_house->setFloorCovering("loop_pile");
     }
     else if(sender()->objectName() == "btn_cutPile")
     {
-        m_house->setRoomFillColor(QColor(200, 0, 0, 127), Qt::Dense6Pattern);
-        m_house->flooring = "Cut Pile";
+        m_house->setRoomFillColor("cut_pile");
+        m_house->setFloorCovering("cut_pile");
     }
     else if(sender()->objectName() == "btn_friezeCut")
     {
-        m_house->setRoomFillColor(QColor(255, 255, 200, 127), Qt::Dense5Pattern);
-        m_house->flooring = "Frieze Cut";
+        m_house->setRoomFillColor("frieze_cut");
+        m_house->setFloorCovering("frieze_cut");
     }
 }
