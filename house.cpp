@@ -69,10 +69,6 @@ Obstruction::Obstruction(bool isChest, QString type) : m_top_left(-50, 20), m_bo
     {
         set_legsRadius(10);
     }
-
-
-
-
 }
 
 Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest, QString type)
@@ -917,6 +913,12 @@ bool House::validateEveryRoomHasDoor()
     // If there's only one room, it doesn't need a door
     if (rooms.size() <= 1) {
         return true;
+    }
+
+    if(doors.size() < rooms.size() -1)
+    {
+        qDebug() << "not enough rooms";
+        return false;
     }
 
     // Check each room
