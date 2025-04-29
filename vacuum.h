@@ -21,7 +21,7 @@ public:
     void setPathingAlgorithms(const QStringList &algorithms);  // Changed to accept a list of algorithms
     void setVacuumPosition(double x, double y);
     void setFloorType(const QString &type);
-
+    double calculateWhiskerEffectiveness() const;
 
     // Getters
     int getBatteryLife() const;
@@ -68,16 +68,20 @@ private:
     int currentZoneY = 0;
     bool movingUpward = false;
 
-    int currentAlgorithmIndex = 0; // 🔥 NEW: which algorithm is currently active
-    int algorithmSwitchTimer = 0;   // 🔥 NEW: how many frames passed
+    int currentAlgorithmIndex = 0; //  which algorithm is currently active
+    int algorithmSwitchTimer = 0;   //  how many frames passed
     const int switchInterval = 30 * 60;
 
     bool autoSwitchingEnabled = false;
 
-
     QMap<QPair<int, int>, int> trailHeatmap;
 
+    QMap<QString, int> visitCount;
     QColor interpolateColor(QColor startColor, QColor endColor, double t);
+
+
+    int whiskerCleaningCount = 0; // New counter
+
 
 };
 
