@@ -161,7 +161,7 @@ QPushButton::hover {
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="timesFiftyPushButton">
             <property name="font">
              <font>
               <family>Verdana</family>
