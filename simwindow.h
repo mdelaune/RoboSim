@@ -6,6 +6,8 @@
 #include <QTimer>
 #include "vacuum.h"
 #include "house.h"
+#include "rundata.h"
+
 
 namespace Ui {
 class SimWindow;
@@ -33,6 +35,8 @@ private slots:
     void updateBatteryLifeLabel();
     void setSimulationSpeed(int multiplier);
 
+    void on_stopButton_clicked();
+
 private:
     Ui::SimWindow *ui;
 
@@ -40,6 +44,9 @@ private:
     Vacuum *vacuum;
     QTimer *simulationTimer;
     int simulationSpeedMultiplier;
+    RunData *simData;
+    void writeReport();
+
 };
 
 #endif // SIMWINDOW_H

@@ -193,6 +193,7 @@ private:
 
     int scene_object_id = 1;
     int total_area;
+    int cover_area;
 
     QString floor_covering = "hard_floor";
 };
