@@ -43,8 +43,8 @@ private:
 class Obstruction
 {
 public:
-    Obstruction(bool isChest);
-    Obstruction(QPointF top_left, QPointF bottom_right, bool isChest);
+    Obstruction(bool isChest, QString type);
+    Obstruction(QPointF top_left, QPointF bottom_right, bool isChest, QString type);
     Obstruction(QJsonObject obstruction);
 
     QPointF get_topLeft();
@@ -54,7 +54,11 @@ public:
     bool get_isChest();
     float get_floorCoverage();
     QRectF* get_legs();
-    void set_legs(int radius);
+    void set_legsRadius(int radius);
+    void set_legs(QRectF *legs);
+
+    QString get_type(); // New getter
+    void set_type(QString& type);
 
     void set_topLeft(QPointF top_left);
     void set_bottomRight(QPointF bottom_right);
@@ -69,10 +73,11 @@ private:
     QRectF m_floorOverlay;
 
     bool m_isChest;
+    QString m_type;
 
     float floorCoverage;
 
-    QRectF legs[4];
+    QRectF m_legs[4];
     int m_id;
 };
 
@@ -148,12 +153,24 @@ public:
     void updateDoorPosition(int id, QPointF newOrigin);
     void updateObstructionPosition(int id, QPointF topLeft, QPointF bottomRight);
 
+    int getTotalArea();
+
     QVector<Room> rooms;
     QVector<Door> doors;
     QVector<Obstruction> obstructions;
     QString flooring;
 
     Room* getRoomById(long id);
+
+    int validateTotalAreaBeforeSave();
+    bool doRoomsShareWall(Room& room1, Room& room2);
+    bool validateRoomConnectivity();
+
+    bool doRoomsIntersect(Room& room1, Room& room2);
+    bool validateNoRoomIntersections();
+
+    const double MIN_TOTAL_AREA = 40000.0;
+    const double MAX_TOTAL_AREA = 600000.0;
 
 private:
     void loadRooms(QJsonArray roomsArray);
@@ -166,9 +183,8 @@ private:
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
-
-
     int scene_object_id = 1;
+    int total_area;
 };
 
 #endif // HOUSE_H

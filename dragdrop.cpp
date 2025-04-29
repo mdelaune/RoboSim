@@ -16,6 +16,8 @@ T* findParent(QObject* obj)
 DragDoor::DragDoor(QGraphicsLineItem *doorLine,
                    QGraphicsLineItem *entryLine,
                    QGraphicsScene *scene,
+                   House *house,
+                   Door *door,
                    QObject *parent)
     : QObject(parent), m_doorLine(doorLine), m_entryLine(entryLine)
 {
@@ -34,6 +36,10 @@ DragDoor::DragDoor(QGraphicsLineItem *doorLine,
     m_doorLine->setAcceptHoverEvents(true);
     m_entryLine->setAcceptHoverEvents(true);
 
+    m_house = house;
+    m_door = door;
+    m_scene = scene;
+
     addToGroup(m_doorLine);
     addToGroup(m_entryLine);
 
@@ -44,8 +50,18 @@ DragDoor::DragDoor(QGraphicsLineItem *doorLine,
     connect(scene, &QGraphicsScene::selectionChanged, this, &DragDoor::updateSelectionStyle);
 }
 
+DragDoor::~DragDoor()
+{
+    if (m_scene) {
+        disconnect(m_scene, &QGraphicsScene::selectionChanged, this, &DragDoor::updateSelectionStyle);
+    }
+}
+
 void DragDoor::updateSelectionStyle()
 {
+    if (!m_doorLine || !m_entryLine)
+        return;
+
     if (this->isSelected())
     {
         m_doorLine->setPen(m_selectedDoorPen);
@@ -68,7 +84,12 @@ void DragDoor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
 
+    QPointF newOrigin = mapToScene(m_door->get_origin());
 
+    if (m_house && m_door) {
+        // Update the Door's origin with the new position
+        m_door->set_origin(newOrigin);
+    }
 
     QGraphicsItemGroup::mouseReleaseEvent(event);
 }
@@ -79,10 +100,14 @@ DragObstruction::DragObstruction(const QRectF &body, QRectF *legs, House *house,
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
     setCursor(QCursor(Qt::OpenHandCursor));
     isChest = false;
+    legs_array = legs;
+    m_house = house;
+    m_obstruction = obstruction;
+    m_type = obstruction->get_type();
 
     for(int i = 0; i < 4; i++)
     {
-        m_legs.append(legs[i]);
+        m_legs.append(legs_array[i]);
     }
 }
 
@@ -94,8 +119,7 @@ DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay, Hous
     isChest = true;
     m_house = house;
     m_obstruction = obstruction;
-
-
+    m_type = obstruction->get_type();
 }
 
 QRectF DragObstruction::boundingRect() const
@@ -161,19 +185,17 @@ void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QRectF localRect = m_body;
     QRectF sceneRect = mapToScene(localRect).boundingRect();
 
-    // if (m_house && m_obstruction) {
-    //     m_obstruction->set_topLeft(sceneRect.topLeft());
-    //     m_obstruction->set_bottomRight(sceneRect.bottomRight());
+    if(m_house)
+    {
+        m_obstruction->set_topLeft(sceneRect.topLeft());
+        m_obstruction->set_bottomRight(sceneRect.bottomRight());
 
-    //     // If this is a table, update our leg positions based on the new obstruction legs
-    //     if (!isChest) {
-    //         QRectF* updatedLegs = m_obstruction->get_legs();
-    //         m_legs.clear();
-    //         for(int i = 0; i < 4; i++) {
-    //             m_legs.append(updatedLegs[i]);
-    //         }
-    //     }
-    // }
+        if(isChest)
+        {
+            // Ensure the get_floorCoverage is called to update the overlay
+            m_obstruction->get_floorCoverage();
+        }
+    }
 
     QGraphicsItem::mouseReleaseEvent(event);
 }
@@ -253,9 +275,26 @@ void DragRoom::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         default: break;
         }
 
+        const qreal MIN_WIDTH = 50.0;
+        const qreal MIN_HEIGHT = 50.0;
+
+        if (r.width() < MIN_WIDTH) {
+            if (m_currentHandle == TopLeft || m_currentHandle == BottomLeft)
+                r.setLeft(r.right() - MIN_WIDTH);
+            else
+                r.setRight(r.left() + MIN_WIDTH);
+        }
+        if (r.height() < MIN_HEIGHT) {
+            if (m_currentHandle == TopLeft || m_currentHandle == TopRight)
+                r.setTop(r.bottom() - MIN_HEIGHT);
+            else
+                r.setBottom(r.top() + MIN_HEIGHT);
+        }
+
         prepareGeometryChange();
         setRect(r.normalized());
         update();
+
     } else {
         QGraphicsRectItem::mouseMoveEvent(event);
     }

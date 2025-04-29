@@ -21,15 +21,7 @@ protected:
     void handleMousePress(QGraphicsSceneMouseEvent *event, QGraphicsItem* item) {
         item->setCursor(Qt::ClosedHandCursor);
     }
-
-    // void handleMouseRelease(QGraphicsSceneMouseEvent *event, QGraphicsItem* item) {
-    //     item->setCursor(Qt::OpenHandCursor);
-    // }
-
-
 };
-
-// In dragdrop.h
 
 // Add to DragDoor class
 class DragDoor : public QObject, public QGraphicsItemGroup
@@ -40,7 +32,11 @@ public:
     DragDoor(QGraphicsLineItem *doorLine,
              QGraphicsLineItem *entryLine,
              QGraphicsScene *scene,
+             House *house,
+             Door *door,
              QObject *parent = nullptr);
+
+    ~DragDoor();
 
     // Add these getters
     QPointF getOrigin() const;
@@ -65,6 +61,10 @@ private:
 
     QPen m_normalEntryPen;
     QPen m_selectedEntryPen;
+
+    House *m_house;
+    Door *m_door;
+    QGraphicsScene *m_scene;
 };
 
 // Add to DragObstruction class
@@ -85,17 +85,22 @@ protected:
 private:
     QRectF m_body;
     QVector<QRectF> m_legs;
+    QRectF *legs_array;
     QRectF m_overlay;
     bool isChest;
     QPointF m_startPos;
     House *m_house;
     Obstruction *m_obstruction;
+    QString m_type;
 };
 
 class DragRoom : public QObject, public QGraphicsRectItem, protected DragBase
 {
     Q_OBJECT
 public:
+    const qreal MIN_ROOM_WIDTH = 100.0;
+    const qreal MIN_ROOM_HEIGHT = 100.0;
+
     DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room *room, long id);
 
     enum HandlePosition { TopLeft, TopRight, BottomLeft, BottomRight, None };

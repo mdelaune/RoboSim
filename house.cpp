@@ -47,6 +47,8 @@ float Door::get_size()
 void Door::set_origin(QPointF origin)
 {
     m_origin = origin;
+    m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
+    m_entry = QLineF(m_origin, QPointF(m_origin.x() + m_size, m_origin.y()));
 }
 
 void Door::set_size(float size)
@@ -57,48 +59,49 @@ void Door::set_size(float size)
 //---------------------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------
 
-Obstruction::Obstruction(bool isChest) : m_top_left(-50, 20), m_bottom_right(50, -20)
+Obstruction::Obstruction(bool isChest, QString type) : m_top_left(-50, 20), m_bottom_right(50, -20)
 {
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = isChest;
+    m_type = type;
     get_floorCoverage();
-
-    if(isChest)
+    if(!isChest)
     {
-        set_legs(0);
-    } else {
-        set_legs(10);
+        set_legsRadius(10);
     }
+
+
+
 
 }
 
-Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest)
+Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest, QString type)
 {
     m_top_left = top_left;
     m_bottom_right = bottom_right;
     m_rect = QRectF(m_top_left, m_bottom_right);
     m_isChest = isChest;
+    m_type = type;
     get_floorCoverage();
-    if(m_isChest)
+    if(!m_isChest)
     {
-        set_legs(0);
-    } else {
-        set_legs(10);
+        set_legsRadius(10);
     }
+
+
 }
 
-Obstruction::Obstruction(QJsonObject room)
+Obstruction::Obstruction(QJsonObject obstruction)
 {
-    m_top_left = QPointF(room.value("x_topLeft").toInt(), room.value("y_topLeft").toInt());
-    m_bottom_right = QPointF(room.value("x_bottomRight").toInt(), room.value("y_bottomRight").toInt());
+    m_top_left = QPointF(obstruction.value("x_topLeft").toInt(), obstruction.value("y_topLeft").toInt());
+    m_bottom_right = QPointF(obstruction.value("x_bottomRight").toInt(), obstruction.value("y_bottomRight").toInt());
     m_rect = QRectF(m_top_left, m_bottom_right);
-    m_isChest = room.value("is_chest").toBool();
+    m_isChest = obstruction.value("is_chest").toBool();
+    m_type = obstruction.value("type").toString();
     get_floorCoverage();
-    if(m_isChest)
+    if(!m_isChest)
     {
-        set_legs(0);
-    } else {
-        set_legs(10);
+        set_legsRadius(10);
     }
 }
 
@@ -138,12 +141,6 @@ float Obstruction::get_floorCoverage()
     else
     {
         floorCoverage = (m_rect.width() * m_rect.height()) * 0.2;
-        m_floorOverlay = QRectF(m_top_left, m_bottom_right);
-
-        legs[0] = QRectF(m_top_left + QPointF(5, 5), QSize(15,15));
-        legs[1] = QRectF(m_top_left + QPointF(m_rect.width() - 20, 5), QSize(15,15));
-        legs[2] = QRectF(m_bottom_right - QPointF(20, 20), QSize(15,15));
-        legs[3] = QRectF(m_bottom_right - QPointF(m_rect.width() - 5, 20), QSize(15,15));
     }
 
     return floorCoverage;
@@ -151,29 +148,56 @@ float Obstruction::get_floorCoverage()
 
 QRectF* Obstruction::get_legs()
 {
-    return legs;
+    return m_legs;
 }
 
-void Obstruction::set_legs(int size)
+void Obstruction::set_legs(QRectF *legs)
 {
-    legs[0] = QRectF(m_top_left + QPointF(5, 5), QSize(size,size));
-    legs[1] = QRectF(m_top_left + QPointF(m_rect.width() - 15, 5), QSize(size,size));
-    legs[2] = QRectF(m_bottom_right - QPointF(20 - 5, 15), QSize(size,size));
-    legs[3] = QRectF(m_bottom_right - QPointF(m_rect.width() - 5, 15), QSize(size,size));
+    for(int i = 0; i < 4; i++)
+    {
+        qDebug() << legs[i];
+        m_legs[i] = legs[i];
+    }
+}
+
+void Obstruction::set_legsRadius(int size)
+{
+    // Top-left corner leg
+    m_legs[0] = QRectF(m_top_left.x() + 5, m_top_left.y() + 5, size, size);
+
+    // Top-right corner leg
+    m_legs[1] = QRectF(m_bottom_right.x() - 5 - size, m_top_left.y() + 5, size, size);
+
+    // Bottom-right corner leg
+    m_legs[2] = QRectF(m_bottom_right.x() - 5 - size, m_bottom_right.y() - 5 - size, size, size);
+
+    // Bottom-left corner leg
+    m_legs[3] = QRectF(m_top_left.x() + 5, m_bottom_right.y() - 5 - size, size, size);
+
 }
 
 void Obstruction::set_topLeft(QPointF top_left)
 {
     m_top_left = top_left;
     m_rect = QRectF(m_top_left, m_bottom_right);
-    set_legs(10);
+    set_legsRadius(10);
 }
 
 void Obstruction::set_bottomRight(QPointF bottom_right)
 {
     m_bottom_right = bottom_right;
     m_rect = QRectF(m_top_left, m_bottom_right);
-    set_legs(10);
+    set_legsRadius(10);
+}
+
+QString Obstruction::get_type()
+{
+    return m_type;
+}
+
+void Obstruction::set_type(QString& type)
+{
+    m_type = type;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -261,6 +285,7 @@ void House::drawRooms()
 {
     for(int i = 0; i < rooms.size(); i++)
     {
+        rooms[i].setId(scene_object_id++);
         DragRoom *rect_item = new DragRoom(rooms[i].get_rectRoom(), m_scene, this, &rooms[i], rooms[i].getId());
         rect_item->setPen(wall_pen);
 
@@ -275,10 +300,13 @@ void House::drawDoors()
 {
     for (Door &door : doors)
     {
+        door.setId(scene_object_id++);
         QGraphicsLineItem *doorLine = new QGraphicsLineItem(door.get_door());
         QGraphicsLineItem *entryLine = new QGraphicsLineItem(door.get_entry());
 
-        DragDoor *doorItem = new DragDoor(doorLine, entryLine, m_scene);
+        DragDoor *doorItem = new DragDoor(doorLine, entryLine, m_scene, this, &door);
+        doorItem->setData(0, door.getId());
+        doorItem->setData(1, "door");
         m_scene->addItem(doorItem);
     }
 }
@@ -288,19 +316,29 @@ void House::drawObstructions()
     QPen overlay_pen;
     for(int i = 0; i < obstructions.size(); i++)
     {
+        obstructions[i].setId(scene_object_id++);
         if(obstructions[i].get_isChest())
         {
             DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_overlay(), this, &obstructions[i]);
             m_scene->addItem(item);
-            item->setZValue(1);        }
+            item->setZValue(1);
+            item->setData(0, obstructions[i].getId());
+            item->setData(1, "obstruction");
+            item->setData(2, obstructions[i].get_type());
+        }
         else
         {
-            obstructions[i].set_legs(10);
+            obstructions[i].set_legsRadius(10);
 
             DragObstruction *item = new DragObstruction(obstructions[i].get_rect(), obstructions[i].get_legs(), this, &obstructions[i]);
             m_scene->addItem(item);
             item->setZValue(1);
+            item->setData(0, obstructions[i].getId());
+            item->setData(1, "obstruction");
+            item->setData(2, obstructions[i].get_type());
         }
+
+
     }
 }
 
@@ -339,6 +377,11 @@ void House::drawSimulationPlan()
     }
 }
 
+int House::getTotalArea()
+{
+    return total_area;
+}
+
 // Generic method to load entities from JSON
 template<typename T>
 void House::loadEntities(QJsonArray entitiesArray, QVector<T>& entities, std::function<T(QJsonObject&)> createEntity)
@@ -366,6 +409,7 @@ void House::addRoom(Room room)
 void House::addObstruction(Obstruction obstruction)
 {
     obstruction.setId(scene_object_id++);
+    qDebug() << "Added obstruction with ID:" << obstruction.getId();
     obstructions.append(obstruction);
 }
 
@@ -420,13 +464,13 @@ QJsonDocument House::toJson()
     for(int i = 0; i < rooms.size(); i++)
     {
         QJsonObject object
-        {
-            {"shape", rooms[i].get_shape()},
-            {"x_topLeft", rooms[i].get_topLeft().x()},
-            {"y_topLeft", rooms[i].get_topLeft().y()},
-            {"x_bottomRight", rooms[i].get_bottomRight().x()},
-            {"y_bottomRight", rooms[i].get_bottomRight().y()},
-        };
+            {
+                {"shape", rooms[i].get_shape()},
+                {"x_topLeft", rooms[i].get_topLeft().x()},
+                {"y_topLeft", rooms[i].get_topLeft().y()},
+                {"x_bottomRight", rooms[i].get_bottomRight().x()},
+                {"y_bottomRight", rooms[i].get_bottomRight().y()}
+            };
 
         roomsArray.append(object);
         qDebug() << roomsArray;
@@ -435,13 +479,14 @@ QJsonDocument House::toJson()
     for(int i = 0; i < obstructions.size(); i++)
     {
         QJsonObject object
-        {
-            {"is_chest", obstructions[i].get_isChest()},
-            {"x_topLeft", obstructions[i].get_topLeft().x()},
-            {"y_topLeft", obstructions[i].get_topLeft().y()},
-            {"x_bottomRight", obstructions[i].get_bottomRight().x()},
-            {"y_bottomRight", obstructions[i].get_bottomRight().y()},
-        };
+            {
+                {"is_chest", obstructions[i].get_isChest()},
+                {"type", obstructions[i].get_type()}, // Add this line to store the type
+                {"x_topLeft", obstructions[i].get_topLeft().x()},
+                {"y_topLeft", obstructions[i].get_topLeft().y()},
+                {"x_bottomRight", obstructions[i].get_bottomRight().x()},
+                {"y_bottomRight", obstructions[i].get_bottomRight().y()},
+            };
 
         obstructionsArray.append(object);
         qDebug() << obstructionsArray;
@@ -496,6 +541,7 @@ void House::setRoomFillColor(QColor color, Qt::BrushStyle style)
 
 void House::clear()
 {
+    m_scene->clearSelection();
     m_scene->clear();
     rooms.clear();
     doors.clear();
@@ -508,45 +554,254 @@ void House::clear()
 void House::deleteItem()
 {
     QList<QGraphicsItem*> selectedItems = m_scene->selectedItems();
+    QVector<int> deletedObstructionIds; // Keep track of deleted IDs for obstructions
+    QVector<int> deletedRoomIds; // Keep track of deleted IDs for rooms
+    QVector<int> deletedDoorIds; // Keep track of deleted IDs for doors
 
-    for (auto it = selectedItems.begin(); it != selectedItems.end(); ) {
-        QGraphicsItem* item = *it;
-
-        if (item->data(1) == "room") {
+    // First, collect all the IDs we need to delete
+    for (QGraphicsItem* item : selectedItems) {
+        if (item->data(1) == "obstruction") {
             int id = item->data(0).toInt();
+            deletedObstructionIds.append(id);
+        }
+        else if (item->data(1) == "room") {
+            int id = item->data(0).toInt();
+            deletedRoomIds.append(id);
+        }
+        else if (item->data(1) == "door") {
+            int id = item->data(0).toInt();
+            deletedDoorIds.append(id);
+        }
+    }
 
-            for (auto roomIt = rooms.begin(); roomIt != rooms.end(); ++roomIt) {
-                if (roomIt->getId() == id) {
-                    qDebug() << "Found and deleting from vector, ID:" << roomIt->getId();
-                    rooms.erase(roomIt);
+    // Debug before deletion
+    qDebug() << "Before deletion: Obstructions count =" << obstructions.size()
+             << "Rooms count =" << rooms.size()
+             << "Doors count =" << doors.size();
+
+    // Remove obstructions
+    if (!deletedObstructionIds.isEmpty()) {
+        QVector<Obstruction> remainingObstructions;
+
+        for (const Obstruction& obs : obstructions) {
+            bool shouldKeep = true;
+            for (int idToDelete : deletedObstructionIds) {
+                if (obs.getId() == idToDelete) {
+                    shouldKeep = false;
+                    qDebug() << "Marking for deletion: obstruction with ID:" << idToDelete;
                     break;
                 }
             }
-        } else if (item->data(1) == "door") {
-            int id = item->data(0).toInt();
-            for (auto doorIt = doors.begin(); doorIt != doors.end(); ++doorIt) {
-                if (doorIt->getId() == id) {
-                    qDebug() << "Found and deleting from vector, ID:" << doorIt->getId();
-                    doors.erase(doorIt);
-                    break;
-                }
-            }
-        } else if (item->data(1) == "obstruction") {
-            int id = item->data(0).toInt();
-            for (auto obstructionIt = obstructions.begin(); obstructionIt != obstructions.end(); ++obstructionIt) {
-                if (obstructionIt->getId() == id) {
-                    qDebug() << "Found and deleting from vector, ID:" << obstructionIt->getId();
-                    obstructions.erase(obstructionIt);
-                    break;
-                }
+
+            if (shouldKeep) {
+                remainingObstructions.append(obs);
             }
         }
 
+        obstructions = remainingObstructions;
+    }
+
+    // Remove rooms
+    if (!deletedRoomIds.isEmpty()) {
+        QVector<Room> remainingRooms;
+
+        for (const Room& room : rooms) {
+            bool shouldKeep = true;
+            for (int idToDelete : deletedRoomIds) {
+                if (room.getId() == idToDelete) {
+                    shouldKeep = false;
+                    qDebug() << "Marking for deletion: room with ID:" << idToDelete;
+                    break;
+                }
+            }
+
+            if (shouldKeep) {
+                remainingRooms.append(room);
+            }
+        }
+
+        rooms = remainingRooms;
+    }
+
+    // Remove doors
+    if (!deletedDoorIds.isEmpty()) {
+        QVector<Door> remainingDoors;
+
+        for (const Door& door : doors) {
+            bool shouldKeep = true;
+            for (int idToDelete : deletedDoorIds) {
+                if (door.getId() == idToDelete) {
+                    shouldKeep = false;
+                    qDebug() << "Marking for deletion: door with ID:" << idToDelete;
+                    break;
+                }
+            }
+
+            if (shouldKeep) {
+                remainingDoors.append(door);
+            }
+        }
+
+        doors = remainingDoors;
+    }
+
+    // Debug after filtering
+    qDebug() << "After deletion: Obstructions count =" << obstructions.size()
+             << "Rooms count =" << rooms.size()
+             << "Doors count =" << doors.size();
+
+    // Finally, remove items from scene
+    for (QGraphicsItem* item : selectedItems) {
         m_scene->removeItem(item);
         delete item;
-        it = selectedItems.erase(it); //erase returns the next valid iterator
     }
 
     m_scene->update(m_scene->sceneRect());
-    qDebug() << "DELETE";
+    qDebug() << "DELETE COMPLETE";
+}
+
+int House::validateTotalAreaBeforeSave()
+{
+    double totalArea = 0.0;
+
+    for (int i = 0; i < rooms.size(); ++i) {
+        Room& currentRoom = rooms[i];
+        QRectF currentRect = currentRoom.get_rectRoom();
+
+        bool isContained = false;
+
+        // Check if currentRoom is fully inside any other room
+        for (int j = 0; j < rooms.size(); ++j) {
+            if (i == j) continue; // don't compare with itself
+
+            Room& otherRoom = rooms[j];
+            QRectF otherRect = otherRoom.get_rectRoom();
+
+            if (otherRect.contains(currentRect)) {
+                isContained = true;
+                break;
+            }
+        }
+
+        // Only add area if not contained
+        if (!isContained) {
+            totalArea += currentRect.width() * currentRect.height();
+        }
+    }
+
+    // Define your acceptable area range
+
+
+    qDebug() << "Total room area (excluding contained rooms):" << totalArea;
+
+    if (totalArea < MIN_TOTAL_AREA) {
+        qDebug() << "ERROR: Total area too small!";
+        return -1;
+    }
+    if (totalArea > MAX_TOTAL_AREA) {
+        qDebug() << "ERROR: Total area too large!";
+        return 1;
+    }
+
+    return 0;
+}
+
+bool House::doRoomsShareWall(Room& room1, Room& room2)
+{
+    QRectF rect1 = room1.get_rectRoom();
+    QRectF rect2 = room2.get_rectRoom();
+
+    // Check for horizontal walls (top/bottom edges)
+    bool sharesHorizontalWall =
+        // X-coordinates overlap
+        (rect1.left() < rect2.right() && rect2.left() < rect1.right()) &&
+        // Y-coordinates are adjacent (bottom of rect1 touches top of rect2 or vice versa)
+        ((qAbs(rect1.bottom() - rect2.top()) < 1.0) || (qAbs(rect2.bottom() - rect1.top()) < 1.0));
+
+    // Check for vertical walls (left/right edges)
+    bool sharesVerticalWall =
+        // Y-coordinates overlap
+        (rect1.top() < rect2.bottom() && rect2.top() < rect1.bottom()) &&
+        // X-coordinates are adjacent (right of rect1 touches left of rect2 or vice versa)
+        ((qAbs(rect1.right() - rect2.left()) < 1.0) || (qAbs(rect2.right() - rect1.left()) < 1.0));
+
+    return sharesHorizontalWall || sharesVerticalWall;
+}
+
+bool House::validateRoomConnectivity()
+{
+    if (rooms.size() <= 1) {
+        // If there's only one room or no rooms, there's nothing to check
+        return true;
+    }
+
+    // For each room, check if it shares a wall with at least one other room
+    // or if it's completely contained within another room (like a closet)
+    for (int i = 0; i < rooms.size(); i++) {
+        bool hasSharedWall = false;
+        bool isContainedInAnotherRoom = false;
+
+        for (int j = 0; j < rooms.size(); j++) {
+            if (i == j) continue; // Skip comparing with itself
+
+            // Check if this room is completely inside another room (like a closet)
+            if (rooms[j].get_rectRoom().contains(rooms[i].get_rectRoom())) {
+                isContainedInAnotherRoom = true;
+                qDebug() << "Room" << rooms[i].getId() << "is contained within room" << rooms[j].getId();
+                break;
+            }
+
+            // Check for shared walls
+            if (doRoomsShareWall(rooms[i], rooms[j])) {
+                hasSharedWall = true;
+                break;
+            }
+        }
+
+        // A room is valid if it either shares a wall OR is contained in another room
+        if (!hasSharedWall && !isContainedInAnotherRoom) {
+            qDebug() << "ERROR: Room" << rooms[i].getId() << "doesn't share a wall with any other room and is not contained within another room!";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool House::doRoomsIntersect(Room& room1, Room& room2)
+{
+    QRectF rect1 = room1.get_rectRoom();
+    QRectF rect2 = room2.get_rectRoom();
+
+    // Check if the rectangles intersect but neither fully contains the other
+    if (rect1.intersects(rect2)) {
+        // If one rectangle fully contains the other, it's not considered an intersection
+        // (This is our "closet" case which is allowed)
+        if (rect1.contains(rect2) || rect2.contains(rect1)) {
+            return false; // Not an intersection case we're concerned with
+        }
+        return true;  // Partial intersection detected
+    }
+
+    return false;
+}
+
+bool House::validateNoRoomIntersections()
+{
+    if (rooms.size() <= 1) {
+        // If there's only one room or no rooms, there's no intersection possible
+        return true;
+    }
+
+    for (int i = 0; i < rooms.size(); i++) {
+        for (int j = i + 1; j < rooms.size(); j++) {
+            // Check for intersection between room i and room j
+            if (doRoomsIntersect(rooms[i], rooms[j])) {
+                qDebug() << "ERROR: Room" << rooms[i].getId() << "intersects with Room" << rooms[j].getId();
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
