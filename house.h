@@ -153,12 +153,24 @@ public:
     void updateDoorPosition(int id, QPointF newOrigin);
     void updateObstructionPosition(int id, QPointF topLeft, QPointF bottomRight);
 
+    int getTotalArea();
+
     QVector<Room> rooms;
     QVector<Door> doors;
     QVector<Obstruction> obstructions;
     QString flooring;
 
     Room* getRoomById(long id);
+
+    int validateTotalAreaBeforeSave();
+    bool doRoomsShareWall(Room& room1, Room& room2);
+    bool validateRoomConnectivity();
+
+    bool doRoomsIntersect(Room& room1, Room& room2);
+    bool validateNoRoomIntersections();
+
+    const double MIN_TOTAL_AREA = 40000.0;
+    const double MAX_TOTAL_AREA = 600000.0;
 
 private:
     void loadRooms(QJsonArray roomsArray);
@@ -172,6 +184,7 @@ private:
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
     int scene_object_id = 1;
+    int total_area;
 };
 
 #endif // HOUSE_H
