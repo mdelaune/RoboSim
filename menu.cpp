@@ -12,7 +12,7 @@ Menu::Menu(House *house)
 
 void Menu::menuNew()
 {
-    m_house->clear();
+    m_house->createNewFloorplan();
     qDebug() << "NEW";
 }
 

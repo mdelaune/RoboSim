@@ -289,7 +289,24 @@ House::House(QGraphicsScene *scene)
     wall_pen.setWidth(4);
     obstruct_pen.setWidth(3);
     instance = this;
+    floorplan_id = 0;
     loadPlan(defaultPlanLocation);
+}
+
+int House::getFloorplanId() const
+{
+    return floorplan_id;
+}
+
+void House::setFloorplanId(int id)
+{
+    floorplan_id = id;
+}
+
+void House::generateNewFloorplanId()
+{
+    // Assign the next available ID and increment it
+    floorplan_id = next_floorplan_id++;
 }
 
 void House::drawRooms()
@@ -444,6 +461,12 @@ void House::loadPlan(QString plan)
 
     QJsonObject root = doc.object();
     floor_covering = root.value("flooring").toString();
+    floorplan_id = root.value("floorplan_id").toInt();
+
+    // Make sure next_floorplan_id stays ahead of any loaded IDs
+    if (floorplan_id >= next_floorplan_id) {
+        next_floorplan_id = floorplan_id + 1;
+    }
 
     QJsonArray roomsArray = root.value("rooms").toArray();
     loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
@@ -456,6 +479,24 @@ void House::loadPlan(QString plan)
     QJsonArray obstructionsArray = root.value("obstructions").toArray();
     loadEntities<Obstruction>(obstructionsArray, obstructions, [](QJsonObject& obj){ return Obstruction(obj); });
     drawObstructions();
+
+    setRoomFillColor(floor_covering);
+    m_scene->update(m_scene->sceneRect());
+}
+
+void House::createNewFloorplan()
+{
+    clear();
+    floorplan_name = "Untitled";
+    floor_covering = "hard_floor";  // Default flooring
+
+    // Generate a new unique ID for this floorplan
+    generateNewFloorplanId();
+
+    // Add a default room if needed
+    Room defaultRoom("square");
+    addRoom(defaultRoom);
+    drawRooms();
 
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
@@ -512,6 +553,7 @@ QJsonDocument House::toJson()
 
     QJsonObject root
         {
+            {"floorplan_id", floorplan_id},
             {"flooring", floor_covering},
             {"doors", doorsArray},
             {"obstructions", obstructionsArray},

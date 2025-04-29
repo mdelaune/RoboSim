@@ -185,13 +185,20 @@ public:
     bool doObstructionsIntersect(Obstruction& obs1, Obstruction& obs2);
     bool isObstructionInsideAnyRoom(Obstruction& obstruction);
 
+    int getFloorplanId() const;
+    void setFloorplanId(int id);
+    void generateNewFloorplanId();
+
+    void createNewFloorplan();
+
 private:
     void loadRooms(QJsonArray roomsArray);
     void loadDoors(QJsonArray doorsArray);
     void loadObstructions(QJsonArray obstructionsArray);
 
     QString floorplan_name;
-    long id;
+    int floorplan_id;
+    int next_floorplan_id;
 
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
