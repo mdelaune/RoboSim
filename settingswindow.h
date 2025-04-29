@@ -18,11 +18,18 @@ public:
     explicit SettingsWindow(QWidget *parent = nullptr);
     ~SettingsWindow();
 
+signals:
+    void settingsUpdated(int batteryLife,
+                         int vacuumEfficiency,
+                         int whiskerEfficiency,
+                         int speed,
+                         QStringList pathingAlgorithms);
+
 private:
     Ui::SettingsWindow *ui;
     void setupAlgorithmList();
     void setupLineEdits();
-    void handleStartClicked();
+    void handleSaveClicked();
     bool validateInputs();
 };
 

@@ -101,6 +101,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
+
            <widget class="QPushButton" name="pushButton_3">
             <property name="font">
              <font>
@@ -110,20 +111,20 @@ border-color: rgba(103, 185, 154, 1);</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
-}
-QPushButton::hover {
-	background: rgba(103, 185, 154, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
-}
-</string>
+                background: rgba(136, 212, 171, 1);
+                border-width: 4px;
+                border-style: solid;
+                border-radius: 32px;
+                border-color: rgba(103, 185, 154, 1);
+              }
+              QPushButton::hover {
+                background: rgba(103, 185, 154, 1);
+                border-width: 4px;
+                border-style: solid;
+                border-radius: 32px;
+                border-color: rgba(103, 185, 154, 1);
+              }
+              </string>
             </property>
             <property name="text">
              <string>x1</string>
@@ -217,7 +218,7 @@ border-color: rgba(103, 185, 154, 1);</string>
          <property name="midLineWidth">
           <number>3</number>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QLabel" name="label">
             <property name="sizePolicy">
@@ -288,7 +289,7 @@ border-color: rgba(103, 185, 154, 1);</string>
              <number>3</number>
             </property>
             <property name="text">
-             <string>150 min</string>
+             <string/>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -322,7 +323,7 @@ border-color: rgba(103, 185, 154, 1);</string>
          <property name="midLineWidth">
           <number>3</number>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <widget class="QLabel" name="label_4">
             <property name="sizePolicy">
@@ -353,7 +354,7 @@ border-color: rgba(103, 185, 154, 1);</string>
              <string notr="true">border-width: 0px;</string>
             </property>
             <property name="text">
-             <string>Covered Sq. Ft.</string>
+             <string>Covered Sq. Ft</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -409,7 +410,7 @@ border-color: rgba(103, 185, 154, 1);</string>
          <property name="midLineWidth">
           <number>3</number>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
            <widget class="QLabel" name="label_6">
             <property name="sizePolicy">
@@ -451,6 +452,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
+
            <widget class="QLabel" name="label_7">
             <property name="minimumSize">
              <size>
@@ -499,7 +501,7 @@ border-color: rgba(103, 185, 154, 1);</string>
          <property name="midLineWidth">
           <number>3</number>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
            <widget class="QLabel" name="label_8">
             <property name="sizePolicy">
@@ -530,7 +532,7 @@ border-color: rgba(103, 185, 154, 1);</string>
              <string notr="true">border-width: 0px;</string>
             </property>
             <property name="text">
-             <string>Pathing Alg.</string>
+             <string>Pathing Algorithm</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
