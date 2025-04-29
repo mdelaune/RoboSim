@@ -255,6 +255,21 @@ QString Room::get_shape()
     return m_shape;
 }
 
+int House::getTotalArea()
+{
+    return total_area;
+}
+
+QString House::getFloorCovering()
+{
+    return floor_covering;
+}
+
+void House::setFloorCovering(QString flooring)
+{
+    floor_covering = flooring;
+}
+
 void Room::set_topLeft(QPointF top_left)
 {
     qDebug() << "top left " << m_top_left;
@@ -377,11 +392,6 @@ void House::drawSimulationPlan()
     }
 }
 
-int House::getTotalArea()
-{
-    return total_area;
-}
-
 // Generic method to load entities from JSON
 template<typename T>
 void House::loadEntities(QJsonArray entitiesArray, QVector<T>& entities, std::function<T(QJsonObject&)> createEntity)
@@ -437,6 +447,8 @@ void House::loadPlan(QString plan)
     floorplan_name = plan;
 
     QJsonObject root = doc.object();
+    floor_covering = root.value("flooring").toString();
+
     QJsonArray roomsArray = root.value("rooms").toArray();
     loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
     drawRooms();
@@ -447,10 +459,9 @@ void House::loadPlan(QString plan)
 
     QJsonArray obstructionsArray = root.value("obstructions").toArray();
     loadEntities<Obstruction>(obstructionsArray, obstructions, [](QJsonObject& obj){ return Obstruction(obj); });
-
     drawObstructions();
 
-    setRoomFillColor(QColor(196, 164, 132, 127), Qt::CrossPattern);
+    setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
 }
 
@@ -459,7 +470,6 @@ QJsonDocument House::toJson()
     QJsonArray roomsArray = QJsonArray();
     QJsonArray obstructionsArray = QJsonArray();
     QJsonArray doorsArray = QJsonArray();
-
 
     for(int i = 0; i < rooms.size(); i++)
     {
@@ -506,6 +516,7 @@ QJsonDocument House::toJson()
 
     QJsonObject root
         {
+            {"flooring", floor_covering},
             {"doors", doorsArray},
             {"obstructions", obstructionsArray},
             {"rooms", roomsArray}
@@ -520,19 +531,64 @@ QString House::get_floorplanName()
     return floorplan_name;
 }
 
-void House::setRoomFillColor(QColor color, Qt::BrushStyle style)
+void House::setRoomFillColor(QString flooring)
 {
     QList<QGraphicsItem *> items = m_scene->items();
 
-    for (QGraphicsItem *item : items)
+    if(flooring == "hard_floor")
     {
-        // Check if it's a room
-        DragRoom *room = dynamic_cast<DragRoom *>(item);
-        if (room)
+        for (QGraphicsItem *item : items)
         {
-            // Create a brush with cross pattern
-            QBrush brush(color, style);
-            room->setBrush(brush);
+            // Check if it's a room
+            DragRoom *room = dynamic_cast<DragRoom *>(item);
+            if (room)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(196, 164, 132, 127), Qt::CrossPattern);
+                room->setBrush(brush);
+            }
+        }
+    }
+    else if(flooring == "cut_pile")
+    {
+        for (QGraphicsItem *item : items)
+        {
+            // Check if it's a room
+            DragRoom *room = dynamic_cast<DragRoom *>(item);
+            if (room)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(200, 0, 0, 127), Qt::Dense6Pattern);
+                room->setBrush(brush);
+            }
+        }
+    }
+    else if(flooring == "loop_pile")
+    {
+        for (QGraphicsItem *item : items)
+        {
+            // Check if it's a room
+            DragRoom *room = dynamic_cast<DragRoom *>(item);
+            if (room)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(50, 50, 255, 127), Qt::Dense7Pattern);
+                room->setBrush(brush);
+            }
+        }
+    }
+    else if(flooring == "frieze_cut")
+    {
+        for (QGraphicsItem *item : items)
+        {
+            // Check if it's a room
+            DragRoom *room = dynamic_cast<DragRoom *>(item);
+            if (room)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(255, 255, 200, 127), Qt::Dense5Pattern);
+                room->setBrush(brush);
+            }
         }
     }
 
