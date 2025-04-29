@@ -155,13 +155,15 @@ public:
 
     Room* getRoomById(long id);
 
+    void setNewID();
+    QString id;
+
 private:
     void loadRooms(QJsonArray roomsArray);
     void loadDoors(QJsonArray doorsArray);
     void loadObstructions(QJsonArray obstructionsArray);
 
     QString floorplan_name;
-    long id;
 
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";

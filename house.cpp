@@ -5,6 +5,8 @@
 #include "house.h"
 #include "dragdrop.h"
 
+#include <QRandomGenerator>
+
 Door::Door() : m_origin(QPointF(0,0)), m_size(45)
 {
     m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
@@ -373,6 +375,10 @@ void House::addDoor(Door door)
 {
     door.setId(scene_object_id++);
     doors.append(door);
+}
+
+void House::setNewID(){
+    id = QString::number(QRandomGenerator::global()->bounded(10000, 99999));
 }
 
 void House::loadPlan(QString plan)
