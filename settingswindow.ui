@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1136</width>
-    <height>842</height>
+    <height>914</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,6 +25,9 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgba(53, 143, 128, 1);</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
@@ -35,11 +38,28 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+        <pointsize>9</pointsize>
+        <kerning>true</kerning>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+</string>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QLabel" name="label">
          <property name="font">
           <font>
+           <family>Verdana</family>
            <pointsize>45</pointsize>
            <bold>true</bold>
            <kerning>false</kerning>
@@ -57,6 +77,16 @@
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QLabel" name="label_2">
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-width: 0px;</string>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Shape::Box</enum>
            </property>
@@ -83,6 +113,13 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
            <property name="frame">
             <bool>false</bool>
            </property>
@@ -97,6 +134,16 @@
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QLabel" name="label_3">
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-width: 0px;</string>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Shape::Box</enum>
            </property>
@@ -123,6 +170,13 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
            <property name="frame">
             <bool>false</bool>
            </property>
@@ -137,6 +191,16 @@
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
           <widget class="QLabel" name="label_4">
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-width: 0px;</string>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Shape::Box</enum>
            </property>
@@ -163,6 +227,13 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
            <property name="frame">
             <bool>false</bool>
            </property>
@@ -177,6 +248,16 @@
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
           <widget class="QLabel" name="label_5">
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-width: 0px;</string>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Shape::Box</enum>
            </property>
@@ -203,6 +284,13 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
            <property name="frame">
             <bool>false</bool>
            </property>
@@ -217,6 +305,16 @@
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <widget class="QLabel" name="label_6">
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-width: 0px;</string>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Shape::Box</enum>
            </property>
@@ -242,6 +340,13 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Verdana</family>
+             <pointsize>12</pointsize>
+             <kerning>true</kerning>
+            </font>
            </property>
            <property name="frameShape">
             <enum>QFrame::Shape::Box</enum>
@@ -274,10 +379,28 @@
         </property>
         <property name="font">
          <font>
+          <family>Verdana</family>
           <pointsize>45</pointsize>
           <bold>true</bold>
           <kerning>false</kerning>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QPushButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
         </property>
         <property name="text">
          <string>SAVE</string>
