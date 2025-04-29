@@ -46,6 +46,8 @@ void Menu::menuOpen()
 
 void Menu::saveToFile(const QString& filename)
 {
+
+
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(nullptr, "Error Opening File",
@@ -54,6 +56,8 @@ void Menu::saveToFile(const QString& filename)
         return;
     }
 
+
+
     QTextStream out(&file);
     out << m_house->toJson().toJson(QJsonDocument::Indented);
     file.close();
@@ -61,6 +65,11 @@ void Menu::saveToFile(const QString& filename)
 
 void Menu::menuSave()
 {
+    if(!errorChecks())
+    {
+        return;
+    }
+
     QString filename = getFilename("Name", true);
     if (!filename.isEmpty()) {
         saveToFile(filename);
@@ -70,11 +79,67 @@ void Menu::menuSave()
 
 void Menu::menuSaveAs()
 {
+    if(!errorChecks())
+    {
+        return;
+    }
     QString filename = getFilename("Name", true);
     if (!filename.isEmpty()) {
         saveToFile(filename);
         qDebug() << "SAVE AS";
     }
+}
+
+bool Menu::errorChecks()
+{
+    if(m_house->validateTotalAreaBeforeSave() > 0)
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan Area");
+        errorBox.setInformativeText("The total floor plan area is outside the acceptable range.\n\nPlease ensure your floor plan is not too large.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+    else if(m_house->validateTotalAreaBeforeSave() < 0)
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan Area");
+        errorBox.setInformativeText("The total floor plan area is outside the acceptable range.\n\nPlease ensure your floor plan is not too small.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    if(!m_house->validateRoomConnectivity())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Each room must share a wall with at least one other room. No room may be isolated or intersect with another room.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    if(!m_house->validateNoRoomIntersections())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("No room may intersect with another room.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    return true;
 }
 
 void Menu::menuQuit()
@@ -94,5 +159,20 @@ void Menu::menuRedo()
 
 void Menu::menuAbout()
 {
+    QMessageBox aboutBox;
+    aboutBox.setWindowTitle("About");
+    aboutBox.setIcon(QMessageBox::Information);
+    aboutBox.setText("<h3>Clean Sweep</h3>");
+    aboutBox.setInformativeText(
+        "Version 1.0<br><br>"
+        "A robot vacuum simulation.<br><br>"
+        "Authors: <br>"
+        "Maddie Delaune<br>"
+        "Allan Benjume<br>"
+        "Quinton Pouncy<br>"
+        "Vasilisa Douglas<br>"
+        );
+    aboutBox.setStandardButtons(QMessageBox::Ok);
+    aboutBox.exec();
     qDebug() << "ABOUT";
 }
