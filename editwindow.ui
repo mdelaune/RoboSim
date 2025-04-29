@@ -90,7 +90,7 @@ QToolBox::tab:selected {
           <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="roomsPage">
           <property name="geometry">
@@ -709,7 +709,10 @@ QToolButton::hover {
          </property>
          <property name="styleSheet">
           <string notr="true">background: rgb(235,255,235);
-border-radius:32px;</string>
+border-radius:32px;
+border-color: rgba(86, 171, 145, 1); 
+border-width: 8px;
+border-style: solid;</string>
          </property>
         </widget>
        </item>
