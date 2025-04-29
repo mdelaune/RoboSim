@@ -41,7 +41,7 @@ public:
     QStringList eTime;
     QStringList eDate;
 
-    QStringList totalRuntime;
+    //QStringList totalRuntime;
     QString totalSF;
 
     QList<Run> runs;

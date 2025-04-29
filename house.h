@@ -160,6 +160,7 @@ public:
     QVector<Room> rooms;
     QVector<Door> doors;
     QVector<Obstruction> obstructions;
+    QString flooring;
 
     Room* getRoomById(long id);
 

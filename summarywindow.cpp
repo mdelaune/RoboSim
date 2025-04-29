@@ -36,7 +36,7 @@ QList<int> SummaryWindow::getShortestRun(){
     int m = 0;
     int n = 0;
     for (int i = 0; i < data.size(); i++){
-        for (int j = 0; j<4; j++){
+        for (int j = 1; j<4; j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].time[0] < data[m].runs[n].time[0]){
                     m = i;
@@ -66,7 +66,7 @@ QList<int> SummaryWindow::getLongestRun(){
     int m = 0;
     int n = 0;
     for (int i = 0; i < data.size(); i++){
-        for (int j = 0; j<4; j++){
+        for (int j = 1; j<4; j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].time[0] > data[m].runs[n].time[0]){
                     m = i;
@@ -96,7 +96,7 @@ QList<int> SummaryWindow::getMostCovRun(){
     int n = 0;
     bool ok;
 
-    for (int i = 1; i < data.size(); i++){
+    for (int i = 0; i < data.size(); i++){
         for (int j = 1; j<data[i].runs.size(); j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].coverSF.toFloat(&ok) > data[m].runs[n].coverSF.toFloat(&ok)){
@@ -116,7 +116,7 @@ QList<int> SummaryWindow::getLeastCovRun(){
     int n = 0;
     bool ok;
 
-    for (int i = 1; i < data.size(); i++){
+    for (int i = 0; i < data.size(); i++){
         for (int j = 1; j<data[i].runs.size(); j++){
             if (data[i].runs[j].exists){
                 if (data[i].runs[j].coverSF.toFloat(&ok) < data[m].runs[n].coverSF.toFloat(&ok)){
@@ -132,13 +132,17 @@ QList<int> SummaryWindow::getLeastCovRun(){
 }
 
 QList<int> SummaryWindow::getAvgTime(){
-    QList<int> timeAvg = {0,0,0};
+    QList<int> timeAvg= {0,0,0};
     bool ok;
 
-    for (int i = 0; i < data.size(); i++){
-        timeAvg[0] += data[i].totalRuntime[0].toInt(&ok);
-        timeAvg[1] += data[i].totalRuntime[1].toInt(&ok);
-        timeAvg[2] += data[i].totalRuntime[2].toInt(&ok);
+    for (int i = 1; i < data.size(); i++){
+        for (int j = 1; j < data[i].runs.size(); j++){
+            if (data[i].runs[j].exists){
+                timeAvg[0] += (data[i].runs[j].time[0].toInt(&ok));
+                timeAvg[1] += (data[i].runs[j].time[1].toInt(&ok));
+                timeAvg[2] += (data[i].runs[j].time[2].toInt(&ok));
+            }
+        }
     }
 
     timeAvg[0] /= data.size();
@@ -199,17 +203,50 @@ void SummaryWindow::updateText(){
 
     QList<int> shortRun = getShortestRun();
     ui->simSR->setText(QString::number(shortRun[0]));
-    ui->algSR->setText(QString::number(shortRun[1]));
+    if (data[shortRun[0]].runs[shortRun[1]].alg == "random"){
+        ui->algSR->setText("Random");
+    }
+    else if (data[shortRun[0]].runs[shortRun[1]].alg == "spiral"){
+        ui->algSR->setText("Spiral");
+    }
+    else if (data[shortRun[0]].runs[shortRun[1]].alg == "snaking"){
+        ui->algSR->setText("Snaking");
+    }
+    else if (data[shortRun[0]].runs[shortRun[1]].alg == "wallfollow"){
+        ui->algSR->setText("Wall Follow");
+    }
     ui->valueSR->setText(data[shortRun[0]].runs[shortRun[1]].getTimeString(data[shortRun[0]].runs[shortRun[1]].time));
 
     QList<int> longRun = getLongestRun();
     ui->simLR->setText(QString::number(longRun[0]));
-    ui->algLR->setText(QString::number(longRun[1]));
+    if (data[longRun[0]].runs[longRun[1]].alg == "random"){
+        ui->algLR->setText("Random");
+    }
+    else if (data[longRun[0]].runs[longRun[1]].alg == "spiral"){
+        ui->algLR->setText("Spiral");
+    }
+    else if (data[longRun[0]].runs[longRun[1]].alg == "snaking"){
+        ui->algLR->setText("Snaking");
+    }
+    else if (data[longRun[0]].runs[longRun[1]].alg == "wallfollow"){
+        ui->algLR->setText("Wall Follow");
+    }
     ui->valueLR->setText(data[longRun[0]].runs[longRun[1]].getTimeString(data[longRun[0]].runs[longRun[1]].time));
 
     QList<int> mostCover = getMostCovRun();
     ui->simMC->setText(QString::number(mostCover[0]));
-    ui->algMC->setText(QString::number(mostCover[1]));
+    if (data[mostCover[0]].runs[mostCover[1]].alg == "random"){
+        ui->algMC->setText("Random");
+    }
+    else if (data[mostCover[0]].runs[mostCover[1]].alg == "spiral"){
+        ui->algMC->setText("Spiral");
+    }
+    else if (data[mostCover[0]].runs[mostCover[1]].alg == "snaking"){
+        ui->algMC->setText("Snaking");
+    }
+    else if (data[mostCover[0]].runs[mostCover[1]].alg == "wallfollow"){
+        ui->algMC->setText("Wall Follow");
+    }
     ui->valueMC->setText(data[mostCover[0]].runs[mostCover[1]].coverSF);
 
     QList<int> leastCover = getLeastCovRun();
@@ -217,13 +254,13 @@ void SummaryWindow::updateText(){
     if (data[leastCover[0]].runs[leastCover[1]].alg == "random"){
         ui->algLC->setText("Random");
     }
-    if (data[leastCover[0]].runs[leastCover[1]].alg == "spiral"){
+    else if (data[leastCover[0]].runs[leastCover[1]].alg == "spiral"){
         ui->algLC->setText("Spiral");
     }
-    if (data[leastCover[0]].runs[leastCover[1]].alg == "snaking"){
+    else if (data[leastCover[0]].runs[leastCover[1]].alg == "snaking"){
         ui->algLC->setText("Snaking");
     }
-    if (data[leastCover[0]].runs[leastCover[1]].alg == "wallfollow"){
+    else if (data[leastCover[0]].runs[leastCover[1]].alg == "wallfollow"){
         ui->algLC->setText("Wall Follow");
     }
     ui->valueLC->setText(data[leastCover[0]].runs[leastCover[1]].coverSF);

@@ -93,9 +93,9 @@ void RunData::setEndValues(){
     eDate.append(QString::number(eDay));
     eDate.append(QString::number(eYear));
 
-    totalRuntime.append(QString::number(rHour));
-    totalRuntime.append(QString::number(rMin));
-    totalRuntime.append(QString::number(rSec));
+    // totalRuntime.append(QString::number(rHour));
+    // totalRuntime.append(QString::number(rMin));
+    // totalRuntime.append(QString::number(rSec));
 }
 
 
@@ -138,7 +138,6 @@ void RunData::parseFile(QString file_name){
         run.alg = filedata[i][0];
 
         if (filedata[i][1] != "0"){
-            qDebug() << filedata[i][1];
             run.time.append(filedata[i][1]);
             run.time.append(filedata[i][2]);
             run.time.append(filedata[i][3]);

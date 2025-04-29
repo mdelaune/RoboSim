@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background: rgba(53, 143, 128, 1);</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
@@ -24,10 +27,10 @@
     <item>
      <widget class="QFrame" name="frame_2">
       <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+       <enum>QFrame::Shape::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Shadow::Raised</enum>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="leftMargin">
@@ -62,11 +65,32 @@
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Verdana</family>
+           <pointsize>12</pointsize>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QToolBox::tab {
+  	background:  rgba(136, 212, 171, 1);
+	border-radius: 32px;
+}
+
+QToolBox::tab:selected { 
+    	font: italic;
+    	background:rgba(20, 116, 111, 1);
+		color: rgb(255,255,255);
+		border-radius: 32px;
+}
+</string>
+         </property>
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="roomsPage">
           <property name="geometry">
@@ -74,8 +98,12 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>468</height>
+            <height>435</height>
            </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgba(86, 171, 145, 1); 
+border-radius: 32px;</string>
           </property>
           <attribute name="label">
            <string>Rooms</string>
@@ -90,32 +118,30 @@
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="1" alignment="Qt::AlignHCenter|Qt::AlignTop">
-             <widget class="QLabel" name="label_6">
-              <property name="maximumSize">
-               <size>
-                <width>70</width>
-                <height>50</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Rectangle Room</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <property name="wordWrap">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_squareRoom">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string/>
@@ -126,13 +152,30 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_rectangleRoom">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string/>
@@ -143,7 +186,7 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0" alignment="Qt::AlignTop">
+            <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="lbl_squareRoom">
               <property name="minimumSize">
                <size>
@@ -157,24 +200,46 @@
                 <height>50</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Square Room</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignCenter</set>
+               <set>Qt::AlignmentFlag::AlignCenter</set>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="2" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_door">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string/>
@@ -185,7 +250,7 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_15">
               <property name="minimumSize">
                <size>
@@ -199,11 +264,40 @@
                 <height>50</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Door</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignCenter</set>
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_6">
+              <property name="maximumSize">
+               <size>
+                <width>70</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
+              <property name="text">
+               <string>Rectangle Room</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -219,8 +313,12 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>468</height>
+            <height>435</height>
            </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgba(86, 171, 145, 1); 
+border-radius: 32px;</string>
           </property>
           <attribute name="label">
            <string>Furniture</string>
@@ -235,13 +333,30 @@
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_Chest">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -252,20 +367,42 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_5">
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Chest</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_Chair">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -276,20 +413,42 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_8">
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Table</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_Table">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -300,8 +459,13 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_9">
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Chair</string>
               </property>
@@ -323,8 +487,12 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>468</height>
+            <height>435</height>
            </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background:rgba(86, 171, 145, 1); 
+border-radius: 32px;</string>
           </property>
           <attribute name="label">
            <string>Flooring</string>
@@ -340,15 +508,32 @@
            </property>
            <layout class="QGridLayout" name="gridLayout">
             <property name="sizeConstraint">
-             <enum>QLayout::SetNoConstraint</enum>
+             <enum>QLayout::SizeConstraint::SetNoConstraint</enum>
             </property>
-            <item row="2" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="2" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_friezeCut">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string/>
@@ -359,13 +544,30 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_hardFloor">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string/>
@@ -376,20 +578,42 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_11">
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Hard Floor</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_loopPile">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string/>
@@ -400,13 +624,30 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
              <widget class="QToolButton" name="btn_cutPile">
               <property name="minimumSize">
                <size>
                 <width>50</width>
                 <height>50</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QToolButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
               </property>
               <property name="text">
                <string/>
@@ -417,22 +658,37 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_12">
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Loop Pile</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_13">
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Cut Pile</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1" alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item row="3" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
              <widget class="QLabel" name="label_14">
+              <property name="font">
+               <font>
+                <family>Verdana</family>
+               </font>
+              </property>
               <property name="text">
                <string>Frieze-Cut</string>
               </property>
@@ -451,6 +707,13 @@
            <height>0</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background: rgb(235,255,235);
+border-radius:32px;
+border-color: rgba(86, 171, 145, 1); 
+border-width: 8px;
+border-style: solid;</string>
+         </property>
         </widget>
        </item>
        <item>
@@ -461,13 +724,33 @@
            <height>0</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background:rgba(86, 171, 145, 1); 
+border-radius: 32px;</string>
+         </property>
          <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+          <enum>QFrame::Shape::StyledPanel</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+          <enum>QFrame::Shadow::Raised</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Policy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
           <item>
            <widget class="QPushButton" name="btn_clear">
             <property name="minimumSize">
@@ -475,6 +758,29 @@
               <width>0</width>
               <height>25</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Verdana</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QPushButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
             </property>
             <property name="text">
              <string>Clear</string>
@@ -489,6 +795,29 @@
               <height>25</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Verdana</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton{
+	background: rgba(136, 212, 171, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+QPushButton::hover {
+	background: rgba(103, 185, 154, 1);
+	border-width: 4px;
+	border-style: solid;
+	border-radius: 32px;
+	border-color: rgba(103, 185, 154, 1);
+}
+</string>
+            </property>
             <property name="text">
              <string>Delete</string>
             </property>
@@ -497,7 +826,7 @@
           <item>
            <spacer name="verticalSpacer">
             <property name="orientation">
-             <enum>Qt::Vertical</enum>
+             <enum>Qt::Orientation::Vertical</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -521,7 +850,7 @@
      <x>0</x>
      <y>0</y>
      <width>1016</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Help">
