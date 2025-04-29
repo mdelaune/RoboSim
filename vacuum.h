@@ -12,6 +12,7 @@ class Vacuum
 {
 public:
     Vacuum(QGraphicsScene* scene);
+    double calculateWhiskerEffectiveness() const;
 
     // Setters
     void setBatteryLife(int minutes);
@@ -21,9 +22,10 @@ public:
     void setPathingAlgorithms(const QStringList &algorithms);  // Changed to accept a list of algorithms
     void setVacuumPosition(double x, double y);
     void setFloorType(const QString &type);
-    double calculateWhiskerEffectiveness() const;
+
 
     // Getters
+
     int getBatteryLife() const;
     int getVacuumEfficiency() const;
     int getWhiskerEfficiency() const;
@@ -86,4 +88,3 @@ private:
 };
 
 #endif // VACUUM_H
-

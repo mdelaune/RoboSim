@@ -257,11 +257,12 @@ void Vacuum::setPathingAlgorithms(const QStringList &algorithms)
     qDebug() << "Pathings algorithms set to:" << pathingAlgorithms;
 }
 
+
 double Vacuum::calculateWhiskerEffectiveness() const
 {
     if (whiskerCleaningCount == 0) return 0.0;
 
+    // Assume each whisker clean adds some contribution based on efficiency
     return static_cast<double>(whiskerCleaningCount) * (static_cast<double>(whiskerEfficiency) / 100.0);
 }
-
 
