@@ -1,4 +1,6 @@
 {
+    "id": 1,
+    "flooring": "hard_floor",
     "rooms":
     [
         {
