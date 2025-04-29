@@ -772,14 +772,14 @@ bool House::doRoomsShareWall(Room& room1, Room& room2)
         // X-coordinates overlap
         (rect1.left() < rect2.right() && rect2.left() < rect1.right()) &&
         // Y-coordinates are adjacent (bottom of rect1 touches top of rect2 or vice versa)
-        ((qAbs(rect1.bottom() - rect2.top()) < 1.0) || (qAbs(rect2.bottom() - rect1.top()) < 1.0));
+        ((qAbs(rect1.bottom() - rect2.top()) < 5.0) || (qAbs(rect2.bottom() - rect1.top()) < 5.0));
 
     // Check for vertical walls (left/right edges)
     bool sharesVerticalWall =
         // Y-coordinates overlap
         (rect1.top() < rect2.bottom() && rect2.top() < rect1.bottom()) &&
         // X-coordinates are adjacent (right of rect1 touches left of rect2 or vice versa)
-        ((qAbs(rect1.right() - rect2.left()) < 1.0) || (qAbs(rect2.right() - rect1.left()) < 1.0));
+        ((qAbs(rect1.right() - rect2.left()) < 5.0) || (qAbs(rect2.right() - rect1.left()) < 5.0));
 
     return sharesHorizontalWall || sharesVerticalWall;
 }
