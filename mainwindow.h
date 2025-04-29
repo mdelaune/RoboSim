@@ -6,6 +6,7 @@
 #include "simwindow.h"
 #include "reportwindow.h"
 #include "summarywindow.h"
+#include "house.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

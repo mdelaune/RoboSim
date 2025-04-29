@@ -5,6 +5,8 @@
 #include "settingswindow.h"
 //#include "vacuumwindow.h"
 
+#include "house.h"
+
 namespace Ui {
 class SimWindow;
 }
@@ -17,6 +19,10 @@ public:
     ~SimWindow();
 
     void startSimulation(int batteryLife, int vacuumEfficiency, int whiskerEfficiency, int speed, QStringList selectedAlgorithms);
+
+    House *house;
+    QString house_path;
+
 
 private:
     Ui::SimWindow *ui;
