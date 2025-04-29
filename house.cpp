@@ -482,6 +482,8 @@ void House::loadPlan(QString plan)
 
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
+
+    getCoveredArea();
 }
 
 void House::createNewFloorplan()
@@ -633,6 +635,16 @@ void House::setRoomFillColor(QString flooring)
     m_scene->update(m_scene->sceneRect());
 }
 
+int House::getCoveredArea()
+{
+    int coveredArea = 0;
+    for (Obstruction& obstruction : obstructions) {
+        coveredArea += static_cast<int>(obstruction.get_floorCoverage());
+    }
+    qDebug() << coveredArea;
+    return coveredArea;
+}
+
 void House::clear()
 {
     m_scene->clearSelection();
@@ -752,6 +764,19 @@ void House::deleteItem()
 
     m_scene->update(m_scene->sceneRect());
     qDebug() << "DELETE COMPLETE";
+}
+
+void House::rotate()
+{
+    for (QGraphicsItem* item : m_scene->selectedItems()) {
+        if (auto door = dynamic_cast<DragDoor*>(item)) {
+            door->setTransformOriginPoint(door->boundingRect().center());
+            door->setRotation(door->rotation() + 90);
+        } else if (auto obs = dynamic_cast<DragObstruction*>(item)) {
+            obs->setTransformOriginPoint(obs->boundingRect().center());
+            obs->setRotation(obs->rotation() + 90);
+        }
+    }
 }
 
 int House::validateTotalAreaBeforeSave()

@@ -137,6 +137,7 @@ public:
 
     void clear();
     void deleteItem();
+    void rotate();
 
     QString get_floorplanName();
     QJsonDocument toJson();
@@ -190,6 +191,8 @@ public:
     void generateNewFloorplanId();
 
     void createNewFloorplan();
+
+    int getCoveredArea();
 
 private:
     void loadRooms(QJsonArray roomsArray);
