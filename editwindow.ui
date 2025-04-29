@@ -27,10 +27,10 @@
     <item>
      <widget class="QFrame" name="frame_2">
       <property name="frameShape">
-       <enum>QFrame::Shape::NoFrame</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Shadow::Raised</enum>
+       <enum>QFrame::Raised</enum>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="leftMargin">
@@ -87,7 +87,7 @@ QToolBox::tab:selected {
 </string>
          </property>
          <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
+          <enum>QFrame::NoFrame</enum>
          </property>
          <property name="currentIndex">
           <number>1</number>
@@ -98,7 +98,7 @@ QToolBox::tab:selected {
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>435</height>
+            <height>462</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -118,7 +118,7 @@ border-radius: 32px;</string>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_squareRoom">
               <property name="minimumSize">
                <size>
@@ -152,7 +152,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="0" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_rectangleRoom">
               <property name="minimumSize">
                <size>
@@ -186,7 +186,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignTop">
+            <item row="1" column="0" alignment="Qt::AlignTop">
              <widget class="QLabel" name="lbl_squareRoom">
               <property name="minimumSize">
                <size>
@@ -209,14 +209,14 @@ QToolButton::hover {
                <string>Square Room</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
+               <set>Qt::AlignCenter</set>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="2" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_door">
               <property name="minimumSize">
                <size>
@@ -250,7 +250,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="3" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_15">
               <property name="minimumSize">
                <size>
@@ -273,7 +273,7 @@ QToolButton::hover {
                <string>Door</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
+               <set>Qt::AlignCenter</set>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -297,7 +297,7 @@ QToolButton::hover {
                <string>Rectangle Room</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
+               <set>Qt::AlignCenter</set>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -313,7 +313,7 @@ QToolButton::hover {
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>435</height>
+            <height>462</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -333,7 +333,7 @@ border-radius: 32px;</string>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_Chest">
               <property name="minimumSize">
                <size>
@@ -367,7 +367,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="1" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_5">
               <property name="font">
                <font>
@@ -379,7 +379,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="2" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_Chair">
               <property name="minimumSize">
                <size>
@@ -413,7 +413,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="1" column="1" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_8">
               <property name="font">
                <font>
@@ -425,7 +425,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="0" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_Table">
               <property name="minimumSize">
                <size>
@@ -459,7 +459,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="3" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_9">
               <property name="font">
                <font>
@@ -487,7 +487,7 @@ QToolButton::hover {
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>435</height>
+            <height>462</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -508,9 +508,9 @@ border-radius: 32px;</string>
            </property>
            <layout class="QGridLayout" name="gridLayout">
             <property name="sizeConstraint">
-             <enum>QLayout::SizeConstraint::SetNoConstraint</enum>
+             <enum>QLayout::SetNoConstraint</enum>
             </property>
-            <item row="2" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="2" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_friezeCut">
               <property name="minimumSize">
                <size>
@@ -544,7 +544,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_hardFloor">
               <property name="minimumSize">
                <size>
@@ -578,7 +578,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="1" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_11">
               <property name="font">
                <font>
@@ -590,7 +590,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="0" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_loopPile">
               <property name="minimumSize">
                <size>
@@ -624,7 +624,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+            <item row="2" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
              <widget class="QToolButton" name="btn_cutPile">
               <property name="minimumSize">
                <size>
@@ -658,7 +658,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="1" column="1" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_12">
               <property name="font">
                <font>
@@ -670,7 +670,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="3" column="0" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_13">
               <property name="font">
                <font>
@@ -682,7 +682,7 @@ QToolButton::hover {
               </property>
              </widget>
             </item>
-            <item row="3" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+            <item row="3" column="1" alignment="Qt::AlignHCenter|Qt::AlignTop">
              <widget class="QLabel" name="label_14">
               <property name="font">
                <font>
@@ -720,8 +720,14 @@ border-style: solid;</string>
         <widget class="QFrame" name="frame">
          <property name="minimumSize">
           <size>
-           <width>150</width>
+           <width>200</width>
            <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>16777215</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -729,19 +735,19 @@ border-style: solid;</string>
 border-radius: 32px;</string>
          </property>
          <property name="frameShape">
-          <enum>QFrame::Shape::StyledPanel</enum>
+          <enum>QFrame::StyledPanel</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Shadow::Raised</enum>
+          <enum>QFrame::Raised</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <spacer name="verticalSpacer_2">
             <property name="orientation">
-             <enum>Qt::Orientation::Vertical</enum>
+             <enum>Qt::Vertical</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Policy::Fixed</enum>
+             <enum>QSizePolicy::Fixed</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -826,7 +832,7 @@ QPushButton::hover {
           <item>
            <spacer name="verticalSpacer">
             <property name="orientation">
-             <enum>Qt::Orientation::Vertical</enum>
+             <enum>Qt::Vertical</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -850,7 +856,7 @@ QPushButton::hover {
      <x>0</x>
      <y>0</y>
      <width>1016</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Help">
