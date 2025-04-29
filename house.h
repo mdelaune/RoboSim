@@ -120,6 +120,9 @@ public:
     House(QGraphicsScene *scene);
 
     static House* instance;
+    const double MIN_TOTAL_AREA = 40000.0;
+    const double MAX_TOTAL_AREA = 600000.0;
+
     void loadPlan(QString plan);
 
     void addRoom(Room room);
@@ -175,8 +178,8 @@ public:
     bool doRoomsIntersect(Room& room1, Room& room2);
     bool validateNoRoomIntersections();
 
-    const double MIN_TOTAL_AREA = 40000.0;
-    const double MAX_TOTAL_AREA = 600000.0;
+    bool validateDoorsOnWalls();
+    bool validateEveryRoomHasDoor();
 
 private:
     void loadRooms(QJsonArray roomsArray);

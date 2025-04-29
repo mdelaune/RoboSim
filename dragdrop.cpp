@@ -84,18 +84,20 @@ void DragDoor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
 
-    QPointF newOrigin = mapToScene(m_door->get_origin());
+    QPointF newOrigin = scenePos();
 
     if (m_house && m_door) {
         // Update the Door's origin with the new position
         m_door->set_origin(newOrigin);
+        qDebug() << "New Origin: " << newOrigin;
     }
 
     QGraphicsItemGroup::mouseReleaseEvent(event);
 }
 
+// Modified DragObstruction class with resizing functionality
 DragObstruction::DragObstruction(const QRectF &body, QRectF *legs, House *house, Obstruction *obstruction)
-    : m_body(body)
+    : m_body(body), m_originalBody(body), m_handleSize(8)  // Increased handle size
 {
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
     setCursor(QCursor(Qt::OpenHandCursor));
@@ -104,15 +106,21 @@ DragObstruction::DragObstruction(const QRectF &body, QRectF *legs, House *house,
     m_house = house;
     m_obstruction = obstruction;
     m_type = obstruction->get_type();
+    m_currentHandle = None;
 
+    // Store the original legs positions and sizes
     for(int i = 0; i < 4; i++)
     {
         m_legs.append(legs_array[i]);
+        m_originalLegs.append(legs_array[i]);
     }
+
+    // Set size constraints based on obstruction type
+    setSizeConstraints();
 }
 
 DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay, House *house, Obstruction *obstruction)
-    : m_body(body), m_overlay(overlay)
+    : m_body(body), m_originalBody(body), m_overlay(overlay), m_originalOverlay(overlay), m_handleSize(8)  // Increased handle size
 {
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
     setCursor(QCursor(Qt::OpenHandCursor));
@@ -120,6 +128,38 @@ DragObstruction::DragObstruction(const QRectF &body, const QRectF &overlay, Hous
     m_house = house;
     m_obstruction = obstruction;
     m_type = obstruction->get_type();
+    m_currentHandle = None;
+
+    // Set size constraints based on obstruction type
+    setSizeConstraints();
+}
+
+void DragObstruction::setSizeConstraints()
+{
+    // Set minimum and maximum sizes based on obstruction type
+    if(m_type == "chest")
+    {
+        m_minWidth = 40.0;
+        m_minHeight = 40.0;
+        m_maxWidth = 150.0;
+        m_maxHeight = 150.0;
+    }
+    else if(m_type == "table")
+    {
+        m_minWidth = 40.0;
+        m_minHeight = 40.0;
+        m_maxWidth = 150.0;
+        m_maxHeight = 150.0;
+    }
+    else if(m_type == "chair")
+    {
+        m_minWidth = 30.0;
+        m_minHeight = 30.0;
+        m_maxWidth = 60.0;
+        m_maxHeight = 60.0;
+    }
+
+
 }
 
 QRectF DragObstruction::boundingRect() const
@@ -137,8 +177,8 @@ QRectF DragObstruction::boundingRect() const
     {
         bounds = bounds.united(m_overlay);
     }
-    //return bounds.adjusted(-5, -5, 5, 5); // margin for selection handles
-    return bounds;
+
+    return bounds.adjusted(-m_handleSize, -m_handleSize, m_handleSize, m_handleSize); // margin for selection handles
 }
 
 void DragObstruction::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
@@ -164,28 +204,226 @@ void DragObstruction::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
             painter->drawEllipse(leg);
         }
     }
+
+    // Draw resize handles when selected
+    if (isSelected()) {
+        painter->setPen(QPen(Qt::black, 1));
+        painter->setBrush(QColor(0, 0, 0, 180)); // Semi-transparent black
+
+        for (int i = 0; i < 4; ++i) {
+            QRectF handleRect = this->handleRect(static_cast<HandlePosition>(i));
+            painter->drawRect(handleRect);
+        }
+    }
+}
+
+DragObstruction::HandlePosition DragObstruction::handleAt(const QPointF &pos) const
+{
+    // Use a larger hit area for detecting handle clicks
+    const qreal handleHitPadding = 4.0;
+
+    for (int i = 0; i < 4; ++i) {
+        HandlePosition handlePos = static_cast<HandlePosition>(i);
+        QRectF handle = handleRect(handlePos);
+
+        // Create an expanded hit area for better handle detection
+        QRectF hitArea = handle.adjusted(-handleHitPadding, -handleHitPadding,
+                                         handleHitPadding, handleHitPadding);
+
+        if (hitArea.contains(pos))
+            return handlePos;
+    }
+    return None;
+}
+
+QRectF DragObstruction::handleRect(HandlePosition pos) const
+{
+    QRectF rect = m_body;
+    QPointF offset(-m_handleSize/2, -m_handleSize/2);
+    QSizeF size(m_handleSize, m_handleSize);
+
+    // Create slightly larger hit areas for the handles
+    const qreal handlePadding = 2.0;
+    QSizeF hitSize(m_handleSize + handlePadding, m_handleSize + handlePadding);
+    QPointF hitOffset(-hitSize.width()/2, -hitSize.height()/2);
+
+    switch (pos) {
+    case TopLeft:
+        // For visual display, we use a slightly larger handle
+        return QRectF(rect.topLeft() + offset, size);
+    case TopRight:
+        return QRectF(rect.topRight() + offset + QPointF(-m_handleSize, 0), size);
+    case BottomLeft:
+        return QRectF(rect.bottomLeft() + offset + QPointF(0, -m_handleSize), size);
+    case BottomRight:
+        return QRectF(rect.bottomRight() + offset + QPointF(-m_handleSize, -m_handleSize), size);
+    default:
+        return QRectF();
+    }
+}
+
+void DragObstruction::updateLegsPositions(const QRectF &newBody)
+{
+    if (isChest) {
+        // Calculate the scale factor compared to original
+        qreal scaleX = newBody.width() / m_originalBody.width();
+        qreal scaleY = newBody.height() / m_originalBody.height();
+
+        // Calculate the relative position of the overlay in the original body
+        qreal relLeft = (m_originalOverlay.left() - m_originalBody.left()) / m_originalBody.width();
+        qreal relTop = (m_originalOverlay.top() - m_originalBody.top()) / m_originalBody.height();
+        qreal relWidth = m_originalOverlay.width() / m_originalBody.width();
+        qreal relHeight = m_originalOverlay.height() / m_originalBody.height();
+
+        // Apply these relative positions to the new body
+        QRectF newOverlay(
+            newBody.left() + relLeft * newBody.width(),
+            newBody.top() + relTop * newBody.height(),
+            relWidth * newBody.width(),
+            relHeight * newBody.height()
+            );
+
+        m_overlay = newOverlay;
+    } else {
+        // Define minimum distance from edges (as a percentage of body size)
+        const qreal minEdgeDistancePercent = 0.15; // 15% of body width/height
+
+        // Calculate actual minimum distances in pixels
+        qreal minDistanceX = newBody.width() * minEdgeDistancePercent;
+        qreal minDistanceY = newBody.height() * minEdgeDistancePercent;
+
+        // Calculate safe area boundaries
+        qreal safeLeft = newBody.left() + minDistanceX;
+        qreal safeRight = newBody.right() - minDistanceX;
+        qreal safeTop = newBody.top() + minDistanceY;
+        qreal safeBottom = newBody.bottom() - minDistanceY;
+
+        // Update the legs positions relative to the new body
+        for (int i = 0; i < m_legs.size(); i++) {
+            // Calculate the relative position of leg in original body
+            qreal relX = (m_originalLegs[i].center().x() - m_originalBody.left()) / m_originalBody.width();
+            qreal relY = (m_originalLegs[i].center().y() - m_originalBody.top()) / m_originalBody.height();
+
+            // Constrain relative positions to stay within safe boundaries
+            relX = qBound(minEdgeDistancePercent, relX, 1.0 - minEdgeDistancePercent);
+            relY = qBound(minEdgeDistancePercent, relY, 1.0 - minEdgeDistancePercent);
+
+            // Calculate new leg center position with safe boundaries
+            QPointF newCenter(
+                newBody.left() + relX * newBody.width(),
+                newBody.top() + relY * newBody.height()
+                );
+
+            // Additional safety check - clamp to safe area if needed
+            newCenter.setX(qBound(safeLeft, newCenter.x(), safeRight));
+            newCenter.setY(qBound(safeTop, newCenter.y(), safeBottom));
+
+            // Keep leg size consistent
+            qreal legWidth = m_originalLegs[i].width();
+            qreal legHeight = m_originalLegs[i].height();
+
+            // Update the leg position while keeping its size
+            m_legs[i] = QRectF(
+                newCenter.x() - legWidth/2,
+                newCenter.y() - legHeight/2,
+                legWidth,
+                legHeight
+                );
+
+            // Update the legs array which might be referenced elsewhere
+            legs_array[i] = m_legs[i];
+        }
+    }
 }
 
 void DragObstruction::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    setCursor(Qt::ClosedHandCursor);
+    m_currentHandle = handleAt(event->pos());
+    m_lastMousePos = event->pos();
+
+    if (m_currentHandle != None)
+        setCursor(Qt::SizeAllCursor);
+    else
+        setCursor(Qt::ClosedHandCursor);
+
     QGraphicsItem::mousePressEvent(event);
 }
 
 void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    // Handle mouse move events for the obstruction
-    QGraphicsItem::mouseMoveEvent(event);
+    if (m_currentHandle != None) {
+        QPointF delta = event->pos() - m_lastMousePos;
+
+        // Add a movement threshold to reduce reactivity
+        const qreal movementThreshold = 2.0; // in pixels
+        if (qAbs(delta.x()) < movementThreshold && qAbs(delta.y()) < movementThreshold) {
+            return; // Ignore tiny movements
+        }
+
+        // Store last position for the next move event
+        m_lastMousePos = event->pos();
+
+        QRectF newBody = m_body;
+
+        switch (m_currentHandle) {
+        case TopLeft:     newBody.setTopLeft(newBody.topLeft() + delta); break;
+        case TopRight:    newBody.setTopRight(newBody.topRight() + delta); break;
+        case BottomLeft:  newBody.setBottomLeft(newBody.bottomLeft() + delta); break;
+        case BottomRight: newBody.setBottomRight(newBody.bottomRight() + delta); break;
+        default: break;
+        }
+
+        // Normalize rectangle
+        newBody = newBody.normalized();
+
+        // Apply size constraints
+        if (newBody.width() < m_minWidth) {
+            if (m_currentHandle == TopLeft || m_currentHandle == BottomLeft)
+                newBody.setLeft(newBody.right() - m_minWidth);
+            else
+                newBody.setRight(newBody.left() + m_minWidth);
+        }
+        if (newBody.height() < m_minHeight) {
+            if (m_currentHandle == TopLeft || m_currentHandle == TopRight)
+                newBody.setTop(newBody.bottom() - m_minHeight);
+            else
+                newBody.setBottom(newBody.top() + m_minHeight);
+        }
+
+        // Apply maximum size constraints
+        if (newBody.width() > m_maxWidth) {
+            if (m_currentHandle == TopLeft || m_currentHandle == BottomLeft)
+                newBody.setLeft(newBody.right() - m_maxWidth);
+            else
+                newBody.setRight(newBody.left() + m_maxWidth);
+        }
+        if (newBody.height() > m_maxHeight) {
+            if (m_currentHandle == TopLeft || m_currentHandle == TopRight)
+                newBody.setTop(newBody.bottom() - m_maxHeight);
+            else
+                newBody.setBottom(newBody.top() + m_maxHeight);
+        }
+
+        // Apply the changes and update legs
+        prepareGeometryChange();
+        m_body = newBody;
+        updateLegsPositions(newBody);
+        update();
+
+    } else {
+        // Let parent handle the standard move
+        QGraphicsItem::mouseMoveEvent(event);
+    }
 }
 
 void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
 
-    QRectF localRect = m_body;
-    QRectF sceneRect = mapToScene(localRect).boundingRect();
+    // Update the obstruction's position and size in the data model
+    QRectF sceneRect = mapToScene(m_body).boundingRect();
 
-    if(m_house)
+    if(m_house && m_obstruction)
     {
         m_obstruction->set_topLeft(sceneRect.topLeft());
         m_obstruction->set_bottomRight(sceneRect.bottomRight());
@@ -197,6 +435,7 @@ void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         }
     }
 
+    m_currentHandle = None;
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
@@ -209,6 +448,7 @@ DragRoom::DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room
     m_id = id;
     m_house = house;
     m_room = room;
+    m_scene = scene;
 }
 
 void DragRoom::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -245,6 +485,40 @@ QRectF DragRoom::handleRect(HandlePosition pos) const
     case BottomRight: return QRectF(rect.bottomRight() + offset + QPointF(-m_handleSize, -m_handleSize), size);
     default:          return QRectF();
     }
+}
+
+bool DragRoom::checkRoomIntersection(const QRectF &newRect)
+{
+    if (!m_scene)
+        return false;
+
+    QRectF sceneRect = mapToScene(newRect).boundingRect();
+
+    // Get all items in the scene
+    QList<QGraphicsItem*> allItems = m_scene->items();
+
+    for (QGraphicsItem *item : allItems) {
+        // Skip checking against itself
+        if (item == this)
+            continue;
+
+        // Check if the item is a DragRoom
+        DragRoom *otherRoom = dynamic_cast<DragRoom*>(item);
+        if (otherRoom) {
+            QRectF otherRect = otherRoom->mapRectToScene(otherRoom->rect());
+
+            // Check if rooms intersect with a small tolerance
+            // The small margin prevents rooms from being exactly adjacent
+            const qreal tolerance = 1.0;
+            QRectF adjustedRect = sceneRect.adjusted(tolerance, tolerance, -tolerance, -tolerance);
+
+            if (adjustedRect.intersects(otherRect)) {
+                return true; // Intersection detected
+            }
+        }
+    }
+
+    return false; // No intersection
 }
 
 void DragRoom::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -291,12 +565,24 @@ void DragRoom::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 r.setBottom(r.top() + MIN_HEIGHT);
         }
 
-        prepareGeometryChange();
-        setRect(r.normalized());
-        update();
+        QRectF normalizedRect = r.normalized();
+        if (!checkRoomIntersection(normalizedRect)) {
+            prepareGeometryChange();
+            setRect(normalizedRect);
+            update();
+        }
 
     } else {
+        QPointF oldPos = pos();
+
+        // Let parent handle the standard move
         QGraphicsRectItem::mouseMoveEvent(event);
+
+        // Check if the move resulted in an intersection
+        if (checkRoomIntersection(rect())) {
+            // If intersecting, revert to the old position
+            setPos(oldPos);
+        }
     }
 }
 
