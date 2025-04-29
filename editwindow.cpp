@@ -44,17 +44,19 @@ void EditWindow::setupMenu()
     //connect(ui->action_Undo, &QAction::triggered, m_menu, &Menu::menuUndo);
     //connect(ui->action_Redo, &QAction::triggered, m_menu, &Menu::menuRedo);
     connect(ui->action_About, &QAction::triggered, m_menu, &Menu::menuQuit);
-
 }
+
 void EditWindow::setupScene()
 {
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     house = new House(scene);
-    QString default_plan = "../../default_plan.json";
+    QString default_plan = ":/Default/default_plan.json";
     house->loadPlan(default_plan);
+    house->setNewID();
     setupMenu();
     setupToolButtons();
+    ui->floorID->setText("Floorplan ID: " + house->id);
 }
 
 void EditWindow::setupSceneFromFile(){
@@ -66,24 +68,25 @@ void EditWindow::setupSceneFromFile(){
     house->loadPlan(plan);
     setupMenu();
     setupToolButtons();
+    ui->floorID->setText("Floorplan ID: " + house->id);
 }
 
 void EditWindow::setupToolButtons()
 {
     //QIcon square = ;
-    ui->btn_squareRoom->setIcon(QIcon("../../Images/square.png"));
-    ui->btn_rectangleRoom->setIcon(QIcon("../../Images/rectangle.png"));
-    //ui->btn_lShapeRoom->setIcon(QIcon("../../Images/lshape.png"));
-    ui->btn_door->setIcon(QIcon("../../Images/door.png"));
+    ui->btn_squareRoom->setIcon(QIcon(":/Images/Images/square.png"));
+    ui->btn_rectangleRoom->setIcon(QIcon(":/Images/Images/rectangle.png"));
+    //ui->btn_lShapeRoom->setIcon(QIcon(":/Images/Images/lshape.png"));
+    ui->btn_door->setIcon(QIcon(":/Images/Images/door.png"));
 
-    ui->btn_Chest->setIcon(QIcon("../../Images/chest.png"));
-    ui->btn_Table->setIcon(QIcon("../../Images/table.png"));
-    ui->btn_Chair->setIcon(QIcon("../../Images/chair.png"));
+    ui->btn_Chest->setIcon(QIcon(":/Images/Images/chest.png"));
+    ui->btn_Table->setIcon(QIcon(":/Images/Images/table.png"));
+    ui->btn_Chair->setIcon(QIcon(":/Images/Images/chair.png"));
 
-    ui->btn_hardFloor->setIcon(QIcon("../../Images/hardfloor.png"));
-    ui->btn_loopPile->setIcon(QIcon("../../Images/looppile.png"));
-    ui->btn_cutPile->setIcon(QIcon("../../Images/cutpile.png"));
-    ui->btn_friezeCut->setIcon(QIcon("../../Images/frieze.png"));
+    ui->btn_hardFloor->setIcon(QIcon(":/Images/Images/hardfloor.png"));
+    ui->btn_loopPile->setIcon(QIcon(":/Images/Images/looppile.png"));
+    ui->btn_cutPile->setIcon(QIcon(":/Images/Images/cutpile.png"));
+    ui->btn_friezeCut->setIcon(QIcon(":/Images/Images/frieze.png"));
 
     ui->btn_squareRoom->setIconSize(QSize(32, 32));
     ui->btn_rectangleRoom->setIconSize(QSize(32,32));

@@ -5,6 +5,8 @@
 #include "house.h"
 #include "dragdrop.h"
 
+#include <QRandomGenerator>
+
 Door::Door() : m_origin(QPointF(0,0)), m_size(45)
 {
     m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
@@ -442,6 +444,10 @@ void House::addDoor(Door door)
     doors.append(door);
 }
 
+void House::setNewID(){
+    id = QString::number(QRandomGenerator::global()->bounded(10000, 99999));
+}
+
 void House::loadPlan(QString plan)
 {
     clear();
@@ -460,6 +466,7 @@ void House::loadPlan(QString plan)
     floorplan_name = plan;
 
     QJsonObject root = doc.object();
+    id = root.value("ID").toString();
     floor_covering = root.value("flooring").toString();
     floorplan_id = root.value("floorplan_id").toInt();
 
@@ -467,6 +474,7 @@ void House::loadPlan(QString plan)
     if (floorplan_id >= next_floorplan_id) {
         next_floorplan_id = floorplan_id + 1;
     }
+
 
     QJsonArray roomsArray = root.value("rooms").toArray();
     loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
@@ -555,6 +563,7 @@ QJsonDocument House::toJson()
 
     QJsonObject root
         {
+
             {"floorplan_id", floorplan_id},
             {"flooring", floor_covering},
             {"doors", doorsArray},

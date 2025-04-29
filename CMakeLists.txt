@@ -29,6 +29,7 @@ set(PROJECT_SOURCES
         dragdrop.h dragdrop.cpp
         reportwindow.cpp reportwindow.h reportwindow.ui
         summarywindow.cpp summarywindow.h summarywindow.ui
+        settingswindow.cpp settingswindow.h settingswindow.ui
         Files.qrc
 )
 
@@ -36,6 +37,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(RoboSim
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        settingswindow.h settingswindow.cpp settingswindow.ui
     )
 
 # Define target properties for Android with Qt 6 as:

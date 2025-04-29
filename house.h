@@ -169,6 +169,9 @@ public:
 
     Room* getRoomById(long id);
 
+    void setNewID();
+    QString id;
+
     int validateTotalAreaBeforeSave();
     bool doRoomsShareWall(Room& room1, Room& room2);
     bool validateRoomConnectivity();
@@ -203,11 +206,13 @@ private:
     int floorplan_id;
     int next_floorplan_id;
 
+
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
     int scene_object_id = 1;
     int total_area;
+    int cover_area;
 
     QString floor_covering = "hard_floor";
 };
