@@ -4,7 +4,9 @@
 #include <QFileDialog>
 #include <QRegularExpression>
 
-Run::Run(){}
+Run::Run(){
+
+}
 
 QString Run::getTimeString(QStringList time){
     return time[0] + ":" + time[1] + "." + time[2];
@@ -130,8 +132,8 @@ void RunData::parseFile(QString file_name){
     sDate.append(filedata[1][4]);
     sDate.append(filedata[1][5]);
 
-    QString totalString = filedata[2][0] + "." + filedata[2][1];
-    totalSF = totalString;
+    //QString totalString = filedata[2][0] + "." + filedata[2][1];
+    totalSF = filedata[2][0]; //totalString;
 
     for (int i = 3; i < 7; i++){
         Run run;
