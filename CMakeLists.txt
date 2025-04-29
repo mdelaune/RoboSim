@@ -29,6 +29,7 @@ set(PROJECT_SOURCES
         dragdrop.h dragdrop.cpp
         reportwindow.cpp reportwindow.h reportwindow.ui
         summarywindow.cpp summarywindow.h summarywindow.ui
+        settingswindow.cpp settingswindow.h settingswindow.ui
         Files.qrc
 )
 
