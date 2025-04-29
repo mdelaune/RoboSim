@@ -101,8 +101,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
-
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="timesOnePushButton">
             <property name="font">
              <font>
               <family>Verdana</family>
@@ -132,7 +131,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="timesFivePushButton">
             <property name="font">
              <font>
               <family>Verdana</family>
@@ -266,7 +265,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="secondsLeftLabel">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -452,7 +451,6 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
-
            <widget class="QLabel" name="label_7">
             <property name="minimumSize">
              <size>
