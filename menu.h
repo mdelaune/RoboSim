@@ -17,6 +17,8 @@ public:
     void menuRedo();
     void menuAbout();
 
+    bool errorChecks();
+
     QString getFilename(const QString& dialogTitle, bool forSaving = false);
     void saveToFile(const QString& filename);
 

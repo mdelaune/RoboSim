@@ -377,6 +377,11 @@ void House::drawSimulationPlan()
     }
 }
 
+int House::getTotalArea()
+{
+    return total_area;
+}
+
 // Generic method to load entities from JSON
 template<typename T>
 void House::loadEntities(QJsonArray entitiesArray, QVector<T>& entities, std::function<T(QJsonObject&)> createEntity)
@@ -653,4 +658,150 @@ void House::deleteItem()
 
     m_scene->update(m_scene->sceneRect());
     qDebug() << "DELETE COMPLETE";
+}
+
+int House::validateTotalAreaBeforeSave()
+{
+    double totalArea = 0.0;
+
+    for (int i = 0; i < rooms.size(); ++i) {
+        Room& currentRoom = rooms[i];
+        QRectF currentRect = currentRoom.get_rectRoom();
+
+        bool isContained = false;
+
+        // Check if currentRoom is fully inside any other room
+        for (int j = 0; j < rooms.size(); ++j) {
+            if (i == j) continue; // don't compare with itself
+
+            Room& otherRoom = rooms[j];
+            QRectF otherRect = otherRoom.get_rectRoom();
+
+            if (otherRect.contains(currentRect)) {
+                isContained = true;
+                break;
+            }
+        }
+
+        // Only add area if not contained
+        if (!isContained) {
+            totalArea += currentRect.width() * currentRect.height();
+        }
+    }
+
+    // Define your acceptable area range
+
+
+    qDebug() << "Total room area (excluding contained rooms):" << totalArea;
+
+    if (totalArea < MIN_TOTAL_AREA) {
+        qDebug() << "ERROR: Total area too small!";
+        return -1;
+    }
+    if (totalArea > MAX_TOTAL_AREA) {
+        qDebug() << "ERROR: Total area too large!";
+        return 1;
+    }
+
+    return 0;
+}
+
+bool House::doRoomsShareWall(Room& room1, Room& room2)
+{
+    QRectF rect1 = room1.get_rectRoom();
+    QRectF rect2 = room2.get_rectRoom();
+
+    // Check for horizontal walls (top/bottom edges)
+    bool sharesHorizontalWall =
+        // X-coordinates overlap
+        (rect1.left() < rect2.right() && rect2.left() < rect1.right()) &&
+        // Y-coordinates are adjacent (bottom of rect1 touches top of rect2 or vice versa)
+        ((qAbs(rect1.bottom() - rect2.top()) < 1.0) || (qAbs(rect2.bottom() - rect1.top()) < 1.0));
+
+    // Check for vertical walls (left/right edges)
+    bool sharesVerticalWall =
+        // Y-coordinates overlap
+        (rect1.top() < rect2.bottom() && rect2.top() < rect1.bottom()) &&
+        // X-coordinates are adjacent (right of rect1 touches left of rect2 or vice versa)
+        ((qAbs(rect1.right() - rect2.left()) < 1.0) || (qAbs(rect2.right() - rect1.left()) < 1.0));
+
+    return sharesHorizontalWall || sharesVerticalWall;
+}
+
+bool House::validateRoomConnectivity()
+{
+    if (rooms.size() <= 1) {
+        // If there's only one room or no rooms, there's nothing to check
+        return true;
+    }
+
+    // For each room, check if it shares a wall with at least one other room
+    // or if it's completely contained within another room (like a closet)
+    for (int i = 0; i < rooms.size(); i++) {
+        bool hasSharedWall = false;
+        bool isContainedInAnotherRoom = false;
+
+        for (int j = 0; j < rooms.size(); j++) {
+            if (i == j) continue; // Skip comparing with itself
+
+            // Check if this room is completely inside another room (like a closet)
+            if (rooms[j].get_rectRoom().contains(rooms[i].get_rectRoom())) {
+                isContainedInAnotherRoom = true;
+                qDebug() << "Room" << rooms[i].getId() << "is contained within room" << rooms[j].getId();
+                break;
+            }
+
+            // Check for shared walls
+            if (doRoomsShareWall(rooms[i], rooms[j])) {
+                hasSharedWall = true;
+                break;
+            }
+        }
+
+        // A room is valid if it either shares a wall OR is contained in another room
+        if (!hasSharedWall && !isContainedInAnotherRoom) {
+            qDebug() << "ERROR: Room" << rooms[i].getId() << "doesn't share a wall with any other room and is not contained within another room!";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool House::doRoomsIntersect(Room& room1, Room& room2)
+{
+    QRectF rect1 = room1.get_rectRoom();
+    QRectF rect2 = room2.get_rectRoom();
+
+    // Check if the rectangles intersect but neither fully contains the other
+    if (rect1.intersects(rect2)) {
+        // If one rectangle fully contains the other, it's not considered an intersection
+        // (This is our "closet" case which is allowed)
+        if (rect1.contains(rect2) || rect2.contains(rect1)) {
+            return false; // Not an intersection case we're concerned with
+        }
+        return true;  // Partial intersection detected
+    }
+
+    return false;
+}
+
+bool House::validateNoRoomIntersections()
+{
+    if (rooms.size() <= 1) {
+        // If there's only one room or no rooms, there's no intersection possible
+        return true;
+    }
+
+    for (int i = 0; i < rooms.size(); i++) {
+        for (int j = i + 1; j < rooms.size(); j++) {
+            // Check for intersection between room i and room j
+            if (doRoomsIntersect(rooms[i], rooms[j])) {
+                qDebug() << "ERROR: Room" << rooms[i].getId() << "intersects with Room" << rooms[j].getId();
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

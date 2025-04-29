@@ -275,9 +275,26 @@ void DragRoom::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         default: break;
         }
 
+        const qreal MIN_WIDTH = 50.0;
+        const qreal MIN_HEIGHT = 50.0;
+
+        if (r.width() < MIN_WIDTH) {
+            if (m_currentHandle == TopLeft || m_currentHandle == BottomLeft)
+                r.setLeft(r.right() - MIN_WIDTH);
+            else
+                r.setRight(r.left() + MIN_WIDTH);
+        }
+        if (r.height() < MIN_HEIGHT) {
+            if (m_currentHandle == TopLeft || m_currentHandle == TopRight)
+                r.setTop(r.bottom() - MIN_HEIGHT);
+            else
+                r.setBottom(r.top() + MIN_HEIGHT);
+        }
+
         prepareGeometryChange();
         setRect(r.normalized());
         update();
+
     } else {
         QGraphicsRectItem::mouseMoveEvent(event);
     }
