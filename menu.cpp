@@ -163,6 +163,30 @@ bool Menu::errorChecks()
         return false;
     }
 
+    if(!m_house->validateObstructionPlacements())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Obstructions can not intersect rooms or block doorways.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    if(!m_house->validateNoObstructionIntersections())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Obstructions can not intersect each other.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
 
     return true;
 }

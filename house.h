@@ -178,6 +178,12 @@ public:
     bool validateDoorsOnWalls();
     bool validateEveryRoomHasDoor();
 
+    bool doesObstructionIntersectRoom(Obstruction& obstruction, Room& room);
+    bool validateObstructionPlacements();
+
+    bool validateNoObstructionIntersections();
+    bool doObstructionsIntersect(Obstruction& obs1, Obstruction& obs2);
+
 private:
     void loadRooms(QJsonArray roomsArray);
     void loadDoors(QJsonArray doorsArray);

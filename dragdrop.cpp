@@ -349,6 +349,11 @@ void DragObstruction::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mousePressEvent(event);
 }
 
+//next make sure obstructions are not intersecting rooms befor save
+//rotate rooms
+//add entry and door coordinates to door class and to json
+//unique floorplan id written and read from json
+
 void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (m_currentHandle != None) {
@@ -403,12 +408,6 @@ void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             else
                 newBody.setBottom(newBody.top() + m_maxHeight);
         }
-
-        // Apply the changes and update legs
-        prepareGeometryChange();
-        m_body = newBody;
-        updateLegsPositions(newBody);
-        update();
 
     } else {
         // Let parent handle the standard move
