@@ -24,7 +24,9 @@ void MainWindow::on_createFP_clicked()
     editWin->setupScene();          // Setup scene with default floorplan
     ui->activePlan->setText("Current Floorplan ID: " + editWin->house->id);
     editWin->showMaximized();
-    ui->runSim->setEnabled(true);
+    //ui->runSim->setEnabled(true);
+    floorplanCreated = true;
+    updateRunSimButtonState();
 }
 
 void MainWindow::on_loadFP_clicked()
@@ -33,7 +35,9 @@ void MainWindow::on_loadFP_clicked()
     editWin->setupSceneFromFile();  // Setup scene with user selected floorplan
     ui->activePlan->setText("Current Floorplan ID: " + editWin->house->id);
     editWin->showMaximized();
-    ui->runSim->setEnabled(true);
+    //ui->runSim->setEnabled(true);
+    floorplanCreated = true;
+    updateRunSimButtonState();
 }
 
 void MainWindow::on_loadRep_clicked()
@@ -52,13 +56,42 @@ void MainWindow::on_sumRep_clicked()
     }
 }
 
+void MainWindow::on_robSet_clicked()
+{
+    setWin = new SettingsWindow(this);
+    setWin->showMaximized();
+    robotSetup = true;
+    updateRunSimButtonState();
+    connect(setWin, &SettingsWindow::settingsUpdated, this, &MainWindow::onSettingsUpdated);
+
+}
 
 void MainWindow::on_runSim_clicked()
 {
-    simWin = new SimWindow(this);
-    if (editWin){
+    if (editWin && setWin){
+        simWin = new SimWindow(this);
+
         simWin->house = editWin->house;
         simWin->house_path = editWin->house->get_floorplanName();
-        simWin->show();
+        simWin->startSimulation(batteryLife, vacuumEfficiency, whiskerEfficiency, speed, selectedAlgorithms);
+        simWin->showMaximized();
     }
 }
+
+void MainWindow::updateRunSimButtonState()
+{
+    if (floorplanCreated && robotSetup)
+    {
+        ui->runSim->setEnabled(true);
+    }
+}
+
+void MainWindow::onSettingsUpdated(int batteryLife, int vacuumEfficiency, int whiskerEfficiency, int speed, QStringList selectedAlgorithms)
+{
+    this->batteryLife = batteryLife;
+    this->vacuumEfficiency = vacuumEfficiency;
+    this->whiskerEfficiency = whiskerEfficiency;
+    this->speed = speed;
+    this->selectedAlgorithms = selectedAlgorithms;
+}
+
