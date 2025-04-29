@@ -139,6 +139,31 @@ bool Menu::errorChecks()
         return false;
     }
 
+    if(!m_house->validateDoorsOnWalls())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Every door must be on a wall.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    if(!m_house->validateEveryRoomHasDoor())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Every room must have a door.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+
     return true;
 }
 

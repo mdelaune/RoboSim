@@ -800,7 +800,7 @@ bool House::validateRoomConnectivity()
         for (int j = 0; j < rooms.size(); j++) {
             if (i == j) continue; // Skip comparing with itself
 
-            // Check if this room is completely inside another room (like a closet)
+            //Check if this room is completely inside another room (like a closet)
             if (rooms[j].get_rectRoom().contains(rooms[i].get_rectRoom())) {
                 isContainedInAnotherRoom = true;
                 qDebug() << "Room" << rooms[i].getId() << "is contained within room" << rooms[j].getId();
@@ -832,7 +832,6 @@ bool House::doRoomsIntersect(Room& room1, Room& room2)
     // Check if the rectangles intersect but neither fully contains the other
     if (rect1.intersects(rect2)) {
         // If one rectangle fully contains the other, it's not considered an intersection
-        // (This is our "closet" case which is allowed)
         if (rect1.contains(rect2) || rect2.contains(rect1)) {
             return false; // Not an intersection case we're concerned with
         }
@@ -856,6 +855,111 @@ bool House::validateNoRoomIntersections()
                 qDebug() << "ERROR: Room" << rooms[i].getId() << "intersects with Room" << rooms[j].getId();
                 return false;
             }
+        }
+    }
+
+    return true;
+}
+
+bool House::validateDoorsOnWalls()
+{
+    for (Door& door : doors) {
+        // Get the door's position
+        QPointF doorOrigin = door.get_origin();
+        // Increase tolerance to accommodate small movements
+        double tolerance = 25.0;
+        bool doorOnWall = false;
+
+        for (Room& room : rooms) {
+            QRectF rect = room.get_rectRoom();
+
+            // Check if door is on left wall
+            if (qAbs(doorOrigin.x() - rect.left()) < tolerance &&
+                doorOrigin.y() >= rect.top() - tolerance && doorOrigin.y() <= rect.bottom() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+
+            // Check if door is on right wall
+            if (qAbs(doorOrigin.x() - rect.right()) < tolerance &&
+                doorOrigin.y() >= rect.top() - tolerance && doorOrigin.y() <= rect.bottom() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+
+            // Check if door is on top wall
+            if (qAbs(doorOrigin.y() - rect.top()) < tolerance &&
+                doorOrigin.x() >= rect.left() - tolerance && doorOrigin.x() <= rect.right() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+
+            // Check if door is on bottom wall
+            if (qAbs(doorOrigin.y() - rect.bottom()) < tolerance &&
+                doorOrigin.x() >= rect.left() - tolerance && doorOrigin.x() <= rect.right() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+        }
+
+        if (!doorOnWall) {
+            qDebug() << "ERROR: Door at position (" << doorOrigin.x() << ","
+                     << doorOrigin.y() << ") is not placed on any wall!";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool House::validateEveryRoomHasDoor()
+{
+    // If there's only one room, it doesn't need a door
+    if (rooms.size() <= 1) {
+        return true;
+    }
+
+    // Check each room
+    for (Room& room : rooms) {
+        QRectF roomRect = room.get_rectRoom();
+        bool hasDoor = false;
+        int tolerance = 15.0;
+        // Check if any door is on this room's walls
+        for (Door& door : doors) {
+            QPointF doorOrigin = door.get_origin();
+
+            // Check if door is on left wall
+            if (qAbs(doorOrigin.x() - roomRect.left()) < tolerance &&
+                doorOrigin.y() >= roomRect.top() && doorOrigin.y() <= roomRect.bottom()) {
+                hasDoor = true;
+                break;
+            }
+
+            // Check if door is on right wall
+            if (qAbs(doorOrigin.x() - roomRect.right()) < tolerance &&
+                doorOrigin.y() >= roomRect.top() && doorOrigin.y() <= roomRect.bottom()) {
+                hasDoor = true;
+                break;
+            }
+
+            // Check if door is on top wall
+            if (qAbs(doorOrigin.y() - roomRect.top()) < tolerance &&
+                doorOrigin.x() >= roomRect.left() && doorOrigin.x() <= roomRect.right()) {
+                hasDoor = true;
+                break;
+            }
+
+            // Check if door is on bottom wall
+            if (qAbs(doorOrigin.y() - roomRect.bottom()) < tolerance &&
+                doorOrigin.x() >= roomRect.left() && doorOrigin.x() <= roomRect.right()) {
+                hasDoor = true;
+                break;
+            }
+        }
+
+        if (!hasDoor) {
+            qDebug() << "ERROR: Room" << room.getId() << "doesn't have any doors!";
+            return false;
         }
     }
 

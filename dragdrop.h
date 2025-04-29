@@ -102,6 +102,7 @@ public:
     const qreal MIN_ROOM_HEIGHT = 100.0;
 
     DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room *room, long id);
+    bool checkRoomIntersection(const QRectF &newRect);
 
     enum HandlePosition { TopLeft, TopRight, BottomLeft, BottomRight, None };
     HandlePosition handleAt(const QPointF &pos) const;
@@ -124,6 +125,8 @@ private:
     QPointF m_lastMousePos;
     QRectF m_originalRect;
     qreal m_handleSize = 8.0;
+    QGraphicsScene *m_scene;
+    QPointF m_originalPos;
 
     QRectF handleRect(HandlePosition pos) const;
 

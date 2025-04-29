@@ -84,11 +84,12 @@ void DragDoor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
 
-    QPointF newOrigin = mapToScene(m_door->get_origin());
+    QPointF newOrigin = scenePos();
 
     if (m_house && m_door) {
         // Update the Door's origin with the new position
         m_door->set_origin(newOrigin);
+        qDebug() << "New Origin: " << newOrigin;
     }
 
     QGraphicsItemGroup::mouseReleaseEvent(event);
@@ -209,6 +210,7 @@ DragRoom::DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room
     m_id = id;
     m_house = house;
     m_room = room;
+    m_scene = scene;
 }
 
 void DragRoom::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -245,6 +247,40 @@ QRectF DragRoom::handleRect(HandlePosition pos) const
     case BottomRight: return QRectF(rect.bottomRight() + offset + QPointF(-m_handleSize, -m_handleSize), size);
     default:          return QRectF();
     }
+}
+
+bool DragRoom::checkRoomIntersection(const QRectF &newRect)
+{
+    if (!m_scene)
+        return false;
+
+    QRectF sceneRect = mapToScene(newRect).boundingRect();
+
+    // Get all items in the scene
+    QList<QGraphicsItem*> allItems = m_scene->items();
+
+    for (QGraphicsItem *item : allItems) {
+        // Skip checking against itself
+        if (item == this)
+            continue;
+
+        // Check if the item is a DragRoom
+        DragRoom *otherRoom = dynamic_cast<DragRoom*>(item);
+        if (otherRoom) {
+            QRectF otherRect = otherRoom->mapRectToScene(otherRoom->rect());
+
+            // Check if rooms intersect with a small tolerance
+            // The small margin prevents rooms from being exactly adjacent
+            const qreal tolerance = 1.0;
+            QRectF adjustedRect = sceneRect.adjusted(tolerance, tolerance, -tolerance, -tolerance);
+
+            if (adjustedRect.intersects(otherRect)) {
+                return true; // Intersection detected
+            }
+        }
+    }
+
+    return false; // No intersection
 }
 
 void DragRoom::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -291,12 +327,24 @@ void DragRoom::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 r.setBottom(r.top() + MIN_HEIGHT);
         }
 
-        prepareGeometryChange();
-        setRect(r.normalized());
-        update();
+        QRectF normalizedRect = r.normalized();
+        if (!checkRoomIntersection(normalizedRect)) {
+            prepareGeometryChange();
+            setRect(normalizedRect);
+            update();
+        }
 
     } else {
+        QPointF oldPos = pos();
+
+        // Let parent handle the standard move
         QGraphicsRectItem::mouseMoveEvent(event);
+
+        // Check if the move resulted in an intersection
+        if (checkRoomIntersection(rect())) {
+            // If intersecting, revert to the old position
+            setPos(oldPos);
+        }
     }
 }
 
