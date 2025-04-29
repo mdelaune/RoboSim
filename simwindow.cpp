@@ -18,7 +18,7 @@ SimWindow::SimWindow(QWidget *parent)
 
     vacuum = new Vacuum(scene);
 
-    houseParser = new HouseParser("/Users/Batman/SimTest/default_plan.json");
+    houseParser = new HouseParser(":/Default/default_plan.json");
 
     simulationTimer = new QTimer(this);
     connect(simulationTimer, &QTimer::timeout, this, &SimWindow::updateSimulation);
