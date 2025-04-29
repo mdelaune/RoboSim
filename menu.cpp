@@ -169,7 +169,7 @@ bool Menu::errorChecks()
         errorBox.setWindowTitle("Floor Plan Error");
         errorBox.setIcon(QMessageBox::Warning);
         errorBox.setText("Invalid Floor Plan");
-        errorBox.setInformativeText("Obstructions can not intersect rooms or block doorways.");
+        errorBox.setInformativeText("Invalid obstruction placement. Obstructions can not intersect rooms, block doors, or exist outside a room.");
         errorBox.setStandardButtons(QMessageBox::Ok);
         errorBox.exec();
         return false;

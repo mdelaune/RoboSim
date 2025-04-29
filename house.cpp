@@ -993,6 +993,15 @@ bool House::doesObstructionIntersectRoom(Obstruction& obstruction, Room& room)
 // Add this method to the House class to validate all obstructions
 bool House::validateObstructionPlacements()
 {
+    for (Obstruction& obstruction : obstructions) {
+        if (!isObstructionInsideAnyRoom(obstruction)) {
+            qDebug() << "ERROR: Obstruction" << obstruction.getId()
+            << "(" << obstruction.get_type() << ")"
+            << "is not fully contained within any room!";
+            return false;
+        }
+    }
+
     // First check if any obstruction is outside of all rooms
     for (Obstruction& obstruction : obstructions) {
         bool isInsideAnyRoom = false;
@@ -1117,4 +1126,20 @@ bool House::validateNoObstructionIntersections()
     }
 
     return true;
+}
+
+bool House::isObstructionInsideAnyRoom(Obstruction& obstruction)
+{
+    // Get the full rectangle of the obstruction
+    QRectF obsRect = obstruction.get_rect();
+
+    // Check if this obstruction is fully contained in any room
+    for (Room& room : rooms) {
+        QRectF roomRect = room.get_rectRoom();
+        if (roomRect.contains(obsRect)) {
+            return true; // Fully contained in this room
+        }
+    }
+
+    return false; // Not fully contained in any room
 }

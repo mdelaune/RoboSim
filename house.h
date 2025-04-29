@@ -183,6 +183,7 @@ public:
 
     bool validateNoObstructionIntersections();
     bool doObstructionsIntersect(Obstruction& obs1, Obstruction& obs2);
+    bool isObstructionInsideAnyRoom(Obstruction& obstruction);
 
 private:
     void loadRooms(QJsonArray roomsArray);

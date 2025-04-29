@@ -349,10 +349,11 @@ void DragObstruction::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mousePressEvent(event);
 }
 
-//next make sure obstructions are not intersecting rooms befor save
+//next
 //rotate rooms
 //add entry and door coordinates to door class and to json
 //unique floorplan id written and read from json
+//check that obstructions exist within rooms before saving
 
 void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
