@@ -44,8 +44,10 @@ void MainWindow::on_loadRep_clicked()
 void MainWindow::on_sumRep_clicked()
 {
     sumWin = new SummaryWindow(this);
-    sumWin->setupSceneFromFiles();
-    sumWin->showMaximized();
+    bool run = sumWin->setupSceneFromFiles();
+    if (run == true){
+        sumWin->showMaximized();
+    }
 }
 
 

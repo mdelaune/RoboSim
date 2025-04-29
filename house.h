@@ -165,6 +165,9 @@ public:
 
     Room* getRoomById(long id);
 
+    void setNewID();
+    QString id;
+
     int validateTotalAreaBeforeSave();
     bool doRoomsShareWall(Room& room1, Room& room2);
     bool validateRoomConnectivity();
@@ -181,7 +184,6 @@ private:
     void loadObstructions(QJsonArray obstructionsArray);
 
     QString floorplan_name;
-    long id;
 
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
