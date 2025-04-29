@@ -13,7 +13,7 @@ class Vacuum
 public:
     Vacuum(QGraphicsScene* scene);
     double calculateWhiskerEffectiveness() const;
-
+    double getSquareFeetCovered() const;
     // Setters
     void setBatteryLife(int minutes);
     void setVacuumEfficiency(int vacuumEff);
@@ -85,6 +85,8 @@ private:
     int whiskerCleaningCount = 0; // New counter
 
 
+
 };
 
 #endif // VACUUM_H
+

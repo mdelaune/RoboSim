@@ -204,7 +204,28 @@ void Vacuum::move(const QList<QRectF>& rooms, const QList<Obstruction2>& obstruc
         speedAdjustedGreen = std::clamp(speedAdjustedGreen, 0, 255);
 
         // Set the trail color
-        QColor color(0, speedAdjustedGreen, 0);
+        QColor color;
+
+        if (floorType == "Hard")
+        {
+            color = QColor(0, speedAdjustedGreen, 0); // Green for hard floors
+        }
+        else if (floorType == "Loop Pile")
+        {
+            color = QColor(0, 0, speedAdjustedGreen); // Blueish for loop pile
+        }
+        else if (floorType == "Cut Pile")
+        {
+            color = QColor(speedAdjustedGreen, 0, 0); // Reddish for cut pile
+        }
+        else if (floorType == "Frieze-cut Pile")
+        {
+            color = QColor(speedAdjustedGreen, speedAdjustedGreen, 0); // Yellow for frieze-cut pile
+        }
+        else
+        {
+            color = QColor(0, speedAdjustedGreen, 0); // Default green if unknown
+        }
 
         QPen trailPen(color);
         trailPen.setWidth(8);
@@ -265,4 +286,19 @@ double Vacuum::calculateWhiskerEffectiveness() const
     // Assume each whisker clean adds some contribution based on efficiency
     return static_cast<double>(whiskerCleaningCount) * (static_cast<double>(whiskerEfficiency) / 100.0);
 }
+
+double Vacuum::getSquareFeetCovered() const
+{
+    constexpr double cellSizeInInches = 10.0; // Since you round trail points to 10x10 inch blocks
+    constexpr double cellAreaInSquareInches = cellSizeInInches * cellSizeInInches;
+    constexpr double squareInchesToSquareFeet = 1.0 / 144.0;
+
+    int cleanedCells = visitCount.size(); // Number of unique cells cleaned
+
+    double totalSquareInches = cleanedCells * cellAreaInSquareInches;
+    double totalSquareFeet = totalSquareInches * squareInchesToSquareFeet;
+
+    return totalSquareFeet;
+}
+
 

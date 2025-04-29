@@ -113,6 +113,7 @@ class House : public QObject
     Q_OBJECT
 public:
     House(QGraphicsScene *scene);
+    QVector<Room> getRooms() const { return rooms; }
 
     static House* instance;
     void loadPlan(QString plan);
