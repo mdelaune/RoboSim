@@ -26,6 +26,7 @@ public:
 
     House* house;
     QString house_path;
+    QString save_path; // for report and heatmap
 
 private slots:
     void updateSimulation();
@@ -51,6 +52,7 @@ private:
     void writeReport();
     void writeRun();
 
+    int batteryStartLife;
     int batteryLife;
     int vacuumEfficiency;
     int whiskerEfficiency;
@@ -58,6 +60,8 @@ private:
     QStringList pendingAlgorithms;
     int currentAlgorithmIndex = 0;
     bool allRunsCompleted = false;
+
+    bool saveHeatmapImage(QString &outImageFilename);
 };
 
 #endif // SIMWINDOW_H
