@@ -6,7 +6,6 @@
 #include <QPointF>
 #include <QBrush>
 #include <QStringList>
-#include "houseparser.h"
 
 struct Vector2D
 {
@@ -48,8 +47,7 @@ class Vacuum
 {
 public:
     Vacuum(QGraphicsScene* scene);
-    double calculateWhiskerEffectiveness() const;
-    double getSquareFeetCovered() const;
+    
     // Setters
     void setBatteryLife(int minutes);
     void setVacuumEfficiency(int vacuumEff);
@@ -68,19 +66,14 @@ public:
     const Vector2D &getPosition() const;
     Vector2D& getVelocity() const;
 
-
-    // test; will be removed.
-    void move(const QList<QRectF>& rooms, const QList<Obstruction2>& obstructions, const QList<QPointF>& doors, int multiplier);
-
     // signals:
     //     void positionUpdated(QPointF newPos);
     //     void batteryDepleted();
-    void enableAutomaticSwitching();
 
 private:
     const double diameter = 12.8;
-    //const double whiskerWidth = 13.5;
-    //const double vacuumWidth = 5.8;
+    const double whiskerWidth = 13.5;
+    const double vacuumWidth = 5.8;
 
     int batteryLife;
     int vacuumEfficiency;
