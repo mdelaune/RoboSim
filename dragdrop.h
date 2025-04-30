@@ -40,7 +40,12 @@ public:
 
     // Add these getters
     QPointF getOrigin() const;
+    QPointF getDoorEnd();
+    QPointF getEntryEnd();
     int getId() const { return data(0).toInt(); }
+    Door* getDoor(){return m_door;}
+    void updateLines();
+
 
 signals:
     void doorPositionChanged(int id, QPointF newOrigin);
@@ -52,6 +57,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
+    Door *m_door;
     QGraphicsLineItem *m_doorLine;
     QGraphicsLineItem *m_entryLine;
     QPointF m_originalPos;
@@ -63,7 +69,7 @@ private:
     QPen m_selectedEntryPen;
 
     House *m_house;
-    Door *m_door;
+
     QGraphicsScene *m_scene;
 };
 
@@ -86,6 +92,10 @@ public:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 
+    QRectF getBody(){return m_body;}
+    void updateLegsPositions(const QRectF &newBody);
+
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -99,8 +109,9 @@ private:
     bool isChest;
     QPointF m_startPos;
     House *m_house;
-    Obstruction *m_obstruction;
     QString m_type;
+    Obstruction *m_obstruction;
+
     // Handle variables
     HandlePosition m_currentHandle;
     QPointF m_lastMousePos;
@@ -118,7 +129,7 @@ private:
     // Methods for handling resizing
     HandlePosition handleAt(const QPointF &pos) const;
     QRectF handleRect(HandlePosition pos) const;
-    void updateLegsPositions(const QRectF &newBody);
+
     void setSizeConstraints();
 };
 
@@ -137,6 +148,7 @@ public:
 
     long getId() const { return data(0).toInt(); }
     void setId(long id) {m_id = id;}
+    Room* getRoom(){return m_room;}
 
 signals:
     void roomGeometryChanged(int id, QPointF topLeft, QPointF bottomRight);

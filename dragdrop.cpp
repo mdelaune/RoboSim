@@ -57,6 +57,16 @@ DragDoor::~DragDoor()
     }
 }
 
+void DragDoor::updateLines()
+{
+    if (m_door) {
+        // Update the graphical lines based on the Door object data
+        m_doorLine->setLine(m_door->get_door());
+        m_entryLine->setLine(m_door->get_entry());
+    }
+}
+
+
 void DragDoor::updateSelectionStyle()
 {
     if (!m_doorLine || !m_entryLine)
@@ -78,6 +88,22 @@ QPointF DragDoor::getOrigin() const
 {
     // The origin is at the scene position of the group
     return scenePos();
+}
+
+QPointF DragDoor::getDoorEnd()
+{
+    QLineF doorLine = m_doorLine->line();
+
+    // Map the end point to scene coordinates
+    return m_doorLine->mapToScene(doorLine.p2());
+}
+
+QPointF DragDoor::getEntryEnd()
+{
+    QLineF entryLine = m_entryLine->line();
+
+    // Map the end point to scene coordinates
+    return m_entryLine->mapToScene(entryLine.p2());
 }
 
 void DragDoor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -352,7 +378,6 @@ void DragObstruction::mousePressEvent(QGraphicsSceneMouseEvent *event)
 //next
 //rotate rooms
 //add entry and door coordinates to door class and to json
-//unique floorplan id written and read from json
 
 void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {

@@ -37,15 +37,27 @@
     [
         {
             "x": 0,
-            "y": 0
+            "y": 0,
+            "doorX": 0,
+            "doorY": 45,
+            "entryX": 45,
+            "entryY": 0
         },
         {
             "x": -200,
-            "y": 0
+            "y": 0,
+            "doorX": -200,
+            "doorY": 45,
+            "entryX": -155,
+            "entryY": 0
         },
         {
             "x": 150,
-            "y": 0
+            "y": 0,
+            "doorX": 150,
+            "doorY": 45,
+            "entryX": 195,
+            "entryY": 0
         }
     ],
     "obstructions":
