@@ -1,6 +1,13 @@
 #include "vacuum.h"
 #include <QtGui/qpen.h>
 #include <iostream>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
+#include <QtCore/QFile>
+#include <QString>
+#include <cmath>
+#include <iostream>
 
 Vacuum::Vacuum(QGraphicsScene* scene)
 {
@@ -49,7 +56,10 @@ void Vacuum::setSpeed(int inchesPerSecond)
     }
 }
 
-
+void Vacuum::setPathingAlgorithms(const QStringList &algorithms)
+{
+    pathingAlgorithms = algorithms;
+}
 
 void Vacuum::setVacuumPosition(Vector2D& startPosition)
 {

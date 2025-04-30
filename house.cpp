@@ -4,7 +4,6 @@
 
 #include "house.h"
 #include "dragdrop.h"
-#include "houseparser.h"
 
 #include <QRandomGenerator>
 
