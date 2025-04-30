@@ -18,13 +18,13 @@ class SimWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit SimWindow(QWidget *parent = nullptr);
+    explicit SimWindow(House* housePtr, QWidget *parent = nullptr);
     ~SimWindow();
 
     void startSimulation(int batteryLife, int vacuumEfficiency, int whiskerEfficiency, int speed, QStringList selectedAlgorithms);
     void stopSimulation();
 
-    House *house;
+    House* house;
     QString house_path;
 
 private slots:
@@ -36,6 +36,8 @@ private slots:
     void setSimulationSpeed(int multiplier);
 
     void on_stopButton_clicked();
+    void startNextRun();
+    void resetScene();
 
 private:
     Ui::SimWindow *ui;
@@ -47,6 +49,14 @@ private:
 
     RunData *simData;
     void writeReport();
+
+    int batteryLife;
+    int vacuumEfficiency;
+    int whiskerEfficiency;
+    int speed;
+    QStringList pendingAlgorithms;
+    int currentAlgorithmIndex = 0;
+    bool allRunsCompleted = false;
 };
 
 #endif // SIMWINDOW_H

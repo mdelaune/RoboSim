@@ -125,6 +125,9 @@ public:
 
     void loadPlan(QString plan);
 
+    void setScene(QGraphicsScene* scene);
+    QGraphicsScene* getScene() const;
+
     void addRoom(Room room);
     void addObstruction(Obstruction obstruction);
     void addDoor(Door door);
