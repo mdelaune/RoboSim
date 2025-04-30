@@ -8,6 +8,42 @@
 #include <QStringList>
 #include "houseparser.h"
 
+struct Vector2D
+{
+    double x;
+    double y;
+};
+
+struct Room2D
+{
+    Vector2D topLeft;
+    Vector2D bottomRight;
+};
+
+struct Door2D
+{
+    Vector2D origin;
+};
+
+struct Obstruction2D
+{
+    Vector2D topLeft;
+    Vector2D bottomRight;
+    bool isChest;
+};
+
+class CollisionSystem
+{
+public:
+    bool loadFromJson(const QString& filePath);
+    void handleCollision(Vector2D& position, Vector2D& velocity, double radius);
+
+private:
+    std::vector<Room2D> rooms;
+    std::vector<Door2D> doors;
+    std::vector<Obstruction2D> obstructions;
+};
+
 class Vacuum
 {
 public:
@@ -20,10 +56,7 @@ public:
     void setWhiskerEfficiency(int whiskerEff);
     void setSpeed(int inchesPerSecond);
     void setPathingAlgorithms(const QStringList &algorithms);  // Changed to accept a list of algorithms
-    void setVacuumPosition(double x, double y);
-    void setFloorType(const QString &type);
-
-
+    void setVacuumPosition(Vector2D& position);
     // Getters
 
     int getBatteryLife() const;
@@ -32,7 +65,9 @@ public:
     int getSpeed() const;
     QStringList getPathingAlgorithms() const;  // Returns a list of algorithms
     QGraphicsEllipseItem* getGraphic() const;
-    QPointF getCurrentPosition() const;
+    const Vector2D &getPosition() const;
+    Vector2D& getVelocity() const;
+
 
     // test; will be removed.
     void move(const QList<QRectF>& rooms, const QList<Obstruction2>& obstructions, const QList<QPointF>& doors, int multiplier);
@@ -51,40 +86,13 @@ private:
     int vacuumEfficiency;
     int whiskerEfficiency;
     int speed;
+
     QStringList pathingAlgorithms;
     QGraphicsEllipseItem *vacuumGraphic;
-    QPointF velocity;
-    QPointF currentPosition;
-    double spiralAngle = 0.0;
-    double spiralRadius = 1.0;
-    bool checkBounds(const QPointF &newPosition, const QList<QPointF> &doors);
-    QGraphicsScene* scene = nullptr;
-    QRectF roomRect;
-    QPointF lastTrailPoint;
 
-    int currentRoomIndex = -1;
-    QString floorType = "Hard";
-    bool movingDown = true;
-    bool movingRight = true;
-    int currentZoneX = 0; // NEW
-    int currentZoneY = 0;
-    bool movingUpward = false;
-
-    int currentAlgorithmIndex = 0; //  which algorithm is currently active
-    int algorithmSwitchTimer = 0;   //  how many frames passed
-    const int switchInterval = 30 * 60;
-
-    bool autoSwitchingEnabled = false;
-
-    QMap<QPair<int, int>, int> trailHeatmap;
-
-    QMap<QString, int> visitCount;
-    QColor interpolateColor(QColor startColor, QColor endColor, double t);
-
-
-    int whiskerCleaningCount = 0; // New counter
-
-
+    Vector2D position;
+    Vector2D velocity;
+    CollisionSystem* collisionSystem;
 
 };
 

@@ -13,6 +13,7 @@ SimWindow::SimWindow(QWidget *parent)
     ui->graphicsView->setScene(scene);
 
     house = new House(scene);
+    house->loadPlan(house_path);
     house->drawSimulationPlan();
 
   //  ui->graphicsView->setRenderHint(QPainter::Antialiasing);

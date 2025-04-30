@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPalette>
+#include <QDebug>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -73,6 +74,7 @@ void MainWindow::on_runSim_clicked()
 
         simWin->house = editWin->house;
         simWin->house_path = editWin->house->get_floorplanName();
+        qDebug() << "house path: " << simWin->house_path;
         simWin->startSimulation(batteryLife, vacuumEfficiency, whiskerEfficiency, speed, selectedAlgorithms);
         simWin->showMaximized();
     }

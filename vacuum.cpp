@@ -1,26 +1,20 @@
 #include "vacuum.h"
-#include "pathingalgorithms.h"
+#include "house.h"
+
 #include <QtGui/qpen.h>
+#include <iostream>
 
 Vacuum::Vacuum(QGraphicsScene* scene)
-    : scene(scene),
-    batteryLife(150), vacuumEfficiency(90), whiskerEfficiency(30), speed(12),
-    spiralAngle(0.0), spiralRadius(1.0), currentRoomIndex(-1)
 {
+    batteryLife = 150;
+    speed = 12;
+    whiskerEfficiency = 30;
     pathingAlgorithms << "Random";
+    position = {0.0, 0.0};
 
     vacuumGraphic = scene->addEllipse(-diameter/2, -diameter/2, diameter, diameter,
                                       QPen(Qt::black), QBrush(Qt::gray));
-
-
-    setVacuumPosition(20,10 );  // x and y should be center of starting room
-
-    currentPosition = vacuumGraphic->pos(); // sync position
-    lastTrailPoint = vacuumGraphic->pos();       // FIX: trail starts at actual location
-
-    double angle = static_cast<double>(std::rand() % 360) * (M_PI / 180.0);
-    velocity.setX(std::cos(angle));
-    velocity.setY(std::sin(angle));
+    setVacuumPosition(position);
 }
 
 
@@ -59,16 +53,12 @@ void Vacuum::setSpeed(int inchesPerSecond)
 
 
 
-void Vacuum::setVacuumPosition(double x, double y)
+void Vacuum::setVacuumPosition(Vector2D& startPosition)
 {
-    vacuumGraphic->setPos(x, y);
-    currentPosition = vacuumGraphic->pos();
-    lastTrailPoint = currentPosition;  // ✅ align trail
+    vacuumGraphic->setPos(startPosition.x, startPosition.y);
+    startPosition.x = vacuumGraphic->pos().x();
+    startPosition.y = vacuumGraphic->pos().y();
 
-    // ✅ Draw a 1-pixel dot to mark the starting position
-    QPen trailPen(Qt::blue);
-    trailPen.setWidth(2);
-    scene->addLine(QLineF(currentPosition, currentPosition), trailPen);
 }
 
 
@@ -104,179 +94,161 @@ QGraphicsEllipseItem* Vacuum::getGraphic() const
     return vacuumGraphic;
 }
 
-QPointF Vacuum::getCurrentPosition() const
+const Vector2D& Vacuum::getPosition() const
 {
-    return currentPosition;
+    return position;
 }
 
-void Vacuum::setFloorType(const QString &type)
+//---------------------------------------------------------------------------------------------------------------------------------------
+// COLLISON SYSTEM BELOW
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+static double clamp(double value, double minVal, double maxVal)
 {
-    floorType = type;
+    return std::max(minVal, std::min(maxVal, value));
 }
 
-
-void Vacuum::move(const QList<QRectF>& rooms, const QList<Obstruction2>& obstructions, const QList<QPointF>& doors, int multiplier)
+bool CollisionSystem::loadFromJson(const QString& filePath)
 {
-    if (batteryLife <= 0 || !vacuumGraphic) return;
-
-    QRectF currentRoom;
-    currentPosition = vacuumGraphic->pos();
-
-    // --- Find current room ---
-    for (const QRectF& room : rooms)
-    {
-        if (room.contains(currentPosition))
-        {
-            currentRoom = room;
-            break;
-        }
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        std::cerr << "Failed to open JSON file: " << filePath.toStdString() << std::endl;
+        return false;
     }
 
-    if (!currentRoom.isNull())
-    {
-        QPointF nextPos;
-        QString currentAlgorithm;
+    QByteArray jsonData = file.readAll();
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
 
-        // --- Handle automatic algorithm switching ---
-        if (pathingAlgorithms.size() == 4)
-        {
-            algorithmSwitchTimer++;
+    if (parseError.error != QJsonParseError::NoError) {
+        std::cerr << "JSON parse error: " << parseError.errorString().toStdString() << std::endl;
+        return false;
+    }
 
-            if (algorithmSwitchTimer >= switchInterval)
-            {
-                algorithmSwitchTimer = 0;
-                currentAlgorithmIndex++;
+    QJsonObject root = doc.object();
 
-                if (currentAlgorithmIndex >= pathingAlgorithms.size())
-                {
-                    currentAlgorithmIndex = 0;
-                    std::random_shuffle(pathingAlgorithms.begin(), pathingAlgorithms.end());
-                    qDebug() << "Shuffled algorithms:" << pathingAlgorithms;
+    // Parse rooms
+    QJsonArray roomsArray = root["rooms"].toArray();
+    for (const QJsonValue& val : roomsArray) {
+        QJsonObject obj = val.toObject();
+        Room2D room;
+        room.topLeft.x = obj["x_topLeft"].toDouble();
+        room.topLeft.y = obj["y_topLeft"].toDouble();
+        room.bottomRight.x = obj["x_bottomRight"].toDouble();
+        room.bottomRight.y = obj["y_bottomRight"].toDouble();
+        rooms.push_back(room);
+    }
+
+    // Parse doors
+    QJsonArray doorsArray = root["doors"].toArray();
+    for (const QJsonValue& val : doorsArray) {
+        QJsonObject obj = val.toObject();
+        Door2D door;
+        door.origin.x = obj["x"].toDouble();
+        door.origin.y = obj["y"].toDouble();
+        doors.push_back(door);
+    }
+
+    // Parse obstructions
+    QJsonArray obsArray = root["obstructions"].toArray();
+    for (const QJsonValue& val : obsArray) {
+        QJsonObject obj = val.toObject();
+        Obstruction2D obstruction;
+        obstruction.isChest = obj["is_chest"].toBool();
+        obstruction.topLeft.x = obj["x_topLeft"].toDouble();
+        obstruction.topLeft.y = obj["y_topLeft"].toDouble();
+        obstruction.bottomRight.x = obj["x_bottomRight"].toDouble();
+        obstruction.bottomRight.y = obj["y_bottomRight"].toDouble();
+        obstructions.push_back(obstruction);
+    }
+
+    return true;
+
+}
+
+void CollisionSystem::handleCollision(Vector2D& pos, Vector2D& vel, double radius)
+{
+    // First: Handle room wall collisions with door gaps
+    for (const auto& room : rooms) {
+        // Top Wall (y = topLeft.y)
+        if (pos.y - radius < room.topLeft.y &&
+            pos.x >= room.topLeft.x && pos.x <= room.bottomRight.x) {
+            bool doorGap = false;
+            for (const auto& door : doors) {
+                if (std::abs(room.topLeft.y - door.origin.y) < 1e-3 &&
+                    pos.x >= door.origin.x && pos.x <= door.origin.x + 45.0f) {
+                    doorGap = true;
+                    break;
                 }
-
-                qDebug() << "Switched to algorithm:" << pathingAlgorithms[currentAlgorithmIndex];
             }
-
-            currentAlgorithm = pathingAlgorithms[currentAlgorithmIndex];
-        }
-        else
-        {
-            currentAlgorithm = pathingAlgorithms.first();
+            if (!doorGap) vel.y = std::abs(vel.y); // Bounce downward
         }
 
-        // --- Choose next move based on algorithm ---
-        if (currentAlgorithm == "Wall Follow")
-            nextPos = PathAlgorithms::moveWallFollowing(currentPosition, velocity, speed * multiplier,
-                                                        currentRoom.left(), currentRoom.right(), currentRoom.top(), currentRoom.bottom(),
-                                                        obstructions);
-        else if (currentAlgorithm == "Snaking")
-            nextPos = PathAlgorithms::moveSnaking(currentPosition, velocity, speed * multiplier,
-                                                  currentRoom.left(), currentRoom.right(), currentRoom.top(), currentRoom.bottom(),
-                                                  obstructions, movingDown, movingRight, currentZoneX, currentZoneY, movingUpward);
-        else if (currentAlgorithm == "Spiral")
-            nextPos = PathAlgorithms::moveSpiral(currentPosition, velocity, speed * multiplier, spiralAngle, spiralRadius,
-                                                 currentRoom.left(), currentRoom.right(), currentRoom.top(), currentRoom.bottom(),
-                                                 obstructions);
-        else
-            nextPos = PathAlgorithms::moveRandomly(currentPosition, velocity, speed * multiplier,
-                                                   currentRoom.left(), currentRoom.right(), currentRoom.top(), currentRoom.bottom(),
-                                                   obstructions, doors);
-
-        // --- Update vacuum position and draw heatmap trail ---
-        vacuumGraphic->setPos(nextPos);
-
-        // Track visit counts
-        // Track visit counts
-        QPointF roundedPos(std::round(nextPos.x() / 10.0) * 10.0, std::round(nextPos.y() / 10.0) * 10.0);
-        QString posKey = QString::number(roundedPos.x()) + "," + QString::number(roundedPos.y());
-
-        visitCount[posKey]++;
-        int visits = visitCount[posKey];
-
-        // Calculate base green based on visits
-        int baseGreen = std::max(0, 255 - visits * 25);
-
-        // Adjust based on speed: slower = darker, faster = lighter
-        double normalizedSpeed = static_cast<double>(speed) / 18.0;
-        normalizedSpeed = std::clamp(normalizedSpeed, 0.0, 1.0);
-
-        // Corrected: slow = dark, fast = light
-        int speedAdjustedGreen = static_cast<int>(baseGreen * (0.5 + 0.5 * normalizedSpeed));
-        speedAdjustedGreen = std::clamp(speedAdjustedGreen, 0, 255);
-
-        // Set the trail color
-        QColor color(0, speedAdjustedGreen, 0);
-
-        QPen trailPen(color);
-        trailPen.setWidth(8);
-        scene->addLine(QLineF(lastTrailPoint, nextPos), trailPen);
-
-        lastTrailPoint = nextPos;
-        currentPosition = nextPos;
-
-
-        // Track whisker cleaning activity
-        if (whiskerEfficiency > 0)
-        {
-            double whiskerRange = 13.5 / 2.0; // Whisker radius in inches
-            QRectF whiskerArea(currentPosition.x() - whiskerRange, currentPosition.y() - whiskerRange,
-                               whiskerRange * 2, whiskerRange * 2);
-
-            // Check if this area overlaps with a cleaning spot
-            if (whiskerArea.contains(currentPosition))
-            {
-                whiskerCleaningCount++;
+        // Bottom Wall (y = bottomRight.y)
+        if (pos.y + radius > room.bottomRight.y &&
+            pos.x >= room.topLeft.x && pos.x <= room.bottomRight.x) {
+            bool doorGap = false;
+            for (const auto& door : doors) {
+                if (std::abs(room.bottomRight.y - door.origin.y) < 1e-3 &&
+                    pos.x >= door.origin.x && pos.x <= door.origin.x + 45.0f) {
+                    doorGap = true;
+                    break;
+                }
             }
+            if (!doorGap) vel.y = -std::abs(vel.y); // Bounce upward
         }
 
-        qDebug() << "Moved to:" << nextPos;
-    }
-    else
-    {
-        qDebug() << "Vacuum is not inside any room!";
+        // Left Wall (x = topLeft.x)
+        if (pos.x - radius < room.topLeft.x &&
+            pos.y >= room.bottomRight.y && pos.y <= room.topLeft.y) {
+            bool doorGap = false;
+            for (const auto& door : doors) {
+                if (std::abs(room.topLeft.x - door.origin.x) < 1e-3 &&
+                    pos.y >= door.origin.y && pos.y <= door.origin.y + 45.0f) {
+                    doorGap = true;
+                    break;
+                }
+            }
+            if (!doorGap) vel.x = std::abs(vel.x); // Bounce right
+        }
+
+        // Right Wall (x = bottomRight.x)
+        if (pos.x + radius > room.bottomRight.x &&
+            pos.y >= room.bottomRight.y && pos.y <= room.topLeft.y) {
+            bool doorGap = false;
+            for (const auto& door : doors) {
+                if (std::abs(room.bottomRight.x - door.origin.x) < 1e-3 &&
+                    pos.y >= door.origin.y && pos.y <= door.origin.y + 45.0f) {
+                    doorGap = true;
+                    break;
+                }
+            }
+            if (!doorGap) vel.x = -std::abs(vel.x); // Bounce left
+        }
     }
 
-    batteryLife--;
+    // Then: Handle collisions with chests (still same logic)
+    for (const auto& obs : obstructions) {
+        if (!obs.isChest) continue;
+
+        double closestX = clamp(pos.x, obs.bottomRight.x, obs.topLeft.x);
+        double closestY = clamp(pos.y, obs.bottomRight.y, obs.topLeft.y);
+
+        double distX = pos.x - closestX;
+        double distY = pos.y - closestY;
+        double distanceSquared = distX * distX + distY * distY;
+
+        if (distanceSquared < radius * radius) {
+            if (std::abs(distX) > std::abs(distY)) {
+                vel.x = -vel.x;
+            } else {
+                vel.y = -vel.y;
+            }
+            return; // Only handle one collision
+        }
+    }
 }
 
-
-
-
-
-void Vacuum::setPathingAlgorithms(const QStringList &algorithms)
-{
-    if (algorithms.size() == 4)
-    {
-        pathingAlgorithms.clear();
-        pathingAlgorithms << "Random" << "Wall Follow" << "Snaking" << "Spiral";
-    }
-    else
-    {
-        pathingAlgorithms = algorithms;
-    }
-
-    qDebug() << "Pathings algorithms set to:" << pathingAlgorithms;
-}
-
-
-double Vacuum::calculateWhiskerEffectiveness() const
-{
-    if (whiskerCleaningCount == 0) return 0.0;
-
-    // Assume each whisker clean adds some contribution based on efficiency
-    return static_cast<double>(whiskerCleaningCount) * (static_cast<double>(whiskerEfficiency) / 100.0);
-}
-
-double Vacuum::getSquareFeetCovered() const
-{
-    constexpr double cellSizeInInches = 10.0; // Since you round trail points to 10x10 inch blocks
-    constexpr double cellAreaInSquareInches = cellSizeInInches * cellSizeInInches;
-    constexpr double squareInchesToSquareFeet = 1.0 / 144.0;
-
-    int cleanedCells = visitCount.size(); // Number of unique cells cleaned
-
-    double totalSquareInches = cleanedCells * cellAreaInSquareInches;
-    double totalSquareFeet = totalSquareInches * squareInchesToSquareFeet;
-
-    return totalSquareFeet;
-}
+//---------------------------------------------------------------------------------------------------------------------------------------
+// VACUUM MOVEMENT BELOW
+//---------------------------------------------------------------------------------------------------------------------------------------
