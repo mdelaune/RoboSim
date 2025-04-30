@@ -24,9 +24,6 @@ void ReportWindow::updateText(){
     QString idText = "Floorplan ID: " + data->id;
     ui->floorplanID->setText(idText);
 
-    QPixmap map(":/Images/Images/HeatMapEx");
-    ui->heatMap->setScene(new QGraphicsScene(this));
-    ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
 
     QString sDateText = data->sDate[0] +"/" + data->sDate[1]+ "/" + data->sDate[2];//QString::number(data->sDate[0]) + "/" + QString::number(data->sDate[1]) + "/" + QString::number(data->sDate[2]);
     ui->startDate->setText(sDateText);
@@ -48,22 +45,36 @@ void ReportWindow::updateText(){
         ui->runTime->setText(data->runs[0].getTimeString(data->runs[0].time));
         ui->coverSqFt->setText(data->runs[0].coverSF);
         ui->perCleaned->setText(data->runs[0].coverPer + " %");
+        QPixmap map(data->runs[0].heatmapPath);
+        ui->heatMap->setScene(new QGraphicsScene(this));
+        ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
     }
     else if (selectedAlg == "spiral"){
         ui->runTime->setText(data->runs[1].getTimeString(data->runs[1].time));
         ui->coverSqFt->setText(data->runs[1].coverSF);
         ui->perCleaned->setText(data->runs[1].coverPer + " %");
+        QPixmap map(data->runs[1].heatmapPath);
+        ui->heatMap->setScene(new QGraphicsScene(this));
+        ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
     }
     else if (selectedAlg == "snaking"){
         ui->runTime->setText(data->runs[2].getTimeString(data->runs[2].time));
         ui->coverSqFt->setText(data->runs[2].coverSF);
         ui->perCleaned->setText(data->runs[2].coverPer + " %");
+        QPixmap map(data->runs[2].heatmapPath);
+        ui->heatMap->setScene(new QGraphicsScene(this));
+        ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
     }
     else if (selectedAlg == "wallfollow"){
         ui->runTime->setText(data->runs[3].getTimeString(data->runs[3].time));
         ui->coverSqFt->setText(data->runs[3].coverSF);
         ui->perCleaned->setText(data->runs[3].coverPer + " %");
+        QPixmap map(data->runs[3].heatmapPath);
+        ui->heatMap->setScene(new QGraphicsScene(this));
+        ui->heatMap->scene()->addPixmap(map.scaled(600, 400, Qt::KeepAspectRatio));
     }
+
+
     this->show();
     //this->showMaximized();
 }
