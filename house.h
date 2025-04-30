@@ -137,6 +137,7 @@ public:
 
     void clear();
     void deleteItem();
+    void rotate();
 
     QString get_floorplanName();
     QJsonDocument toJson();
@@ -181,12 +182,30 @@ public:
     bool validateDoorsOnWalls();
     bool validateEveryRoomHasDoor();
 
+    bool doesObstructionIntersectRoom(Obstruction& obstruction, Room& room);
+    bool validateObstructionPlacements();
+
+    bool validateNoObstructionIntersections();
+    bool doObstructionsIntersect(Obstruction& obs1, Obstruction& obs2);
+    bool isObstructionInsideAnyRoom(Obstruction& obstruction);
+
+    int getFloorplanId() const;
+    void setFloorplanId(int id);
+    void generateNewFloorplanId();
+
+    void createNewFloorplan();
+
+    int getCoveredArea();
+
 private:
     void loadRooms(QJsonArray roomsArray);
     void loadDoors(QJsonArray doorsArray);
     void loadObstructions(QJsonArray obstructionsArray);
 
     QString floorplan_name;
+    int floorplan_id;
+    int next_floorplan_id;
+
 
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
@@ -196,6 +215,10 @@ private:
     int cover_area;
 
     QString floor_covering = "hard_floor";
+
+    QList<QRectF> getRooms() const;
+    QList<Obstruction> getObstructions() const;
+    QList<QPointF> getDoors() const;
 };
 
 #endif // HOUSE_H

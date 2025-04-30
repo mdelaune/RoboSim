@@ -120,7 +120,6 @@ private:
     QRectF handleRect(HandlePosition pos) const;
     void updateLegsPositions(const QRectF &newBody);
     void setSizeConstraints();
-
 };
 
 class DragRoom : public QObject, public QGraphicsRectItem, protected DragBase
