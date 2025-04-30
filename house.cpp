@@ -295,6 +295,16 @@ House::House(QGraphicsScene *scene)
     loadPlan(defaultPlanLocation);
 }
 
+void House::setScene(QGraphicsScene* scene)
+{
+    m_scene = scene;
+}
+
+QGraphicsScene* House::getScene() const
+{
+    return m_scene;
+}
+
 int House::getFloorplanId() const
 {
     return floorplan_id;

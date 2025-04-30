@@ -39,6 +39,9 @@ border-color: rgba(86, 171, 145, 1);
 border-width: 8px;
 border-style: solid;</string>
       </property>
+      <property name="interactive">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item>

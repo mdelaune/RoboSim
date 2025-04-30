@@ -5,7 +5,7 @@
 #include <QGraphicsScene>
 #include <QPointF>
 #include <QBrush>
-#include <QStringList>
+#include <QString>
 
 struct Vector2D
 {
@@ -36,6 +36,7 @@ class CollisionSystem
 public:
     bool loadFromJson(const QString& filePath);
     void handleCollision(Vector2D& position, Vector2D& velocity, double radius);
+    const Room2D* getCurrentRoom(const Vector2D& pos) const;
 
 private:
     std::vector<Room2D> rooms;
@@ -53,7 +54,7 @@ public:
     void setVacuumEfficiency(int vacuumEff);
     void setWhiskerEfficiency(int whiskerEff);
     void setSpeed(int inchesPerSecond);
-    void setPathingAlgorithms(const QStringList &algorithms);  // Changed to accept a list of algorithms
+    void setPathingAlgorithm(const QString &algorithm);  // Changed to accept a list of algorithms
     void setVacuumPosition(Vector2D& position);
     // Getters
 
@@ -61,10 +62,16 @@ public:
     int getVacuumEfficiency() const;
     int getWhiskerEfficiency() const;
     int getSpeed() const;
-    QStringList getPathingAlgorithms() const;  // Returns a list of algorithms
+    QString getPathingAlgorithm() const;
     QGraphicsEllipseItem* getGraphic() const;
     const Vector2D &getPosition() const;
     Vector2D& getVelocity() const;
+    int getElapsedTime() const;
+    double getCoveredArea() const;
+
+    void updateMovementandTrail(QGraphicsScene* scene);
+    void reset();
+    void advance();
 
     // signals:
     //     void positionUpdated(QPointF newPos);
@@ -79,13 +86,18 @@ private:
     int vacuumEfficiency;
     int whiskerEfficiency;
     int speed;
+    QString currentAlgorithm;
 
-    QStringList pathingAlgorithms;
     QGraphicsEllipseItem *vacuumGraphic;
 
     Vector2D position;
     Vector2D velocity;
     CollisionSystem* collisionSystem;
+
+    int elapsedTime = 0;
+    double coveredArea = 0.0;
+
+    QGraphicsScene* scene;
 
 };
 
