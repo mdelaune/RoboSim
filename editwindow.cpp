@@ -60,17 +60,25 @@ void EditWindow::setupScene()
     ui->floorID->setText("Floorplan ID: " + QString::number(house->getFloorplanId()));
 }
 
-void EditWindow::setupSceneFromFile(){
-    scene = new QGraphicsScene(this);
-    ui->graphicsView->setScene(scene);
-    house = new House(scene);
-    house->setScene(scene);
-    //house->file_name =
+bool EditWindow::setupSceneFromFile(){
     QString plan = QFileDialog::getOpenFileName(this, "Select Floorplan File", "C://", "JSON (*.json)");
-    house->loadPlan(plan);
-    setupMenu();
-    setupToolButtons();
-    ui->floorID->setText("Floorplan ID: " + QString::number(house->getFloorplanId()));
+
+    QFile planFile(plan);
+    if (planFile.open(QIODevice::ReadOnly)){
+        scene = new QGraphicsScene(this);
+        ui->graphicsView->setScene(scene);
+        house = new House(scene);
+        house->setScene(scene);
+        house->loadPlan(plan);
+        setupMenu();
+        setupToolButtons();
+        ui->floorID->setText("Floorplan ID: " + house->id);
+        return true;
+    }
+    else{
+        return false;
+    }
+
 }
 
 void EditWindow::setupToolButtons()

@@ -285,23 +285,28 @@ void SummaryWindow::updateText(){
 
 bool SummaryWindow::setupSceneFromFiles(){
     file_names = QFileDialog::getOpenFileNames(this, "Select Floorplans to Summarize", "C://", "text (*.txt)");
-    QString matchID = "";
-    for (int i = 0; i < file_names.size(); i++){
-        RunData rep;
-        rep.parseFile(file_names[i]);
-        if (matchID == ""){
-            matchID = rep.id;
+    if (file_names.size() != 0){
+        QString matchID = "";
+        for (int i = 0; i < file_names.size(); i++){
+            RunData rep;
+            rep.parseFile(file_names[i]);
+            if (matchID == ""){
+                matchID = rep.id;
+            }
+            if (matchID == rep.id){
+                data.append(rep);
+            }
+            else{
+                QMessageBox errorMsg;
+                errorMsg.setText("Selected files do not belong to same floorplan. Please try again.");
+                errorMsg.exec();
+                return false;
+            }
         }
-        if (matchID == rep.id){
-            data.append(rep);
-        }
-        else{
-            QMessageBox errorMsg;
-            errorMsg.setText("Selected files do not belong to same floorplan. Please try again.");
-            errorMsg.exec();
-            return false;
-        }
+        updateText();
+        return true;
     }
-    updateText();
-    return true;
+    else{
+        return false;
+    }
 }

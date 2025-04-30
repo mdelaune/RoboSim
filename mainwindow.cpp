@@ -33,26 +33,31 @@ void MainWindow::on_createFP_clicked()
 void MainWindow::on_loadFP_clicked()
 {
     editWin = new EditWindow(this); // Create edit window object
-    editWin->setupSceneFromFile();  // Setup scene with user selected floorplan
-    ui->activePlan->setText("Current Floorplan ID: " + QString::number(editWin->house->getFloorplanId()));
-    editWin->showMaximized();
-    //ui->runSim->setEnabled(true);
-    floorplanCreated = true;
-    updateRunSimButtonState();
+
+    bool fileSelected = editWin->setupSceneFromFile();  // Setup scene with user selected floorplan
+    if (fileSelected){
+        ui->activePlan->setText("Current Floorplan ID: " + editWin->house->id);
+        editWin->showMaximized();
+        //ui->runSim->setEnabled(true);
+        floorplanCreated = true;
+        updateRunSimButtonState();
+    }
 }
 
 void MainWindow::on_loadRep_clicked()
 {
     repWin = new ReportWindow(this);
-    repWin->setupSceneFromFile();
-    repWin->showMaximized();
+    bool fileSelected = repWin->setupSceneFromFile();
+        if (fileSelected){
+        repWin->showMaximized();
+    }
 }
 
 void MainWindow::on_sumRep_clicked()
 {
     sumWin = new SummaryWindow(this);
-    bool run = sumWin->setupSceneFromFiles();
-    if (run == true){
+    bool validFilesSelected = sumWin->setupSceneFromFiles();
+    if (validFilesSelected == true){
         sumWin->showMaximized();
     }
 }
