@@ -20,7 +20,7 @@ public:
     explicit EditWindow(QWidget *parent = nullptr);
     ~EditWindow();
     void setupScene();
-    void setupSceneFromFile();
+    bool setupSceneFromFile();
     void setupMenu();
     void setupToolButtons();
 
