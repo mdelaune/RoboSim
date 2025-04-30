@@ -15,10 +15,24 @@ SimWindow::SimWindow(QWidget *parent)
     house = new House(scene);
     house->drawSimulationPlan();
 
-    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
-    ui->graphicsView->setRenderHint(QPainter::SmoothPixmapTransform, true);
+  //  ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+  //  ui->graphicsView->setRenderHint(QPainter::SmoothPixmapTransform, true);
+
 
     vacuum = new Vacuum(scene);
+
+    if (!rooms.isEmpty())
+    {
+        QRectF startRoom = rooms.first();   // take first room
+        double centerX = (startRoom.left() + startRoom.right()) / 2.0;
+        double centerY = (startRoom.top() + startRoom.bottom()) / 2.0;
+
+        vacuum->setVacuumPosition(centerX, centerY);
+    }
+    else
+    {
+        qDebug() << "No rooms available to place vacuum!";
+    }
 
     simulationTimer = new QTimer(this);
     connect(simulationTimer, &QTimer::timeout, this, &SimWindow::updateSimulation);
@@ -76,6 +90,8 @@ void SimWindow::updateSimulation()
         simulationTimer->stop();
         return;
     }
+
+    vacuum->move(rooms, obstructions, doors, simulationSpeedMultiplier); // <<<<<< MOVE the vacuum!
 
     scene->update();
     updateBatteryLifeLabel();
