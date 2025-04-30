@@ -4,7 +4,6 @@
 
 #include "house.h"
 #include "dragdrop.h"
-#include "houseparser.h"
 
 #include <QRandomGenerator>
 
@@ -294,6 +293,16 @@ House::House(QGraphicsScene *scene)
     instance = this;
     floorplan_id = 0;
     loadPlan(defaultPlanLocation);
+}
+
+void House::setScene(QGraphicsScene* scene)
+{
+    m_scene = scene;
+}
+
+QGraphicsScene* House::getScene() const
+{
+    return m_scene;
 }
 
 int House::getFloorplanId() const

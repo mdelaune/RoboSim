@@ -3,37 +3,28 @@
 
 #include <QFileDialog>
 
-SimWindow::SimWindow(QWidget *parent)
-    : QMainWindow(parent)
+SimWindow::SimWindow(House* housePtr, QWidget *parent)
+    : QMainWindow(parent), house(housePtr)
     , ui(new Ui::SimWindow)
 {
     ui->setupUi(this);
 
+    QGraphicsView *view = ui->graphicsView;
+
+    view->setRenderHint(QPainter::Antialiasing);
+    view->setRenderHint(QPainter::SmoothPixmapTransform, true);
+
     scene = new QGraphicsScene(this);
-    ui->graphicsView->setScene(scene);
+    view->setScene(scene);
 
-    house = new House(scene);
-    house->loadPlan(house_path);
+    house->setScene(scene);
+    //house->loadPlan(house_path);
     house->drawSimulationPlan();
-
-    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
-    ui->graphicsView->setRenderHint(QPainter::SmoothPixmapTransform, true);
-
 
     vacuum = new Vacuum(scene);
 
-    // if (!rooms.isEmpty())
-    // {
-    //     QRectF startRoom = rooms.first();   // take first room
-    //     double centerX = (startRoom.left() + startRoom.right()) / 2.0;
-    //     double centerY = (startRoom.top() + startRoom.bottom()) / 2.0;
-
-    //     vacuum->setVacuumPosition(centerX, centerY);
-    // }
-    // else
-    // {
-    //     qDebug() << "No rooms available to place vacuum!";
-    // }
+    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+    ui->graphicsView->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
     simulationTimer = new QTimer(this);
     connect(simulationTimer, &QTimer::timeout, this, &SimWindow::updateSimulation);
@@ -73,35 +64,21 @@ SimWindow::~SimWindow()
 
 void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whiskerEfficiency, int speed, QStringList selectedAlgorithms)
 {
-    vacuum->setBatteryLife(batteryLife);
-    vacuum->setVacuumEfficiency(vacuumEfficiency);
-    vacuum->setWhiskerEfficiency(whiskerEfficiency);
-    vacuum->setSpeed(speed);
-    vacuum->setPathingAlgorithms(selectedAlgorithms);
+    this->batteryLife = batteryLife;
+    this->vacuumEfficiency = vacuumEfficiency;
+    this->whiskerEfficiency = whiskerEfficiency;
+    this->speed = speed;
+    pendingAlgorithms = selectedAlgorithms;
 
-    updateBatteryLifeLabel();
-
-    simulationTimer->start(1000);
-
-    simData = new RunData();
-    simData->id = house->id;
-    QDate date = QDate::currentDate();
-    QString dateString = date.QDate::toString("dd MM yy");
-    simData->sDate = dateString.split(' ');
-    qDebug() << dateString;
-
-    QTime time = QTime::currentTime();
-    QString timeString = time.toString();
-    simData->sTime = timeString.split(':');
-    qDebug() << timeString;
-
-    simData->totalSF = QString::number(house->getTotalArea()/16000);
+    currentAlgorithmIndex = 0;
+    allRunsCompleted = false;
 
     for (int i = 0; i < 4; i++){
             Run run;
             run.exists = false;
             simData->runs.append(run);
     }
+
     startNextRun();
 }
 
@@ -110,12 +87,12 @@ void SimWindow::updateSimulation()
     if (vacuum->getBatteryLife() <= 0)
     {
         simulationTimer->stop();
+        currentAlgorithmIndex++;
+        startNextRun();
         return;
     }
 
-    // vacuum->move(rooms, obstructions, doors, simulationSpeedMultiplier); // <<<<<< MOVE the vacuum!
-
-    scene->update();
+    vacuum->advance();
     updateBatteryLifeLabel();
 }
 
@@ -190,6 +167,7 @@ void SimWindow::writeReport(){
 
 void SimWindow::on_stopButton_clicked()
 {
+    simulationTimer->stop();
     QDate date = QDate::currentDate();
     QString dateString = date.QDate::toString("dd MM yy");
     simData->eDate = dateString.split(' ');
@@ -201,4 +179,50 @@ void SimWindow::on_stopButton_clicked()
     writeReport();
     this->close();
 }
+
+// This method is what handles multiple runs for the simulation
+void SimWindow::startNextRun()
+{
+    if (currentAlgorithmIndex >= pendingAlgorithms.size())
+    {
+        if (!allRunsCompleted) {
+            simulationTimer->stop();
+            qDebug() << "All runs complete";
+            allRunsCompleted = true;
+
+            // Optionally close or update UI here
+            this->close();
+        }
+    }
+    else
+    {
+        resetScene();
+        updateBatteryLifeLabel();
+        simulationTimer->start();
+    }
+}
+
+// This method clears all items from the simulation window scene and resets them for the starting run and new runs
+void SimWindow::resetScene()
+{
+    scene->clear(); // Clears all items from the scene
+    house->setScene(scene); // Sets the simulation window scene as the current scene
+    house->drawSimulationPlan(); // Redraws the house layout
+
+    // Ensure vacuum exists and is properly reset
+    if (vacuum != nullptr)
+    {
+        vacuum->reset(); // Reset the vacuum (position, battery, etc.)
+        vacuum->setBatteryLife(batteryLife); // Set battery life for the new run
+        vacuum->setVacuumEfficiency(vacuumEfficiency); // Set vacuum efficiency
+        vacuum->setWhiskerEfficiency(whiskerEfficiency); // Set whisker efficiency
+        vacuum->setSpeed(speed); // Set speed for the new run
+    }
+    else
+    {
+        qDebug() << "Error: Vacuum object is null.";
+    }
+}
+
+
 

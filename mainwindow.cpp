@@ -70,9 +70,7 @@ void MainWindow::on_robSet_clicked()
 void MainWindow::on_runSim_clicked()
 {
     if (editWin && setWin){
-        simWin = new SimWindow(this);
-
-        simWin->house = editWin->house;
+        simWin = new SimWindow(editWin->house, this);
         simWin->house_path = editWin->house->get_floorplanName();
         qDebug() << "house path: " << simWin->house_path;
         simWin->startSimulation(batteryLife, vacuumEfficiency, whiskerEfficiency, speed, selectedAlgorithms);

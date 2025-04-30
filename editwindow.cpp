@@ -51,6 +51,7 @@ void EditWindow::setupScene()
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     house = new House(scene);
+    house->setScene(scene);
     QString default_plan = ":/Default/default_plan.json";
     house->loadPlan(default_plan);
     house->setNewID();
@@ -63,6 +64,7 @@ void EditWindow::setupSceneFromFile(){
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     house = new House(scene);
+    house->setScene(scene);
     //house->file_name =
     QString plan = QFileDialog::getOpenFileName(this, "Select Floorplan File", "C://", "JSON (*.json)");
     house->loadPlan(plan);
