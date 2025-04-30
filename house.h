@@ -120,6 +120,9 @@ public:
     House(QGraphicsScene *scene);
 
     static House* instance;
+    const double MIN_TOTAL_AREA = 40000.0;
+    const double MAX_TOTAL_AREA = 600000.0;
+
     void loadPlan(QString plan);
 
     void addRoom(Room room);
@@ -134,6 +137,7 @@ public:
 
     void clear();
     void deleteItem();
+    void rotate();
 
     QString get_floorplanName();
     QJsonDocument toJson();
@@ -175,8 +179,23 @@ public:
     bool doRoomsIntersect(Room& room1, Room& room2);
     bool validateNoRoomIntersections();
 
-    const double MIN_TOTAL_AREA = 40000.0;
-    const double MAX_TOTAL_AREA = 600000.0;
+    bool validateDoorsOnWalls();
+    bool validateEveryRoomHasDoor();
+
+    bool doesObstructionIntersectRoom(Obstruction& obstruction, Room& room);
+    bool validateObstructionPlacements();
+
+    bool validateNoObstructionIntersections();
+    bool doObstructionsIntersect(Obstruction& obs1, Obstruction& obs2);
+    bool isObstructionInsideAnyRoom(Obstruction& obstruction);
+
+    int getFloorplanId() const;
+    void setFloorplanId(int id);
+    void generateNewFloorplanId();
+
+    void createNewFloorplan();
+
+    int getCoveredArea();
 
 private:
     void loadRooms(QJsonArray roomsArray);
@@ -184,12 +203,16 @@ private:
     void loadObstructions(QJsonArray obstructionsArray);
 
     QString floorplan_name;
+    int floorplan_id;
+    int next_floorplan_id;
+
 
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
     int scene_object_id = 1;
     int total_area;
+    int cover_area;
 
     QString floor_covering = "hard_floor";
 

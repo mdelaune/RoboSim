@@ -72,10 +72,6 @@ Obstruction::Obstruction(bool isChest, QString type) : m_top_left(-50, 20), m_bo
     {
         set_legsRadius(10);
     }
-
-
-
-
 }
 
 Obstruction::Obstruction(QPointF top_left, QPointF bottom_right, bool isChest, QString type)
@@ -296,7 +292,24 @@ House::House(QGraphicsScene *scene)
     wall_pen.setWidth(4);
     obstruct_pen.setWidth(3);
     instance = this;
+    floorplan_id = 0;
     loadPlan(defaultPlanLocation);
+}
+
+int House::getFloorplanId() const
+{
+    return floorplan_id;
+}
+
+void House::setFloorplanId(int id)
+{
+    floorplan_id = id;
+}
+
+void House::generateNewFloorplanId()
+{
+    // Assign the next available ID and increment it
+    floorplan_id = next_floorplan_id++;
 }
 
 void House::drawRooms()
@@ -454,7 +467,15 @@ void House::loadPlan(QString plan)
     floorplan_name = plan;
 
     QJsonObject root = doc.object();
+    id = root.value("ID").toString();
     floor_covering = root.value("flooring").toString();
+    floorplan_id = root.value("floorplan_id").toInt();
+
+    // Make sure next_floorplan_id stays ahead of any loaded IDs
+    if (floorplan_id >= next_floorplan_id) {
+        next_floorplan_id = floorplan_id + 1;
+    }
+
 
     QJsonArray roomsArray = root.value("rooms").toArray();
     loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
@@ -467,6 +488,26 @@ void House::loadPlan(QString plan)
     QJsonArray obstructionsArray = root.value("obstructions").toArray();
     loadEntities<Obstruction>(obstructionsArray, obstructions, [](QJsonObject& obj){ return Obstruction(obj); });
     drawObstructions();
+
+    setRoomFillColor(floor_covering);
+    m_scene->update(m_scene->sceneRect());
+
+    getCoveredArea();
+}
+
+void House::createNewFloorplan()
+{
+    clear();
+    floorplan_name = "Untitled";
+    floor_covering = "hard_floor";  // Default flooring
+
+    // Generate a new unique ID for this floorplan
+    generateNewFloorplanId();
+
+    // Add a default room if needed
+    Room defaultRoom("square");
+    addRoom(defaultRoom);
+    drawRooms();
 
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
@@ -523,6 +564,8 @@ QJsonDocument House::toJson()
 
     QJsonObject root
         {
+
+            {"floorplan_id", floorplan_id},
             {"flooring", floor_covering},
             {"doors", doorsArray},
             {"obstructions", obstructionsArray},
@@ -600,6 +643,16 @@ void House::setRoomFillColor(QString flooring)
     }
 
     m_scene->update(m_scene->sceneRect());
+}
+
+int House::getCoveredArea()
+{
+    int coveredArea = 0;
+    for (Obstruction& obstruction : obstructions) {
+        coveredArea += static_cast<int>(obstruction.get_floorCoverage());
+    }
+    qDebug() << coveredArea;
+    return coveredArea;
 }
 
 void House::clear()
@@ -723,6 +776,19 @@ void House::deleteItem()
     qDebug() << "DELETE COMPLETE";
 }
 
+void House::rotate()
+{
+    for (QGraphicsItem* item : m_scene->selectedItems()) {
+        if (auto door = dynamic_cast<DragDoor*>(item)) {
+            door->setTransformOriginPoint(door->boundingRect().center());
+            door->setRotation(door->rotation() + 90);
+        } else if (auto obs = dynamic_cast<DragObstruction*>(item)) {
+            obs->setTransformOriginPoint(obs->boundingRect().center());
+            obs->setRotation(obs->rotation() + 90);
+        }
+    }
+}
+
 int House::validateTotalAreaBeforeSave()
 {
     double totalArea = 0.0;
@@ -779,14 +845,14 @@ bool House::doRoomsShareWall(Room& room1, Room& room2)
         // X-coordinates overlap
         (rect1.left() < rect2.right() && rect2.left() < rect1.right()) &&
         // Y-coordinates are adjacent (bottom of rect1 touches top of rect2 or vice versa)
-        ((qAbs(rect1.bottom() - rect2.top()) < 1.0) || (qAbs(rect2.bottom() - rect1.top()) < 1.0));
+        ((qAbs(rect1.bottom() - rect2.top()) < 5.0) || (qAbs(rect2.bottom() - rect1.top()) < 5.0));
 
     // Check for vertical walls (left/right edges)
     bool sharesVerticalWall =
         // Y-coordinates overlap
         (rect1.top() < rect2.bottom() && rect2.top() < rect1.bottom()) &&
         // X-coordinates are adjacent (right of rect1 touches left of rect2 or vice versa)
-        ((qAbs(rect1.right() - rect2.left()) < 1.0) || (qAbs(rect2.right() - rect1.left()) < 1.0));
+        ((qAbs(rect1.right() - rect2.left()) < 5.0) || (qAbs(rect2.right() - rect1.left()) < 5.0));
 
     return sharesHorizontalWall || sharesVerticalWall;
 }
@@ -807,7 +873,7 @@ bool House::validateRoomConnectivity()
         for (int j = 0; j < rooms.size(); j++) {
             if (i == j) continue; // Skip comparing with itself
 
-            // Check if this room is completely inside another room (like a closet)
+            //Check if this room is completely inside another room (like a closet)
             if (rooms[j].get_rectRoom().contains(rooms[i].get_rectRoom())) {
                 isContainedInAnotherRoom = true;
                 qDebug() << "Room" << rooms[i].getId() << "is contained within room" << rooms[j].getId();
@@ -839,7 +905,6 @@ bool House::doRoomsIntersect(Room& room1, Room& room2)
     // Check if the rectangles intersect but neither fully contains the other
     if (rect1.intersects(rect2)) {
         // If one rectangle fully contains the other, it's not considered an intersection
-        // (This is our "closet" case which is allowed)
         if (rect1.contains(rect2) || rect2.contains(rect1)) {
             return false; // Not an intersection case we're concerned with
         }
@@ -868,9 +933,289 @@ bool House::validateNoRoomIntersections()
 
     return true;
 }
-//QList<Obstruction2> Obstruction::getObstructions() const {
-//    return obstructions;
-//}
-//QList<Obstruction2> Obstruction::getObstructions() const {
- //   return obstructions;
-//}
+bool House::validateDoorsOnWalls()
+{
+    for (Door& door : doors) {
+        // Get the door's position
+        QPointF doorOrigin = door.get_origin();
+        // Increase tolerance to accommodate small movements
+        double tolerance = 25.0;
+        bool doorOnWall = false;
+
+        for (Room& room : rooms) {
+            QRectF rect = room.get_rectRoom();
+
+            // Check if door is on left wall
+            if (qAbs(doorOrigin.x() - rect.left()) < tolerance &&
+                doorOrigin.y() >= rect.top() - tolerance && doorOrigin.y() <= rect.bottom() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+
+            // Check if door is on right wall
+            if (qAbs(doorOrigin.x() - rect.right()) < tolerance &&
+                doorOrigin.y() >= rect.top() - tolerance && doorOrigin.y() <= rect.bottom() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+
+            // Check if door is on top wall
+            if (qAbs(doorOrigin.y() - rect.top()) < tolerance &&
+                doorOrigin.x() >= rect.left() - tolerance && doorOrigin.x() <= rect.right() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+
+            // Check if door is on bottom wall
+            if (qAbs(doorOrigin.y() - rect.bottom()) < tolerance &&
+                doorOrigin.x() >= rect.left() - tolerance && doorOrigin.x() <= rect.right() + tolerance) {
+                doorOnWall = true;
+                break;
+            }
+        }
+
+        if (!doorOnWall) {
+            qDebug() << "ERROR: Door at position (" << doorOrigin.x() << ","
+                     << doorOrigin.y() << ") is not placed on any wall!";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool House::validateEveryRoomHasDoor()
+{
+    // If there's only one room, it doesn't need a door
+    if (rooms.size() <= 1) {
+        return true;
+    }
+
+    if(doors.size() < rooms.size() -1)
+    {
+        qDebug() << "not enough rooms";
+        return false;
+    }
+
+    // Check each room
+    for (Room& room : rooms) {
+        QRectF roomRect = room.get_rectRoom();
+        bool hasDoor = false;
+        int tolerance = 15.0;
+        // Check if any door is on this room's walls
+        for (Door& door : doors) {
+            QPointF doorOrigin = door.get_origin();
+
+            // Check if door is on left wall
+            if (qAbs(doorOrigin.x() - roomRect.left()) < tolerance &&
+                doorOrigin.y() >= roomRect.top() && doorOrigin.y() <= roomRect.bottom()) {
+                hasDoor = true;
+                break;
+            }
+
+            // Check if door is on right wall
+            if (qAbs(doorOrigin.x() - roomRect.right()) < tolerance &&
+                doorOrigin.y() >= roomRect.top() && doorOrigin.y() <= roomRect.bottom()) {
+                hasDoor = true;
+                break;
+            }
+
+            // Check if door is on top wall
+            if (qAbs(doorOrigin.y() - roomRect.top()) < tolerance &&
+                doorOrigin.x() >= roomRect.left() && doorOrigin.x() <= roomRect.right()) {
+                hasDoor = true;
+                break;
+            }
+
+            // Check if door is on bottom wall
+            if (qAbs(doorOrigin.y() - roomRect.bottom()) < tolerance &&
+                doorOrigin.x() >= roomRect.left() && doorOrigin.x() <= roomRect.right()) {
+                hasDoor = true;
+                break;
+            }
+        }
+
+        if (!hasDoor) {
+            qDebug() << "ERROR: Room" << room.getId() << "doesn't have any doors!";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool House::doesObstructionIntersectRoom(Obstruction& obstruction, Room& room)
+{
+    QRectF obsRect;
+
+    // For chest type obstructions, use the full rectangle
+    if (obstruction.get_isChest()) {
+        obsRect = obstruction.get_rect();
+    } else {
+        // For non-chest obstructions, we only check if any leg intersects with the room
+        QRectF* legs = obstruction.get_legs();
+        for (int i = 0; i < 4; i++) {
+            if (room.get_rectRoom().intersects(legs[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Check if the obstruction rect intersects with the room's rect
+    return room.get_rectRoom().intersects(obsRect);
+}
+
+// Add this method to the House class to validate all obstructions
+bool House::validateObstructionPlacements()
+{
+    for (Obstruction& obstruction : obstructions) {
+        if (!isObstructionInsideAnyRoom(obstruction)) {
+            qDebug() << "ERROR: Obstruction" << obstruction.getId()
+            << "(" << obstruction.get_type() << ")"
+            << "is not fully contained within any room!";
+            return false;
+        }
+    }
+
+    // First check if any obstruction is outside of all rooms
+    for (Obstruction& obstruction : obstructions) {
+        bool isInsideAnyRoom = false;
+
+        for (Room& room : rooms) {
+            QRectF roomRect = room.get_rectRoom();
+
+            // For chest type, check if the entire obstruction is inside a room
+            if (obstruction.get_isChest()) {
+                QRectF obsRect = obstruction.get_rect();
+                if (roomRect.contains(obsRect)) {
+                    isInsideAnyRoom = true;
+                    break;
+                }
+            } else {
+                // For furniture with legs, check if all legs are inside a room
+                QRectF* legs = obstruction.get_legs();
+                bool allLegsInside = true;
+
+                for (int i = 0; i < 4; i++) {
+                    if (!roomRect.contains(legs[i])) {
+                        allLegsInside = false;
+                        break;
+                    }
+                }
+
+                if (allLegsInside) {
+                    isInsideAnyRoom = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isInsideAnyRoom) {
+            qDebug() << "ERROR: Obstruction" << obstruction.getId() << "is not fully inside any room!";
+            return false;
+        }
+    }
+
+    // Next check if any obstruction intersects with room walls
+    for (Obstruction& obstruction : obstructions) {
+        for (Room& room : rooms) {
+            // We don't want to check if the obstruction is inside the room,
+            // only if it's on the border (intersection with walls)
+
+            QRectF roomRect = room.get_rectRoom();
+            QRectF obsRect = obstruction.get_rect();
+
+            // Skip if obstruction is fully inside or fully outside this room
+            if (roomRect.contains(obsRect) || !roomRect.intersects(obsRect)) {
+                continue;
+            }
+
+            // If we get here, the obstruction intersects with a room wall
+            qDebug() << "ERROR: Obstruction" << obstruction.getId()
+                     << "intersects with room" << room.getId() << "wall!";
+            return false;
+        }
+    }
+
+    // Also check if obstructions are blocking doors
+    for (Obstruction& obstruction : obstructions) {
+        QRectF obsRect = obstruction.get_rect();
+
+        for (Door& door : doors) {
+            QLineF doorLine = door.get_door();
+            QLineF entryLine = door.get_entry();
+
+            // Create a small rect around the door for intersection checking
+            QRectF doorRect(
+                QPointF(qMin(doorLine.p1().x(), doorLine.p2().x()) - 5,
+                        qMin(doorLine.p1().y(), doorLine.p2().y()) - 5),
+                QPointF(qMax(doorLine.p1().x(), doorLine.p2().x()) + 5,
+                        qMax(doorLine.p1().y(), doorLine.p2().y()) + 5)
+                );
+
+            // Create a small rect around the entry line
+            QRectF entryRect(
+                QPointF(qMin(entryLine.p1().x(), entryLine.p2().x()) - 5,
+                        qMin(entryLine.p1().y(), entryLine.p2().y()) - 5),
+                QPointF(qMax(entryLine.p1().x(), entryLine.p2().x()) + 5,
+                        qMax(entryLine.p1().y(), entryLine.p2().y()) + 5)
+                );
+
+            // Check if obstruction intersects with door or entry line
+            if (obsRect.intersects(doorRect) || obsRect.intersects(entryRect)) {
+                qDebug() << "ERROR: Obstruction" << obstruction.getId()
+                << "is blocking a door!";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool House::doObstructionsIntersect(Obstruction& obs1, Obstruction& obs2)
+{
+    // Check if the full rectangles intersect, regardless of legs or chest type
+    return obs1.get_rect().intersects(obs2.get_rect());
+}
+
+// Validate that no obstructions intersect with each other
+bool House::validateNoObstructionIntersections()
+{
+    if (obstructions.size() <= 1) {
+        // If there's only one obstruction or none, there's no intersection possible
+        return true;
+    }
+
+    for (int i = 0; i < obstructions.size(); i++) {
+        for (int j = i + 1; j < obstructions.size(); j++) {
+            // Check for intersection between obstruction i and obstruction j
+            if (doObstructionsIntersect(obstructions[i], obstructions[j])) {
+                qDebug() << "ERROR: Obstruction" << obstructions[i].getId()
+                << "(" << obstructions[i].get_type() << ")"
+                << "intersects with Obstruction" << obstructions[j].getId()
+                << "(" << obstructions[j].get_type() << ")";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool House::isObstructionInsideAnyRoom(Obstruction& obstruction)
+{
+    // Get the full rectangle of the obstruction
+    QRectF obsRect = obstruction.get_rect();
+
+    // Check if this obstruction is fully contained in any room
+    for (Room& room : rooms) {
+        QRectF roomRect = room.get_rectRoom();
+        if (roomRect.contains(obsRect)) {
+            return true; // Fully contained in this room
+        }
+    }
+
+    return false; // Not fully contained in any room
+}

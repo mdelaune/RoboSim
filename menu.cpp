@@ -12,7 +12,7 @@ Menu::Menu(House *house)
 
 void Menu::menuNew()
 {
-    m_house->clear();
+    m_house->createNewFloorplan();
     qDebug() << "NEW";
 }
 
@@ -138,6 +138,55 @@ bool Menu::errorChecks()
         errorBox.exec();
         return false;
     }
+
+    if(!m_house->validateDoorsOnWalls())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Every door must be on a wall.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    if(!m_house->validateEveryRoomHasDoor())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Every room must have a door.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    if(!m_house->validateObstructionPlacements())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Invalid obstruction placement. Obstructions can not intersect rooms, block doors, or exist outside a room.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
+    if(!m_house->validateNoObstructionIntersections())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Obstructions can not intersect each other.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
+
 
     return true;
 }

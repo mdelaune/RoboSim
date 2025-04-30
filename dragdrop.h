@@ -71,6 +71,15 @@ private:
 class DragObstruction : public QGraphicsItem, protected DragBase
 {
 public:
+
+    enum HandlePosition {
+        None = -1,
+        TopLeft = 0,
+        TopRight = 1,
+        BottomLeft = 2,
+        BottomRight = 3
+    };
+
     DragObstruction(const QRectF &body, QRectF *legs, House *house, Obstruction *obstruction);
     DragObstruction(const QRectF &body, const QRectF &overlay, House *house, Obstruction *obstruction);
 
@@ -92,6 +101,25 @@ private:
     House *m_house;
     Obstruction *m_obstruction;
     QString m_type;
+    // Handle variables
+    HandlePosition m_currentHandle;
+    QPointF m_lastMousePos;
+    qreal m_handleSize;
+    QRectF m_originalBody;
+    QRectF m_originalOverlay;
+    QList<QRectF> m_originalLegs;
+
+    // Size constraints
+    qreal m_minWidth;
+    qreal m_minHeight;
+    qreal m_maxWidth;
+    qreal m_maxHeight;
+
+    // Methods for handling resizing
+    HandlePosition handleAt(const QPointF &pos) const;
+    QRectF handleRect(HandlePosition pos) const;
+    void updateLegsPositions(const QRectF &newBody);
+    void setSizeConstraints();
 };
 
 class DragRoom : public QObject, public QGraphicsRectItem, protected DragBase
@@ -102,6 +130,7 @@ public:
     const qreal MIN_ROOM_HEIGHT = 100.0;
 
     DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room *room, long id);
+    bool checkRoomIntersection(const QRectF &newRect);
 
     enum HandlePosition { TopLeft, TopRight, BottomLeft, BottomRight, None };
     HandlePosition handleAt(const QPointF &pos) const;
@@ -124,6 +153,8 @@ private:
     QPointF m_lastMousePos;
     QRectF m_originalRect;
     qreal m_handleSize = 8.0;
+    QGraphicsScene *m_scene;
+    QPointF m_originalPos;
 
     QRectF handleRect(HandlePosition pos) const;
 

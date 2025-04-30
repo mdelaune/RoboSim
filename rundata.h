@@ -12,7 +12,7 @@ class Run
 public:
     Run();
     QString alg;
-    bool exists;
+    bool exists = false;
 
     QStringList time;
 
