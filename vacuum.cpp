@@ -8,6 +8,7 @@
 #include <QString>
 #include <cmath>
 #include <iostream>
+#include <QRandomGenerator>
 
 Vacuum::Vacuum(QGraphicsScene* scene)
 {
@@ -15,25 +16,11 @@ Vacuum::Vacuum(QGraphicsScene* scene)
     speed = 12;
     whiskerEfficiency = 30;
     currentAlgorithm = "Random";
-    velocity = {0.0, 10.0};
+    velocity = {0.0, 0.0};
     this->scene = scene;
 
     collisionSystem = new CollisionSystem();
     collisionSystem->loadFromJson(":/Default/default_plan.json");
-}
-
-void Vacuum::advance()
-{
-    if (batteryLife <= 0 || !vacuumGraphic) return;
-
-    batteryLife--;
-
-    position.x += velocity.x;
-    position.y += velocity.y;
-
-    collisionSystem->handleCollision(position, velocity, diameter/2.0);
-
-    vacuumGraphic->setPos(position.x, position.y);
 }
 
 // A method to reset the vacuum and add back into the simulation for multiple runs
@@ -53,7 +40,7 @@ void Vacuum::reset()
     }
     vacuumGraphic = scene->addEllipse(-diameter/2, -diameter/2, diameter, diameter,
                                             QPen(Qt::black), QBrush(Qt::red));
-    position = {300.0, -210.0};
+    position = {0, 200.0};
     setVacuumPosition(position);
 }
 
@@ -234,431 +221,151 @@ bool CollisionSystem::loadFromJson(const QString& filePath)
 
 }
 
-void CollisionSystem::handleCollision(Vector2D& pos, Vector2D& vel, double radius)
+// Corrects pos if it overlaps a wall or chest. Returns true if any correction was done.
+bool CollisionSystem::handleCollision(Vector2D& pos, double radius)
 {
-    const Room2D* currentRoom = getCurrentRoom(pos);
-    if (!currentRoom) return; // Vacuum is not inside any known room
+    // 1) find the room this candidate is in (or just outside)
+    const Room2D* room = getCurrentRoom(pos);
+    if (!room) {
+        for (const auto &r : rooms) {
+            double left   = std::min(r.topLeft.x,    r.bottomRight.x);
+            double right  = std::max(r.topLeft.x,    r.bottomRight.x);
+            double top    = std::min(r.topLeft.y,    r.bottomRight.y);
+            double bottom = std::max(r.topLeft.y,    r.bottomRight.y);
 
-    double left = std::min(currentRoom->topLeft.x, currentRoom->bottomRight.x);
-    double right = std::max(currentRoom->topLeft.x, currentRoom->bottomRight.x);
-    double top = std::min(currentRoom->topLeft.y, currentRoom->bottomRight.y);
-    double bottom = std::max(currentRoom->topLeft.y, currentRoom->bottomRight.y);
+            if (pos.x + radius > left && pos.x - radius < right &&
+                pos.y + radius > top  && pos.y - radius < bottom)
+            {
+                room = &r;
+                break;
+            }
+        }
+    }
+    // if still no room, give up—vacuum must be completely outside any known area
+    if (!room) return false;
 
-    // Handle chest (obstruction) collisions inside current room
-    for (const auto& obs : obstructions) {
+    // 2) now apply your chest + wall corrections exactly as before
+    double left   = std::min(room->topLeft.x,    room->bottomRight.x);
+    double right  = std::max(room->topLeft.x,    room->bottomRight.x);
+    double top    = std::min(room->topLeft.y,    room->bottomRight.y);
+    double bottom = std::max(room->topLeft.y,    room->bottomRight.y);
+
+    // --- Chest collisions ---
+    for (auto &obs : obstructions) {
         if (!obs.isChest) continue;
-
-        // Skip obstruction if it's outside the current room
         if (obs.bottomRight.x < left || obs.topLeft.x > right ||
-            obs.bottomRight.y < top || obs.topLeft.y > bottom) {
+            obs.bottomRight.y < top  || obs.topLeft.y > bottom)
             continue;
-        }
 
-        double obsLeft = std::min(obs.topLeft.x, obs.bottomRight.x);
-        double obsRight = std::max(obs.topLeft.x, obs.bottomRight.x);
-        double obsTop = std::min(obs.topLeft.y, obs.bottomRight.y);
-        double obsBottom = std::max(obs.topLeft.y, obs.bottomRight.y);
+        double oL = std::min(obs.topLeft.x, obs.bottomRight.x);
+        double oR = std::max(obs.topLeft.x, obs.bottomRight.x);
+        double oT = std::min(obs.topLeft.y, obs.bottomRight.y);
+        double oB = std::max(obs.topLeft.y, obs.bottomRight.y);
 
-        if (pos.x + radius > obsLeft && pos.x - radius < obsRight &&
-            pos.y + radius > obsTop && pos.y - radius < obsBottom) {
+        if (pos.x + radius > oL && pos.x - radius < oR &&
+            pos.y + radius > oT && pos.y - radius < oB)
+        {
+            double overlapX = std::min((pos.x+radius)-oL, oR-(pos.x-radius));
+            double overlapY = std::min((pos.y+radius)-oT, oB-(pos.y-radius));
 
-            // Calculate overlaps on each axis
-            double overlapLeft = (pos.x + radius) - obsLeft;
-            double overlapRight = obsRight - (pos.x - radius);
-            double overlapTop = (pos.y + radius) - obsTop;
-            double overlapBottom = obsBottom - (pos.y - radius);
-
-            // Pick smallest overlap direction
-            double minOverlapX = std::min(overlapLeft, overlapRight);
-            double minOverlapY = std::min(overlapTop, overlapBottom);
-
-            if (minOverlapX < minOverlapY) {
-                // Horizontal collision
-                if (overlapLeft < overlapRight) {
-                    pos.x -= overlapLeft;
-                } else {
-                    pos.x += overlapRight;
-                }
-                vel.x = -vel.x;
+            if (overlapX < overlapY) {
+                if ((pos.x - oL) < (oR - pos.x)) pos.x -= overlapX;
+                else                               pos.x += overlapX;
             } else {
-                // Vertical collision
-                if (overlapTop < overlapBottom) {
-                    pos.y -= overlapTop;
-                } else {
-                    pos.y += overlapBottom;
-                }
-                vel.y = -vel.y;
+                if ((pos.y - oT) < (oB - pos.y)) pos.y -= overlapY;
+                else                               pos.y += overlapY;
             }
-
-            return;
-        }
-
-    }
-
-    // Handle wall collisions for current room (with door gaps)
-    // Top wall
-    if (pos.y - radius < top &&
-        pos.x >= left && pos.x <= right) {
-        bool doorGap = false;
-        for (const auto& door : doors) {
-            if (std::abs(top - door.origin.y) < 1e-3 &&
-                door.origin.x <= pos.x && pos.x <= door.origin.x + 45.0f) {
-                doorGap = true;
-                break;
-            }
-        }
-        if (!doorGap) {
-            vel.y = std::abs(vel.y);
-            pos.y = top + radius;
+            return true;
         }
     }
 
-    // Bottom wall
-    if (pos.y + radius > bottom &&
-        pos.x >= left && pos.x <= right) {
-        bool doorGap = false;
-        for (const auto& door : doors) {
-            if (std::abs(bottom - door.origin.y) < 1e-3 &&
-                door.origin.x <= pos.x && pos.x <= door.origin.x + 45.0f) {
-                doorGap = true;
-                break;
+    // helper to skip door gaps
+    auto doorGap = [&](double wallPos, double orthPos, bool horiz){
+        for (auto &d : doors) {
+            if (horiz) {
+                if (std::abs(wallPos - d.origin.y) < 1e-3 &&
+                    orthPos >= d.origin.x && orthPos <= d.origin.x + 45.0)
+                    return true;
+            } else {
+                if (std::abs(wallPos - d.origin.x) < 1e-3 &&
+                    orthPos >= d.origin.y && orthPos <= d.origin.y + 45.0)
+                    return true;
             }
         }
-        if (!doorGap) {
-            vel.y = -std::abs(vel.y);
-            pos.y = bottom - radius;
-        }
+        return false;
+    };
+
+    // --- Wall collisions (early return each time) ---
+    if (pos.y - radius < top    && pos.x >= left && pos.x <= right && !doorGap(top,    pos.x, true)) {
+        pos.y = top + radius;    return true;
+    }
+    if (pos.y + radius > bottom && pos.x >= left && pos.x <= right && !doorGap(bottom, pos.x, true)) {
+        pos.y = bottom - radius; return true;
+    }
+    if (pos.x - radius < left   && pos.y >= top  && pos.y <= bottom&& !doorGap(left,   pos.y, false)) {
+        pos.x = left + radius;   return true;
+    }
+    if (pos.x + radius > right  && pos.y >= top  && pos.y <= bottom&& !doorGap(right,  pos.y, false)) {
+        pos.x = right - radius;  return true;
     }
 
-    // Left wall
-    if (pos.x - radius < left &&
-        pos.y >= top && pos.y <= bottom) {
-        bool doorGap = false;
-        for (const auto& door : doors) {
-            if (std::abs(left - door.origin.x) < 1e-3 &&
-                door.origin.y <= pos.y && pos.y <= door.origin.y + 45.0f) {
-                doorGap = true;
-                break;
-            }
-        }
-        if (!doorGap) {
-            vel.x = std::abs(vel.x);
-            pos.x = left + radius;
-        }
-    }
-
-    // Right wall
-    if (pos.x + radius > right &&
-        pos.y >= top && pos.y <= bottom) {
-        bool doorGap = false;
-        for (const auto& door : doors) {
-            if (std::abs(right - door.origin.x) < 1e-3 &&
-                door.origin.y <= pos.y && pos.y <= door.origin.y + 45.0f) {
-                doorGap = true;
-                break;
-            }
-        }
-        if (!doorGap) {
-            vel.x = -std::abs(vel.x);
-            pos.x = right - radius;
-        }
-    }
+    return false;
 }
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 // VACUUM MOVEMENT BELOW
 //---------------------------------------------------------------------------------------------------------------------------------------
-// void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
-// {
-//     if (batteryLife <= 0) return;
 
-//     constexpr double radius = diameter / 2.0;
+void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
+{
+    if (batteryLife <= 0 || !vacuumGraphic) return;
 
-//     // Determine current algorithm
-//     QString currentAlgorithm = pathingAlgorithms.isEmpty() ? "Random" : pathingAlgorithms.first();
-//     QPointF currentPos(position.x, position.y);
-//     QPointF nextPos;
+    // 1) Propose new position via random (and seed vel if needed)
+    Vector2D candidate = moveRandomly(position, velocity, speed);
 
-//     // --- ALGORITHM-BASED MOVEMENT ---
-//     if (currentAlgorithm == "Random")
-//     {
-//         nextPos = PathAlgorithms::moveRandomly(
-//             currentPos, velocity, speed,
-//             collisionSystem->getRoomBounds(),
-//             collisionSystem->getObstructions(),
-//             collisionSystem->getDoors()
-//             );
-//     }
-//     else if (currentAlgorithm == "Wall Follow")
-//     {
-//         nextPos = PathAlgorithms::moveWallFollowing(
-//             currentPos, velocity, speed,
-//             collisionSystem->getRoomBounds(),
-//             collisionSystem->getObstructions()
-//             );
-//     }
-//     else if (currentAlgorithm == "Snaking")
-//     {
-//         nextPos = PathAlgorithms::moveSnaking(
-//             currentPos, velocity, speed,
-//             collisionSystem->getRoomBounds(),
-//             collisionSystem->getObstructions(),
-//             movingDown, movingRight, currentZoneX, currentZoneY, movingUpward
-//             );
-//     }
-//     else if (currentAlgorithm == "Spiral")
-//     {
-//         nextPos = PathAlgorithms::moveSpiral(
-//             currentPos, velocity, speed,
-//             spiralAngle, spiralRadius,
-//             collisionSystem->getRoomBounds(),
-//             collisionSystem->getObstructions()
-//             );
-//     }
-//     else
-//     {
-//         // Fallback: simple forward motion
-//         nextPos.setX(position.x + velocity.x * speed);
-//         nextPos.setY(position.y + velocity.y * speed);
-//     }
+    // 2) Resolve any overlap (position-only correction)
+    bool hit = collisionSystem->handleCollision(candidate, radius);
 
-//     // Update Vector2D position
-//     position.x = nextPos.x();
-//     position.y = nextPos.y();
+    if (hit) {
+        // 3a) Random‐algorithm response: pick a brand‐new heading
+        qreal angle = QRandomGenerator::global()->bounded(360.0);
+        velocity = { std::cos(qDegreesToRadians(angle)),
+                    std::sin(qDegreesToRadians(angle)) };
 
-//     // Handle collisions
-//     if (collisionSystem)
-//         collisionSystem->handleCollision(position, velocity, radius);
+        // 3b) Retry the move once
+        candidate = moveRandomly(position, velocity, speed);
+        if (collisionSystem->handleCollision(candidate, radius)) {
+            // Still blocked: skip movement this frame
+            return;
+        }
+    }
 
-//     // Move the vacuum graphic
-//     vacuumGraphic->setPos(position.x, position.y);
+    // 4) Commit the move
+    position = candidate;
+    vacuumGraphic->setPos(position.x, position.y);
 
-//     // Draw trail
-//     static QPointF lastTrailPoint = vacuumGraphic->pos();
-//     QPointF currentTrailPoint(position.x, position.y);
+    // 5) Draw trail
+    static QPointF lastPoint = vacuumGraphic->pos();
+    QPointF now(position.x, position.y);
+    QPen pen(Qt::blue); pen.setWidth(6);
+    scene->addLine(QLineF(lastPoint, now), pen);
+    lastPoint = now;
 
-//     QPen trailPen(Qt::blue);
-//     trailPen.setWidth(2);
-//     scene->addLine(QLineF(lastTrailPoint, currentTrailPoint), trailPen);
+    // 6) Drain battery
+    batteryLife--;
+}
 
-//     lastTrailPoint = currentTrailPoint;
-
-//     batteryLife--;
-// }
-
-// QPointF moveRandomly(const QPointF &currentPosition, QPointF &velocity, double speed,
-//                      double roomLeft, double roomRight, double roomTop, double roomBottom,
-//                      const QList<Obstruction2> &obstructions, const QList<QPointF> &doors)
-// {
-//     constexpr double vacuumRadius = 6.4;
-//     QPointF next = currentPosition + velocity * speed;
-
-//     auto isValidMove = [&](const QPointF &pos) {
-//         if (pos.x() - vacuumRadius < roomLeft || pos.x() + vacuumRadius > roomRight ||
-//             pos.y() - vacuumRadius < roomTop  || pos.y() + vacuumRadius > roomBottom)
-//             return false;
-//         for (const Obstruction2 &obs : obstructions)
-//         {
-//             QRectF obsRect = obs.rect;
-//             if (pos.x() + vacuumRadius > obsRect.left() &&
-//                 pos.x() - vacuumRadius < obsRect.right() &&
-//                 pos.y() + vacuumRadius > obsRect.top() &&
-//                 pos.y() - vacuumRadius < obsRect.bottom())
-//                 return false;
-//         }
-//         return true;
-//     };
-
-//     if (isValidMove(next))
-//     {
-//         for (const QPointF &door : doors)
-//         {
-//             double distanceToDoor = std::hypot(next.x() - door.x(), next.y() - door.y());
-//             if (distanceToDoor < 8.0)
-//                 return next;
-//         }
-//         return next;
-//     }
-
-//     int retries = 10;
-//     while (retries-- > 0)
-//     {
-//         double angle = static_cast<double>(std::rand() % 360) * (M_PI / 180.0);
-//         velocity.setX(std::cos(angle));
-//         velocity.setY(std::sin(angle));
-//         velocity /= std::hypot(velocity.x(), velocity.y());
-
-//         QPointF tryNext = currentPosition + velocity * speed;
-//         if (isValidMove(tryNext))
-//             return tryNext;
-//     }
-
-//     return currentPosition;
-// }
-
-
-// QPointF moveWallFollowing(QPointF currentPosition, QPointF &velocity, double speed,
-//                           double roomLeft, double roomRight, double roomTop, double roomBottom,
-//                           const QList<Obstruction2> &obstructions)
-// {
-//     constexpr double vacuumRadius = 6.4;
-//     constexpr double wallHugDistance = 3.0; // how close we want to stay near walls
-//     constexpr double rotateStep = M_PI / 12.0; // 15 degree rotation step when bouncing
-//     static double wallFollowAngle = 0.0;
-
-//     auto isValid = [&](const QPointF &pos) {
-//         if (pos.x() - vacuumRadius < roomLeft || pos.x() + vacuumRadius > roomRight ||
-//             pos.y() - vacuumRadius < roomTop  || pos.y() + vacuumRadius > roomBottom)
-//             return false;
-//         for (const auto &obs : obstructions)
-//         {
-//             QRectF obsRect = obs.rect;
-//             if (pos.x() + vacuumRadius > obsRect.left() &&
-//                 pos.x() - vacuumRadius < obsRect.right() &&
-//                 pos.y() + vacuumRadius > obsRect.top() &&
-//                 pos.y() - vacuumRadius < obsRect.bottom())
-//                 return false;
-//         }
-//         return true;
-//     };
-
-//     QPointF next = currentPosition + velocity * speed;
-
-//     // If normal move is fine, keep moving forward
-//     if (isValid(next))
-//         return next;
-
-//     // If blocked, rotate slightly and try to move along wall
-//     for (int i = 0; i < 24; ++i) // try small angle rotations
-//     {
-//         wallFollowAngle += rotateStep;
-//         if (wallFollowAngle > 2 * M_PI)
-//             wallFollowAngle -= 2 * M_PI;
-
-//         QPointF tryVel(std::cos(wallFollowAngle), std::sin(wallFollowAngle));
-//         QPointF tryNext = currentPosition + tryVel * speed;
-
-//         if (isValid(tryNext))
-//         {
-//             velocity = tryVel / std::hypot(tryVel.x(), tryVel.y()); // normalize velocity
-//             return tryNext;
-//         }
-//     }
-
-//     // If completely trapped, reverse direction
-//     velocity = -velocity;
-//     return currentPosition;
-// }
+Vector2D Vacuum::moveRandomly(Vector2D currentPos, Vector2D& velocity, int speed)
+{
+    // Initialize once if zero
+    if (velocity.x == 0 && velocity.y == 0) {
+        qreal angle = QRandomGenerator::global()->bounded(360.0);
+        velocity = { std::cos(qDegreesToRadians(angle)),
+                    std::sin(qDegreesToRadians(angle)) };
+    }
+    return currentPos + velocity * speed;
+}
 
 
 
-// QPointF moveSnaking(const QPointF &currentPosition, QPointF &velocity, double speed,
-//                     double roomLeft, double roomRight, double roomTop, double roomBottom,
-//                     const QList<Obstruction2> &obstructions,
-//                     bool &movingDown, bool &movingRight,
-//                     int &currentZoneX, int &currentZoneY,
-//                     bool &movingUpward)
-// {
-//     constexpr double vacuumRadius = 6.4;
-//     const double shiftDistance = vacuumRadius * 0.5;
-
-//     QPointF next = currentPosition + velocity * speed;
-
-//     if (!movingUpward) {
-//         if (movingRight && (next.x() + vacuumRadius) >= roomRight) {
-//             movingRight = false;
-//             next.setX(roomRight - vacuumRadius);
-//             next.setY(currentPosition.y() + shiftDistance);
-//         }
-//         else if (!movingRight && (next.x() - vacuumRadius) <= roomLeft) {
-//             movingRight = true;
-//             next.setX(roomLeft + vacuumRadius);
-//             next.setY(currentPosition.y() + shiftDistance);
-//         }
-
-//         if ((next.y() + vacuumRadius) >= roomBottom) {
-//             next.setY(roomBottom - vacuumRadius);
-//             movingUpward = true;
-//             movingDown = false;
-//         }
-
-//         velocity = movingRight ? QPointF(1, 0) : QPointF(-1, 0);
-//     }
-//     else {
-//         if (movingRight && (next.x() + vacuumRadius) >= roomRight) {
-//             movingRight = false;
-//             next.setX(roomRight - vacuumRadius);
-//             next.setY(currentPosition.y() - shiftDistance);
-//         }
-//         else if (!movingRight && (next.x() - vacuumRadius) <= roomLeft) {
-//             movingRight = true;
-//             next.setX(roomLeft + vacuumRadius);
-//             next.setY(currentPosition.y() - shiftDistance);
-//         }
-
-//         if ((next.y() - vacuumRadius) <= roomTop) {
-//             next.setY(roomTop + vacuumRadius);
-//             movingUpward = false;
-//             movingDown = true;
-//         }
-
-//         velocity = movingRight ? QPointF(1, 0) : QPointF(-1, 0);
-//     }
-
-//     return next;
-// }
-
-
-
-
-// QPointF moveSpiral(QPointF currentPosition, QPointF &velocity, double speed,
-//                    double &spiralAngle, double &spiralRadius,
-//                    double roomLeft, double roomRight, double roomTop, double roomBottom,
-//                    const QList<Obstruction2> &obstructions)
-// {
-//     constexpr double vacuumRadius = 6.4;
-//     constexpr double angleIncrement = 0.1;
-//     constexpr double radiusGrowthRate = 0.02;
-
-//     spiralAngle += angleIncrement;
-//     spiralRadius += radiusGrowthRate;
-
-//     double dx = std::cos(spiralAngle) * spiralRadius;
-//     double dy = std::sin(spiralAngle) * spiralRadius;
-//     QPointF next = currentPosition + QPointF(dx, dy);
-
-//     auto isValidMove = [&](const QPointF &pos) {
-//         if (pos.x() - vacuumRadius < roomLeft || pos.x() + vacuumRadius > roomRight ||
-//             pos.y() - vacuumRadius < roomTop  || pos.y() + vacuumRadius > roomBottom)
-//             return false;
-//         for (const auto& obs : obstructions)
-//         {
-//             QRectF obsRect = obs.rect;
-//             if (pos.x() + vacuumRadius > obsRect.left() &&
-//                 pos.x() - vacuumRadius < obsRect.right() &&
-//                 pos.y() + vacuumRadius > obsRect.top() &&
-//                 pos.y() - vacuumRadius < obsRect.bottom())
-//                 return false;
-//         }
-//         return true;
-//     };
-
-//     if (!isValidMove(next))
-//     {
-//         double bounceAngle = (std::rand() % 60 - 30) * (M_PI / 180.0);
-//         spiralAngle += bounceAngle;
-
-//         dx = std::cos(spiralAngle) * spiralRadius;
-//         dy = std::sin(spiralAngle) * spiralRadius;
-//         next = currentPosition + QPointF(dx, dy);
-
-//         if (!isValidMove(next))
-//         {
-//             spiralRadius = std::max(1.0, spiralRadius - 0.5);
-//             next = currentPosition;
-//         }
-//     }
-
-//     return next;
-// }

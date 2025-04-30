@@ -7,11 +7,21 @@
 #include <QBrush>
 #include <QString>
 
-struct Vector2D
-{
+struct Vector2D {
     double x;
     double y;
+
+    // Addition
+    Vector2D operator+(const Vector2D& other) const {
+        return {x + other.x, y + other.y};
+    }
+
+    // Scalar multiplication
+    Vector2D operator*(double scalar) const {
+        return {x * scalar, y * scalar};
+    }
 };
+
 
 struct Room2D
 {
@@ -35,7 +45,7 @@ class CollisionSystem
 {
 public:
     bool loadFromJson(const QString& filePath);
-    void handleCollision(Vector2D& position, Vector2D& velocity, double radius);
+    bool handleCollision(Vector2D& position, double radius);
     const Room2D* getCurrentRoom(const Vector2D& pos) const;
 
 private:
@@ -72,6 +82,7 @@ public:
     void updateMovementandTrail(QGraphicsScene* scene);
     void reset();
     void advance();
+    Vector2D moveRandomly(Vector2D position, Vector2D& velocity, int speed);
 
     // signals:
     //     void positionUpdated(QPointF newPos);
@@ -79,6 +90,7 @@ public:
 
 private:
     const double diameter = 12.8;
+    double radius = diameter/2.0;
     const double whiskerWidth = 13.5;
     const double vacuumWidth = 5.8;
 
@@ -91,6 +103,7 @@ private:
     QGraphicsEllipseItem *vacuumGraphic;
 
     Vector2D position;
+    Vector2D nextPosition;
     Vector2D velocity;
     CollisionSystem* collisionSystem;
 
