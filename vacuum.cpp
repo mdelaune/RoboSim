@@ -1,6 +1,8 @@
 #include "vacuum.h"
 #include "pathingalgorithms.h"
 #include <QtGui/qpen.h>
+#include <cmath>
+#include <cstdlib>
 
 Vacuum::Vacuum(QGraphicsScene* scene)
     : scene(scene),
@@ -9,103 +11,53 @@ Vacuum::Vacuum(QGraphicsScene* scene)
 {
     pathingAlgorithms << "Random";
 
-    vacuumGraphic = scene->addEllipse(-diameter/2, -diameter/2, diameter, diameter,
+    vacuumGraphic = scene->addEllipse(-diameter / 2, -diameter / 2, diameter, diameter,
                                       QPen(Qt::black), QBrush(Qt::gray));
 
-
-    setVacuumPosition(0, 0);  // x and y should be center of starting room
-    currentPosition = vacuumGraphic->pos(); // sync position
-    lastTrailPoint = vacuumGraphic->pos();       // FIX: trail starts at actual location
+    setVacuumPosition(0, 0);
+    currentPosition = vacuumGraphic->pos();
+    lastTrailPoint = currentPosition;
 
     double angle = static_cast<double>(std::rand() % 360) * (M_PI / 180.0);
     velocity.setX(std::cos(angle));
     velocity.setY(std::sin(angle));
 }
 
+// ---------------- Setters ----------------
 
-// Setters
 void Vacuum::setBatteryLife(int minutes)
 {
     if (minutes >= 1 && minutes <= 200)
-    {
         batteryLife = minutes * 60;
-    }
 }
 
 void Vacuum::setVacuumEfficiency(int vacuumEff)
 {
     if (vacuumEff >= 10 && vacuumEff <= 90)
-    {
         vacuumEfficiency = vacuumEff;
-    }
 }
 
 void Vacuum::setWhiskerEfficiency(int whiskerEff)
 {
     if (whiskerEff >= 10 && whiskerEff <= 50)
-    {
         whiskerEfficiency = whiskerEff;
-    }
 }
 
 void Vacuum::setSpeed(int inchesPerSecond)
 {
     if (inchesPerSecond >= 6 && inchesPerSecond <= 18)
-    {
         speed = inchesPerSecond;
-    }
 }
-
-
 
 void Vacuum::setVacuumPosition(double x, double y)
 {
     vacuumGraphic->setPos(x, y);
     currentPosition = vacuumGraphic->pos();
-    lastTrailPoint = currentPosition;  // ✅ align trail
+    lastTrailPoint = currentPosition;
 
-    // ✅ Draw a 1-pixel dot to mark the starting position
     QPen trailPen(Qt::blue);
     trailPen.setWidth(2);
     scene->addLine(QLineF(currentPosition, currentPosition), trailPen);
-}
-
-
-
-// Getters
-int Vacuum::getBatteryLife() const
-{
-    return batteryLife;
-}
-
-int Vacuum::getVacuumEfficiency() const
-{
-    return vacuumEfficiency;
-}
-
-int Vacuum::getWhiskerEfficiency() const
-{
-    return whiskerEfficiency;
-}
-
-int Vacuum::getSpeed() const
-{
-    return speed;
-}
-
-QStringList Vacuum::getPathingAlgorithms() const
-{
-    return pathingAlgorithms;
-}
-
-QGraphicsEllipseItem* Vacuum::getGraphic() const
-{
-    return vacuumGraphic;
-}
-
-QPointF Vacuum::getCurrentPosition() const
-{
-    return currentPosition;
 }
 
 void Vacuum::setFloorType(const QString &type)
@@ -113,6 +65,40 @@ void Vacuum::setFloorType(const QString &type)
     floorType = type;
 }
 
+void Vacuum::setPathingAlgorithms(const QStringList &algorithms)
+{
+    if (algorithms.size() == 4)
+        pathingAlgorithms = { "Random", "Wall Follow", "Snaking", "Spiral" };
+    else
+        pathingAlgorithms = algorithms;
+
+    qDebug() << "Pathing algorithms set to:" << pathingAlgorithms;
+}
+
+// ---------------- Getters ----------------
+
+int Vacuum::getBatteryLife() const { return batteryLife; }
+int Vacuum::getVacuumEfficiency() const { return vacuumEfficiency; }
+int Vacuum::getWhiskerEfficiency() const { return whiskerEfficiency; }
+int Vacuum::getSpeed() const { return speed; }
+QStringList Vacuum::getPathingAlgorithms() const { return pathingAlgorithms; }
+QGraphicsEllipseItem* Vacuum::getGraphic() const { return vacuumGraphic; }
+QPointF Vacuum::getCurrentPosition() const { return currentPosition; }
+
+double Vacuum::calculateWhiskerEffectiveness() const
+{
+    if (whiskerCleaningCount == 0) return 0.0;
+    return static_cast<double>(whiskerCleaningCount) * (static_cast<double>(whiskerEfficiency) / 100.0);
+}
+
+double Vacuum::getSquareFeetCovered() const
+{
+    constexpr double cellArea = 10.0 * 10.0;
+    constexpr double inchToFeet = 1.0 / 144.0;
+    return visitCount.size() * cellArea * inchToFeet;
+}
+
+// ---------------- Movement Function ----------------
 
 void Vacuum::move(const QList<QRectF>& rooms, const QList<Obstruction2>& obstructions, const QList<QPointF>& doors, int multiplier)
 {
@@ -258,47 +244,3 @@ void Vacuum::move(const QList<QRectF>& rooms, const QList<Obstruction2>& obstruc
 
     batteryLife--;
 }
-
-
-
-
-
-void Vacuum::setPathingAlgorithms(const QStringList &algorithms)
-{
-    if (algorithms.size() == 4)
-    {
-        pathingAlgorithms.clear();
-        pathingAlgorithms << "Random" << "Wall Follow" << "Snaking" << "Spiral";
-    }
-    else
-    {
-        pathingAlgorithms = algorithms;
-    }
-
-    qDebug() << "Pathings algorithms set to:" << pathingAlgorithms;
-}
-
-
-double Vacuum::calculateWhiskerEffectiveness() const
-{
-    if (whiskerCleaningCount == 0) return 0.0;
-
-    // Assume each whisker clean adds some contribution based on efficiency
-    return static_cast<double>(whiskerCleaningCount) * (static_cast<double>(whiskerEfficiency) / 100.0);
-}
-
-double Vacuum::getSquareFeetCovered() const
-{
-    constexpr double cellSizeInInches = 10.0; // Since you round trail points to 10x10 inch blocks
-    constexpr double cellAreaInSquareInches = cellSizeInInches * cellSizeInInches;
-    constexpr double squareInchesToSquareFeet = 1.0 / 144.0;
-
-    int cleanedCells = visitCount.size(); // Number of unique cells cleaned
-
-    double totalSquareInches = cleanedCells * cellAreaInSquareInches;
-    double totalSquareFeet = totalSquareInches * squareInchesToSquareFeet;
-
-    return totalSquareFeet;
-}
-
-
