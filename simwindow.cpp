@@ -73,12 +73,6 @@ void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whisk
     currentAlgorithmIndex = 0;
     allRunsCompleted = false;
 
-    for (int i = 0; i < 4; i++){
-            Run run;
-            run.exists = false;
-            simData->runs.append(run);
-    }
-
     startNextRun();
 }
 
@@ -86,6 +80,7 @@ void SimWindow::updateSimulation()
 {
     if (vacuum->getBatteryLife() <= 0)
     {
+        writeRun();
         simulationTimer->stop();
         currentAlgorithmIndex++;
         startNextRun();
@@ -129,6 +124,7 @@ void SimWindow::fiftySpeedPushed()
     setSimulationSpeed(50);
 }
 
+
 void SimWindow::writeReport(){
     QString filename = QFileDialog::getSaveFileName(this, "Select Report Save Location", "C://", "text(*.txt)");
     QFile file(filename);
@@ -138,31 +134,51 @@ void SimWindow::writeReport(){
         stream << simData->sTime[0]<< ":" << simData->sTime[1]<< "." << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
         stream << simData->totalSF << Qt::endl;
         if (simData->runs[0].exists){
-            stream << "random" << simData->runs[0].getTimeString(simData->runs[0].time) << simData->runs[0].coverSF << Qt::endl;
+            stream << "random " << simData->runs[0].getTimeString(simData->runs[0].time) << " " << simData->runs[0].coverSF << Qt::endl;
         }
         else{
             stream << "random 0" << Qt::endl;
         }
         if (simData->runs[1].exists){
-            stream << "spiral" << simData->runs[1].getTimeString(simData->runs[1].time) << simData->runs[0].coverSF << Qt::endl;
+            stream << "spiral " << simData->runs[1].getTimeString(simData->runs[1].time) << " " << simData->runs[1].coverSF << Qt::endl;
         }
         else{
             stream << "spiral 0" << Qt::endl;
         }
         if (simData->runs[2].exists){
-            stream << "snaking" << simData->runs[2].getTimeString(simData->runs[2].time) << simData->runs[0].coverSF << Qt::endl;
+            stream << "snaking " << simData->runs[2].getTimeString(simData->runs[2].time) << " " << simData->runs[2].coverSF << Qt::endl;
         }
         else{
             stream << "snaking 0" << Qt::endl;
         }
         if (simData->runs[3].exists){
-            stream << "wallfollow" << simData->runs[3].getTimeString(simData->runs[3].time) << simData->runs[0].coverSF << Qt::endl;
+            stream << "wallfollow " << simData->runs[3].getTimeString(simData->runs[3].time) << " " << simData->runs[3].coverSF << Qt::endl;
         }
         else{
-            stream << "wallfollow 0" << Qt::endl;
+            stream << "wallfollow 0";
         }
 
     }
+}
+
+void SimWindow::writeRun(){
+    Run run;
+    if (currentAlgorithmIndex == 0){
+        run.alg = "random";
+    }
+    if (currentAlgorithmIndex == 1){
+        run.alg = "spiral";
+    }
+    if (currentAlgorithmIndex == 2){
+        run.alg = "snaking";
+    }
+    if (currentAlgorithmIndex == 3){
+        run.alg = "wallfollow";
+    }
+    run.exists = true;
+    run.time = QTime::currentTime().toString().split(':');
+    run.coverSF = QString::number(1234.56);
+    simData->runs[currentAlgorithmIndex] = run;
 }
 
 void SimWindow::on_stopButton_clicked()
@@ -176,6 +192,7 @@ void SimWindow::on_stopButton_clicked()
     QString timeString = time.toString();
     simData->eTime = timeString.split(':');
 
+    writeRun();
     writeReport();
     this->close();
 }
@@ -217,6 +234,18 @@ void SimWindow::resetScene()
         vacuum->setVacuumEfficiency(vacuumEfficiency); // Set vacuum efficiency
         vacuum->setWhiskerEfficiency(whiskerEfficiency); // Set whisker efficiency
         vacuum->setSpeed(speed); // Set speed for the new run
+        if (currentAlgorithmIndex == 0){
+            ui->algLabel->setText("Random");
+        }
+        if (currentAlgorithmIndex == 1){
+            ui->algLabel->setText("Spiral");
+        }
+        if (currentAlgorithmIndex == 2){
+            ui->algLabel->setText("Snaking");
+        }
+        if (currentAlgorithmIndex == 3){
+          ui->algLabel->setText("Wall Follow");
+        }
     }
     else
     {

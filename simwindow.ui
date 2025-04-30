@@ -364,7 +364,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_5">
+           <widget class="QLabel" name="coverSF">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -454,7 +454,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_7">
+           <widget class="QLabel" name="perCleaned">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -541,7 +541,7 @@ border-color: rgba(103, 185, 154, 1);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="algLabel">
             <property name="minimumSize">
              <size>
               <width>100</width>
