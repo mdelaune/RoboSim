@@ -72,7 +72,7 @@ bool EditWindow::setupSceneFromFile(){
         house->loadPlan(plan);
         setupMenu();
         setupToolButtons();
-        ui->floorID->setText("Floorplan ID: " + house->id);
+        ui->floorID->setText("Floorplan ID: " + QString::number(house->getFloorplanId()));
         return true;
     }
     else{

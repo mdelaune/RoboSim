@@ -36,7 +36,7 @@ void MainWindow::on_loadFP_clicked()
 
     bool fileSelected = editWin->setupSceneFromFile();  // Setup scene with user selected floorplan
     if (fileSelected){
-        ui->activePlan->setText("Current Floorplan ID: " + editWin->house->id);
+        ui->activePlan->setText("Current Floorplan ID: " + QString::number(editWin->house->getFloorplanId()));
         editWin->showMaximized();
         //ui->runSim->setEnabled(true);
         floorplanCreated = true;
