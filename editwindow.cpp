@@ -57,7 +57,7 @@ void EditWindow::setupScene()
     house->setNewID();
     setupMenu();
     setupToolButtons();
-    ui->floorID->setText("Floorplan ID: " + house->id);
+    ui->floorID->setText("Floorplan ID: " + QString::number(house->getFloorplanId()));
 }
 
 void EditWindow::setupSceneFromFile(){
@@ -70,7 +70,7 @@ void EditWindow::setupSceneFromFile(){
     house->loadPlan(plan);
     setupMenu();
     setupToolButtons();
-    ui->floorID->setText("Floorplan ID: " + house->id);
+    ui->floorID->setText("Floorplan ID: " + QString::number(house->getFloorplanId()));
 }
 
 void EditWindow::setupToolButtons()
