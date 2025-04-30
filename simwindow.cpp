@@ -92,7 +92,7 @@ void SimWindow::updateSimulation()
         return;
     }
 
-    vacuum->advance();
+    vacuum->updateMovementandTrail(scene);
     updateBatteryLifeLabel();
 }
 
