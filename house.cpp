@@ -4,6 +4,7 @@
 
 #include "house.h"
 #include "dragdrop.h"
+#include "houseparser.h"
 
 #include <QRandomGenerator>
 
@@ -932,7 +933,6 @@ bool House::validateNoRoomIntersections()
 
     return true;
 }
-
 bool House::validateDoorsOnWalls()
 {
     for (Door& door : doors) {

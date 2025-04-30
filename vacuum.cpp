@@ -1,5 +1,6 @@
 #include "vacuum.h"
 #include "house.h"
+
 #include <QtGui/qpen.h>
 #include <iostream>
 
@@ -11,11 +12,11 @@ Vacuum::Vacuum(QGraphicsScene* scene)
     pathingAlgorithms << "Random";
     position = {0.0, 0.0};
 
-    vacuumGraphic = scene->addEllipse(-diameter/2, -diameter, diameter, diameter,
+    vacuumGraphic = scene->addEllipse(-diameter/2, -diameter/2, diameter, diameter,
                                       QPen(Qt::black), QBrush(Qt::gray));
     setVacuumPosition(position);
-
 }
+
 
 // Setters
 void Vacuum::setBatteryLife(int minutes)
@@ -50,17 +51,17 @@ void Vacuum::setSpeed(int inchesPerSecond)
     }
 }
 
-void Vacuum::setPathingAlgorithms(const QStringList &algorithms)
-{
-    pathingAlgorithms = algorithms;
-}
+
 
 void Vacuum::setVacuumPosition(Vector2D& startPosition)
 {
     vacuumGraphic->setPos(startPosition.x, startPosition.y);
     startPosition.x = vacuumGraphic->pos().x();
     startPosition.y = vacuumGraphic->pos().y();
+
 }
+
+
 
 // Getters
 int Vacuum::getBatteryLife() const
@@ -251,4 +252,3 @@ void CollisionSystem::handleCollision(Vector2D& pos, Vector2D& vel, double radiu
 //---------------------------------------------------------------------------------------------------------------------------------------
 // VACUUM MOVEMENT BELOW
 //---------------------------------------------------------------------------------------------------------------------------------------
-
