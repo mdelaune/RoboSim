@@ -81,7 +81,6 @@ public:
 
     void updateMovementandTrail(QGraphicsScene* scene);
     void reset();
-    void advance();
     Vector2D moveRandomly(Vector2D position, Vector2D& velocity, int speed);
 
     // signals:
