@@ -455,7 +455,7 @@ void House::addDoor(Door door)
 }
 
 void House::setNewID(){
-    id = QString::number(QRandomGenerator::global()->bounded(10000, 99999));
+    floorplan_id = QRandomGenerator::global()->bounded(10000, 99999);
 }
 
 void House::loadPlan(QString plan)
@@ -476,7 +476,6 @@ void House::loadPlan(QString plan)
     floorplan_name = plan;
 
     QJsonObject root = doc.object();
-    id = root.value("ID").toString();
     floor_covering = root.value("flooring").toString();
     floorplan_id = root.value("floorplan_id").toInt();
 

@@ -23,7 +23,7 @@ void MainWindow::on_createFP_clicked()
 {
     editWin = new EditWindow(this); // Create edit window object
     editWin->setupScene();          // Setup scene with default floorplan
-    ui->activePlan->setText("Current Floorplan ID: " + editWin->house->id);
+    ui->activePlan->setText("Current Floorplan ID: " + QString::number(editWin->house->getFloorplanId()));
     editWin->showMaximized();
     //ui->runSim->setEnabled(true);
     floorplanCreated = true;
@@ -33,6 +33,7 @@ void MainWindow::on_createFP_clicked()
 void MainWindow::on_loadFP_clicked()
 {
     editWin = new EditWindow(this); // Create edit window object
+
     bool fileSelected = editWin->setupSceneFromFile();  // Setup scene with user selected floorplan
     if (fileSelected){
         ui->activePlan->setText("Current Floorplan ID: " + editWin->house->id);
