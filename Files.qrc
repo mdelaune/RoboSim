@@ -16,4 +16,5 @@
     <qresource prefix="/Default">
         <file>default_plan.json</file>
     </qresource>
+    <qresource prefix="/HeatMaps"/>
 </RCC>

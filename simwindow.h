@@ -49,6 +49,7 @@ private:
 
     RunData *simData;
     void writeReport();
+    void writeRun();
 
     int batteryLife;
     int vacuumEfficiency;
