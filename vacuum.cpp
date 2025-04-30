@@ -1,6 +1,4 @@
 #include "vacuum.h"
-#include "house.h"
-
 #include <QtGui/qpen.h>
 #include <iostream>
 
