@@ -82,6 +82,10 @@ public:
     void updateMovementandTrail(QGraphicsScene* scene);
     void reset();
     Vector2D moveRandomly(Vector2D position, Vector2D& velocity, int speed);
+    Vector2D moveWallFollow(Vector2D currentPos, Vector2D& velocity, int speed);
+    Vector2D moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed);
+    Vector2D moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed);
+
 
     // signals:
     //     void positionUpdated(QPointF newPos);
@@ -108,6 +112,16 @@ private:
 
     int elapsedTime = 0;
     double coveredArea = 0.0;
+    double spiralAngle = 0.0;
+    double spiralRadius = 1.0;
+    bool movingRight = true;
+    bool movingDown = true;
+    bool movingUpward = false;
+
+    double snakeLeftBound = 0.0;
+    double snakeRightBound = 0.0;
+    double snakeTopBound = 0.0;
+    double snakeBottomBound = 0.0;
 
     QGraphicsScene* scene;
 

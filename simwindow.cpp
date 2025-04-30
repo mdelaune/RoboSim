@@ -230,10 +230,17 @@ void SimWindow::resetScene()
     if (vacuum != nullptr)
     {
         vacuum->reset(); // Reset the vacuum (position, battery, etc.)
-        vacuum->setBatteryLife(batteryLife); // Set battery life for the new run
-        vacuum->setVacuumEfficiency(vacuumEfficiency); // Set vacuum efficiency
-        vacuum->setWhiskerEfficiency(whiskerEfficiency); // Set whisker efficiency
-        vacuum->setSpeed(speed); // Set speed for the new run
+        vacuum->setBatteryLife(batteryLife);
+        vacuum->setVacuumEfficiency(vacuumEfficiency);
+        vacuum->setWhiskerEfficiency(whiskerEfficiency);
+        vacuum->setSpeed(speed);
+
+        // ✅ NEW: set the vacuum's current algorithm
+        if (currentAlgorithmIndex < pendingAlgorithms.size()) {
+            vacuum->setPathingAlgorithm(pendingAlgorithms[currentAlgorithmIndex]);
+        }
+
+        // Update label
         if (currentAlgorithmIndex == 0){
             ui->algLabel->setText("Random");
         }
@@ -244,7 +251,7 @@ void SimWindow::resetScene()
             ui->algLabel->setText("Snaking");
         }
         if (currentAlgorithmIndex == 3){
-          ui->algLabel->setText("Wall Follow");
+            ui->algLabel->setText("Wall Follow");
         }
     }
     else
@@ -252,6 +259,5 @@ void SimWindow::resetScene()
         qDebug() << "Error: Vacuum object is null.";
     }
 }
-
 
 
