@@ -170,7 +170,6 @@ public:
     Room* getRoomById(long id);
 
     void setNewID();
-    QString id;
 
     int validateTotalAreaBeforeSave();
     bool doRoomsShareWall(Room& room1, Room& room2);

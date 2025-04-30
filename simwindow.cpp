@@ -44,6 +44,26 @@ SimWindow::SimWindow(QWidget *parent)
     connect(ui->timesOnePushButton, &QPushButton::clicked, this, &SimWindow::oneSpeedPushed);
     connect(ui->timesFivePushButton, &QPushButton::clicked, this, &SimWindow::fiveSpeedPushed);
     connect(ui->timesFiftyPushButton, &QPushButton::clicked, this, &SimWindow::fiftySpeedPushed);
+
+    simData = new RunData();
+    simData->id = QString::number(house->getFloorplanId());
+    QDate date = QDate::currentDate();
+    QString dateString = date.QDate::toString("dd MM yy");
+    simData->sDate = dateString.split(' ');
+    qDebug() << dateString;
+
+    QTime time = QTime::currentTime();
+    QString timeString = time.toString();
+    simData->sTime = timeString.split(':');
+    qDebug() << timeString;
+
+    simData->totalSF = QString::number(house->getTotalArea()/16000);
+
+    for (int i = 0; i < 4; i++){
+        Run run;
+        run.exists = false;
+        simData->runs.append(run);
+    }
 }
 
 SimWindow::~SimWindow()
@@ -82,6 +102,7 @@ void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whisk
             run.exists = false;
             simData->runs.append(run);
     }
+    startNextRun();
 }
 
 void SimWindow::updateSimulation()
