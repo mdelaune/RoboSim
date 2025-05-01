@@ -647,7 +647,7 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
-    const double shiftDistance = radius * 0.5;
+    const double shiftDistance = (radius * 2) -1; // * 0.5;
 
     bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
                     currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
