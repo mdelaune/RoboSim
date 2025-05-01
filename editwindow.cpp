@@ -10,7 +10,6 @@ EditWindow::EditWindow(QWidget *parent)
     , ui(new Ui::EditWindow)
 {
     ui->setupUi(this);
-    ui->graphicsView->scale(3,3);
 }
 
 EditWindow::~EditWindow()
