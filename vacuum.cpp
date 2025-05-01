@@ -324,7 +324,7 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
 
     Vector2D candidate;
 
-    if (currentAlgorithm.toLower() == "wallfollow") {
+    if (currentAlgorithm.toLower() == "WallFollow") {
         candidate = moveWallFollow(position, velocity, speed);
     } else if (currentAlgorithm.toLower() == "spiral") {
         candidate = moveSpiral(position, velocity, speed);
@@ -344,7 +344,8 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     }
 
     bool hit = collisionSystem->handleCollision(candidate, radius);
-    if (hit) {
+    if (hit)
+    {
         qreal angle = QRandomGenerator::global()->bounded(360.0);
         velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
         candidate = moveRandomly(position, velocity, speed);
@@ -396,53 +397,54 @@ Vector2D Vacuum::moveRandomly(Vector2D currentPos, Vector2D& velocity, int speed
         velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
     }
     return currentPos + velocity * speed;
+
+
 }
 
 Vector2D Vacuum::moveWallFollow(Vector2D currentPos, Vector2D& velocity, int speed)
 {
     constexpr double vacuumRadius = 6.4;
-    constexpr double rotateStep = M_PI / 12.0;
+    constexpr double rotateStep = M_PI / 12.0;   // 15 degrees
     constexpr int maxRotations = 24;
+    constexpr int randomChanceOnBlock = 15;      // % chance to switch to Random if blocked
+
     static double wallFollowAngle = 0.0;
 
-    auto isValid = [&](const Vector2D& pos) -> bool {
-        Vector2D test = pos;
-        return !collisionSystem->handleCollision(test, vacuumRadius);
+    auto isValid = [&](Vector2D pos) {
+        return !collisionSystem->handleCollision(pos, vacuumRadius);
     };
 
-    // Try normal movement first
+    // Step 1: Try current direction
     Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
     if (isValid(next)) {
         wallFollowAngle = std::atan2(velocity.y, velocity.x);
         return next;
     }
 
-    // Try rotating until a clear direction is found
+    // Step 2: Rotate left/right to find alternative path
     for (int i = 0; i < maxRotations; ++i) {
         wallFollowAngle += rotateStep;
         if (wallFollowAngle > 2 * M_PI) wallFollowAngle -= 2 * M_PI;
 
-        Vector2D tryVel;
-        tryVel.x = std::cos(wallFollowAngle);
-        tryVel.y = std::sin(wallFollowAngle);
-
-        Vector2D tryNext;
-        tryNext.x = currentPos.x + tryVel.x * speed;
-        tryNext.y = currentPos.y + tryVel.y * speed;
+        Vector2D tryVel = { std::cos(wallFollowAngle), std::sin(wallFollowAngle) };
+        Vector2D tryNext = { currentPos.x + tryVel.x * speed, currentPos.y + tryVel.y * speed };
 
         if (isValid(tryNext)) {
             double len = std::hypot(tryVel.x, tryVel.y);
             if (len != 0) {
-                velocity.x = tryVel.x / len;
-                velocity.y = tryVel.y / len;
+                velocity = { tryVel.x / len, tryVel.y / len };
             }
             return tryNext;
         }
     }
 
-    // Fully blocked — bounce back
-    velocity.x = -velocity.x;
-    velocity.y = -velocity.y;
+    // Step 3: Still blocked — inject random with chance
+    if (QRandomGenerator::global()->bounded(100) < randomChanceOnBlock) {
+        return moveRandomly(currentPos, velocity, speed);
+    }
+
+    // Step 4: Bounce back if nothing else worked
+    velocity = { -velocity.x, -velocity.y };
     return currentPos;
 }
 
@@ -497,21 +499,27 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
     return next;
 }
 
-
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
     constexpr double vacuumRadius = 6.4;
     const double shiftDistance = vacuumRadius * 0.5;
+    constexpr double edgeTrigger = 10.0; // how close to edge triggers random
 
-    bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
-                    currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
+    // --- Random escape logic at boundaries (suggested in PDF)
+    bool nearEdge = currentPos.x - snakeLeftBound < edgeTrigger ||
+                    snakeRightBound - currentPos.x < edgeTrigger ||
+                    currentPos.y - snakeTopBound < edgeTrigger ||
+                    snakeBottomBound - currentPos.y < edgeTrigger;
 
-    if (nearWall && QRandomGenerator::global()->bounded(100) < 10) {
+    if (nearEdge && QRandomGenerator::global()->bounded(100) < 10) {
         return moveRandomly(currentPos, velocity, speed);
     }
 
-    Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
+    // --- Compute candidate move
+    Vector2D next = { currentPos.x + velocity.x * speed,
+                     currentPos.y + velocity.y * speed };
 
+    // --- Downward snaking phase
     if (!movingUpward) {
         if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
             movingRight = false;
@@ -530,7 +538,10 @@ Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
-    } else {
+    }
+
+    // --- Upward snaking phase
+    else {
         if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
             movingRight = false;
             next.x = snakeRightBound - vacuumRadius;
@@ -550,6 +561,7 @@ Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     }
 
+    // --- Clamp position to bounds
     next.x = std::clamp(next.x, snakeLeftBound + vacuumRadius, snakeRightBound - vacuumRadius);
     next.y = std::clamp(next.y, snakeTopBound + vacuumRadius, snakeBottomBound - vacuumRadius);
 
