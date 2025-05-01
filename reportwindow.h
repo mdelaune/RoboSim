@@ -30,9 +30,7 @@ private slots:
 
     void on_snakingAlg_clicked();
 
-    void on_wallFollowAlg_clicked();
-
-    // void on_homeButton_clicked();
+    void on_wallfollowAlg_clicked();
 
 private:
     Ui::ReportWindow *ui;

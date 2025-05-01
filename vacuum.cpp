@@ -41,6 +41,8 @@ void Vacuum::reset()
                                             QPen(Qt::black), QBrush(Qt::red));
     position = collisionSystem->getVacuumStartPosition();
     setVacuumPosition(position);
+
+    cleanedCoords.clear();
 }
 
 
@@ -142,7 +144,7 @@ int Vacuum::getElapsedTime() const
 
 double Vacuum::getCoveredArea() const
 {
-    return coveredArea;
+    return cleanedCoords.size(); //coveredArea;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -344,7 +346,7 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     Vector2D candidate;
 
     // Select movement algorithm
-    if (currentAlgorithm.toLower() == "wallfollow") {
+    if (currentAlgorithm.toLower() == "wall follow") {
         candidate = moveWallFollow(position, velocity, speed);
     } else if (currentAlgorithm.toLower() == "spiral") {
         candidate = moveSpiral(position, velocity, speed);
@@ -379,9 +381,22 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     // Trail
     static QPointF lastPoint = vacuumGraphic->pos();
     QPointF now(position.x, position.y);
-    QPen pen(Qt::blue); pen.setWidth(6);
+    QPen pen(QColor(0,0,255,vacuumEfficiency)); pen.setWidth(12);
     scene->addLine(QLineF(lastPoint, now), pen);
     lastPoint = now;
+
+    // Cover Sq Ft
+    bool add = true;
+
+    for (int i = 0; i < cleanedCoords.size(); i++){
+        if (static_cast<int>(cleanedCoords[i].x) == static_cast<int>(position.x) and static_cast<int>(cleanedCoords[i].y) == static_cast<int>(position.y)) {
+            add = false;
+        }
+    }
+
+    if (add == true){
+        cleanedCoords.append(position);
+    }
 
     batteryLife--;
 }

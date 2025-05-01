@@ -105,6 +105,11 @@ void SimWindow::updateBatteryLifeLabel()
 
     QString timeString = QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
     ui->secondsLeftLabel->setText(timeString);
+    ui->coverSF->setText(QString::number(vacuum->getCoveredArea()));
+    double perD = vacuum->getCoveredArea()/house->getTotalArea() * 10000;
+    ui->perCleaned->setText(QString::number(perD, 'g' ,4));
+
+
 }
 
 void SimWindow::setSimulationSpeed(int multiplier)
@@ -135,7 +140,7 @@ void SimWindow::writeReport(){
     QFile file(save_path+"/"+simData->id+ "-" + QString::number(simData->report_id) + ".txt");
     if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
-        stream << simData->id << Qt::endl;
+        stream << simData->id << " " << simData->report_id << Qt::endl;
         stream << simData->sTime[0]<< ":" << simData->sTime[1]<< ":" << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
         stream << simData->totalSF << Qt::endl;
         stream << simData->openSF << Qt::endl;
@@ -198,7 +203,7 @@ void SimWindow::writeRun(){
     run.time.append(QString::number(m/60));
     run.time.append(QString::number(m % 60));
     run.time.append(QString::number(batRuntime % 60));
-    run.coverSF = QString::number(1234.56); //-----------------------------------------------------------replace w cover sq ft calc
+    run.coverSF = QString::number(vacuum->getCoveredArea());
 
     QPixmap heatmap = ui->graphicsView->grab();
     if (pendingAlgorithms[currentAlgorithmIndex] == "Random"){

@@ -212,7 +212,7 @@ void SummaryWindow::updateText(){
     ui->numRuns->setText(QString::number(getNumRuns()));
 
     QList<int> shortRun = getShortestRun();
-    ui->simSR->setText(QString::number(shortRun[0]));
+    ui->simSR->setText(QString::number(data[shortRun[0]].report_id));
     if (data[shortRun[0]].runs[shortRun[1]].alg == "random"){
         ui->algSR->setText("Random");
     }
@@ -228,7 +228,7 @@ void SummaryWindow::updateText(){
     ui->valueSR->setText(data[shortRun[0]].runs[shortRun[1]].getTimeString(data[shortRun[0]].runs[shortRun[1]].time));
 
     QList<int> longRun = getLongestRun();
-    ui->simLR->setText(QString::number(longRun[0]));
+    ui->simLR->setText(QString::number(data[longRun[0]].report_id));
     if (data[longRun[0]].runs[longRun[1]].alg == "random"){
         ui->algLR->setText("Random");
     }
@@ -244,7 +244,7 @@ void SummaryWindow::updateText(){
     ui->valueLR->setText(data[longRun[0]].runs[longRun[1]].getTimeString(data[longRun[0]].runs[longRun[1]].time));
 
     QList<int> mostCover = getMostCovRun();
-    ui->simMC->setText(QString::number(mostCover[0]));
+    ui->simMC->setText(QString::number(data[mostCover[0]].report_id));
     if (data[mostCover[0]].runs[mostCover[1]].alg == "random"){
         ui->algMC->setText("Random");
     }
@@ -260,7 +260,7 @@ void SummaryWindow::updateText(){
     ui->valueMC->setText(data[mostCover[0]].runs[mostCover[1]].coverSF);
 
     QList<int> leastCover = getLeastCovRun();
-    ui->simLC->setText(QString::number(leastCover[0]));
+    ui->simLC->setText(QString::number(data[leastCover[0]].report_id));
     if (data[leastCover[0]].runs[leastCover[1]].alg == "random"){
         ui->algLC->setText("Random");
     }
@@ -281,12 +281,12 @@ void SummaryWindow::updateText(){
     ui->avgCover->setText(QString::number(getAvgCover()));
     ui->avgPerCl->setText(QString::number(getAvgPerCl())+"%");
 
-    QStringList keyString;
-    for (int i = 0; i < data.size(); i++){
-        keyString.append(QString::number(i) + "-> " + data[i].sDate[0] + "/" + data[i].sDate[1] + "/" + data[i].sDate[2]);
-    }
+    // QStringList keyString;
+    // for (int i = 0; i < data.size(); i++){
+    //     keyString.append("  " +QString::number(i) + QString::number(data[i].report_id));//"-> " + data[i].sDate[0] + "/" + data[i].sDate[1] + "/" + data[i].sDate[2]);
+    // }
 
-    ui->key->setText(keyString.join("\n"));
+    // ui->key->setText(keyString.join("\n"));
 
     this->show();
 }

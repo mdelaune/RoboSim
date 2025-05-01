@@ -246,7 +246,7 @@ private:
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
     int scene_object_id = 1;
-    int totalArea;
+    int total_area;
     int cover_area;
 
     QString floor_covering = "hard_floor";
