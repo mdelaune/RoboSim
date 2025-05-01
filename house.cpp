@@ -335,32 +335,32 @@ QString Room::get_shape()
 
 int House::getTotalArea()
 {
-    for (int i = 0; i < rooms.size(); ++i) {
-        Room& currentRoom = rooms[i];
-        QRectF currentRect = currentRoom.get_rectRoom();
+    // for (int i = 0; i < rooms.size(); ++i) {
+    //     Room& currentRoom = rooms[i];
+    //     QRectF currentRect = currentRoom.get_rectRoom();
 
-        bool isContained = false;
+    //     bool isContained = false;
 
-        // Check if currentRoom is fully inside any other room
-        for (int j = 0; j < rooms.size(); ++j) {
-            if (i == j) continue; // don't compare with itself
+    //     // Check if currentRoom is fully inside any other room
+    //     for (int j = 0; j < rooms.size(); ++j) {
+    //         if (i == j) continue; // don't compare with itself
 
-            Room& otherRoom = rooms[j];
-            QRectF otherRect = otherRoom.get_rectRoom();
+    //         Room& otherRoom = rooms[j];
+    //         QRectF otherRect = otherRoom.get_rectRoom();
 
-            if (otherRect.contains(currentRect)) {
-                isContained = true;
-                break;
-            }
-        }
+    //         if (otherRect.contains(currentRect)) {
+    //             isContained = true;
+    //             break;
+    //         }
+    //     }
 
-        // Only add area if not contained
-        if (!isContained) {
-            totalArea += currentRect.width() * currentRect.height();
-        }
-    }
+    //     // Only add area if not contained
+    //     if (!isContained) {
+    //         totalArea += currentRect.width() * currentRect.height();
+    //     }
+    // }
 
-    return totalArea;
+    return total_area;
 }
 
 QString House::getFloorCovering()
@@ -874,7 +874,7 @@ void House::setRoomFillColor(QString flooring)
 int House::getOpenArea()
 {
     int coveredArea = 0;
-    totalArea = 0;
+    int totalArea = 0;
     for (Obstruction& obstruction : obstructions) {
         coveredArea += static_cast<int>(obstruction.get_floorCoverage());
     }
@@ -905,6 +905,7 @@ int House::getOpenArea()
             totalArea += currentRect.width() * currentRect.height();
         }
     }
+    total_area = totalArea;
 
     totalArea /= 23.3;
 

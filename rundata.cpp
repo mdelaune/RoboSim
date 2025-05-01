@@ -48,6 +48,7 @@ void RunData::parseFile(QString file_name){
     bool ok;
     //qDebug() << filedata[0];
     id = filedata[0][0];
+    report_id = filedata[0][1].toInt();
 
     sTime.append(filedata[1][0]);
     sTime.append(filedata[1][1]);
@@ -61,24 +62,24 @@ void RunData::parseFile(QString file_name){
     totalSF = filedata[2][0]; //totalString;
     openSF = filedata[3][0];
 
+
     for (int i = 0; i < 4; i++){
         Run run;
         QStringList runString = algdata[i].split(' ');
         if (runString.size() >2){
-            qDebug() << runString[i].size();
             run.alg = runString[0];
             run.time = runString[1].split(':');
             run.coverSF = runString[2];
             run.heatmapPath = runString[3];
             qDebug() << run.heatmapPath;
             run.exists = true;
+            run.coverPer = QString::number(run.coverSF.toDouble()/openSF.toDouble() * 100, 'g', 4);
         }
         else run.exists = false;
         runs.append(run);
     }
 
     file.close();
-    //setEndValues();
 }
 
 void RunData::setNewID(){

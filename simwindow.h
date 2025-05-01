@@ -7,6 +7,7 @@
 #include "vacuum.h"
 #include "house.h"
 #include "rundata.h"
+#include "reportwindow.h"
 
 
 namespace Ui {
@@ -49,7 +50,7 @@ private:
     int simulationSpeedMultiplier;
 
     RunData *simData;
-    void writeReport();
+    QString writeReport();
     void writeRun();
 
     int batteryLife;
@@ -61,6 +62,9 @@ private:
     bool allRunsCompleted = false;
 
     bool saveHeatmapImage(QString &outImageFilename);
+
+
+    ReportWindow *repWin;
 };
 
 #endif // SIMWINDOW_H

@@ -14,6 +14,8 @@ SimWindow::SimWindow(House* housePtr, QWidget *parent)
     view->setRenderHint(QPainter::Antialiasing);
     view->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
+    view->scale(1.5, 1.5);
+
     scene = new QGraphicsScene(this);
     view->setScene(scene);
 
@@ -60,8 +62,8 @@ void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whisk
     simData = new RunData();
     simData->setNewID();
     simData->id = QString::number(house->getFloorplanId());
-    simData->openSF = QString::number(house->getOpenArea()/100);
-    simData->totalSF = QString::number(house->getTotalArea()/100);
+    simData->openSF = QString::number(house->getOpenArea()/120);
+    simData->totalSF = QString::number(house->getTotalArea()/120);
 
 
     QDate date = QDate::currentDate();
@@ -105,6 +107,11 @@ void SimWindow::updateBatteryLifeLabel()
 
     QString timeString = QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
     ui->secondsLeftLabel->setText(timeString);
+    ui->coverSF->setText(QString::number(vacuum->getCoveredArea()));
+    double perD = vacuum->getCoveredArea()/house->getTotalArea() * 10000;
+    ui->perCleaned->setText(QString::number(perD, 'g' ,4));
+
+
 }
 
 void SimWindow::setSimulationSpeed(int multiplier)
@@ -129,13 +136,13 @@ void SimWindow::fiftySpeedPushed()
     setSimulationSpeed(50);
 }
 
-void SimWindow::writeReport(){
+QString SimWindow::writeReport(){
     save_path = QFileDialog::getExistingDirectory(this, "Select Report Save Location", "C://", QFileDialog::ShowDirsOnly);
-    qDebug() << save_path;
-    QFile file(save_path+"/"+simData->id+ "-" + QString::number(simData->report_id) + ".txt");
+    QString pathToSavedReport = save_path+"/"+simData->id+ "-" + QString::number(simData->report_id) + ".txt";
+    QFile file(pathToSavedReport);
     if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
-        stream << simData->id << Qt::endl;
+        stream << simData->id << " " << simData->report_id << Qt::endl;
         stream << simData->sTime[0]<< ":" << simData->sTime[1]<< ":" << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
         stream << simData->totalSF << Qt::endl;
         stream << simData->openSF << Qt::endl;
@@ -176,6 +183,8 @@ void SimWindow::writeReport(){
         }
 
     }
+
+    return pathToSavedReport;
 }
 
 void SimWindow::writeRun(){
@@ -198,7 +207,7 @@ void SimWindow::writeRun(){
     run.time.append(QString::number(m/60));
     run.time.append(QString::number(m % 60));
     run.time.append(QString::number(batRuntime % 60));
-    run.coverSF = QString::number(1234.56); //-----------------------------------------------------------replace w cover sq ft calc
+    run.coverSF = QString::number(vacuum->getCoveredArea());
 
     QPixmap heatmap = ui->graphicsView->grab();
     if (pendingAlgorithms[currentAlgorithmIndex] == "Random"){
@@ -229,8 +238,15 @@ void SimWindow::stopSimulation(){
     QString timeString = time.toString();
     simData->eTime = timeString.split(':');
 
-    writeReport();
+
+    repWin = new ReportWindow(this);
+    QString newPath = writeReport();
+    bool fileSelected = repWin->setupSceneFromSim(newPath);
+    if (fileSelected){
+        repWin->showMaximized();
+    }
     this->close();
+
 }
 
 void SimWindow::on_stopButton_clicked()
@@ -285,16 +301,16 @@ void SimWindow::resetScene()
         }
 
         // Update label
-        if (currentAlgorithmIndex == 0){
+        if (vacuum->getPathingAlgorithm() == "Random"){
             ui->algLabel->setText("Random");
         }
-        if (currentAlgorithmIndex == 1){
+        if (vacuum->getPathingAlgorithm() == "Spiral"){
             ui->algLabel->setText("Spiral");
         }
-        if (currentAlgorithmIndex == 2){
+        if (vacuum->getPathingAlgorithm() == "Snaking"){
             ui->algLabel->setText("Snaking");
         }
-        if (currentAlgorithmIndex == 3){
+        if (vacuum->getPathingAlgorithm() == "Wall Follow"){
             ui->algLabel->setText("Wall Follow");
         }
     }

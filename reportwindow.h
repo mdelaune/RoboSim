@@ -19,6 +19,7 @@ public:
     ~ReportWindow();
     QString file_name;
     bool setupSceneFromFile();
+    bool setupSceneFromSim(QString sim_file_path);
     void updateText();
     QString selectedAlg;
     // QMainWindow *mw;
@@ -30,9 +31,7 @@ private slots:
 
     void on_snakingAlg_clicked();
 
-    void on_wallFollowAlg_clicked();
-
-    // void on_homeButton_clicked();
+    void on_wallfollowAlg_clicked();
 
 private:
     Ui::ReportWindow *ui;

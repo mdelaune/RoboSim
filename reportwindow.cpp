@@ -79,6 +79,45 @@ void ReportWindow::updateText(){
     //this->showMaximized();
 }
 
+bool ReportWindow::setupSceneFromSim(QString sim_file_path){
+
+    QFile fileTest(sim_file_path);
+    if (fileTest.open(QIODevice::ReadOnly)){
+        data->parseFile(sim_file_path);
+
+        if (!data->runs[0].exists){
+            ui->randomAlg->setEnabled(0);
+        }
+        else{
+            ui->randomAlg->setEnabled(1);
+        }
+
+        if (!data->runs[1].exists){
+            ui->spiralAlg->setEnabled(0);
+        }
+        else{
+            ui->spiralAlg->setEnabled(1);
+        }
+
+        if (!data->runs[2].exists){
+            ui->snakingAlg->setEnabled(0);
+        }
+        else{
+            ui->snakingAlg->setEnabled(1);
+        }
+
+        if (!data->runs[3].exists){
+            ui->wallfollowAlg->setEnabled(0);
+        }
+        else{
+            ui->wallfollowAlg->setEnabled(1);
+        }
+        updateText();
+        return true;
+    }
+    return false;
+}
+
 
 bool ReportWindow::setupSceneFromFile(){
     file_name = QFileDialog::getOpenFileName(this, "Select Floorplan File", "C://", "text (*.txt)");
@@ -116,9 +155,7 @@ bool ReportWindow::setupSceneFromFile(){
         updateText();
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 
@@ -143,9 +180,10 @@ void ReportWindow::on_snakingAlg_clicked()
 }
 
 
-void ReportWindow::on_wallFollowAlg_clicked()
+void ReportWindow::on_wallfollowAlg_clicked()
 {
     selectedAlg = "wallfollow";
     updateText();
 }
+
 

@@ -56,7 +56,7 @@ private:
     std::vector<Room2D> rooms;
     std::vector<Door2D> doors;
     std::vector<Obstruction2D> obstructions;
-    Vector2D vacuumStart;
+    Vector2D vacuumStart = {67.0, 192.0};
 };
 
 class Vacuum
@@ -132,6 +132,8 @@ private:
     double snakeBottomBound = 0.0;
 
     QGraphicsScene* scene;
+
+    QList<Vector2D> cleanedCoords;
 
 };
 
