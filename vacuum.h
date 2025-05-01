@@ -85,7 +85,10 @@ public:
     Vector2D moveWallFollow(Vector2D currentPos, Vector2D& velocity, int speed);
     Vector2D moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed);
     Vector2D moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed);
-
+    QString floorType = "Hard";
+    QMap<QString, int> visitCount;
+QPointF lastTrailPoint;
+    Vector2D moveWallFollowWithRandom(Vector2D currentPos, Vector2D& velocity, int speed);
 
     // signals:
     //     void positionUpdated(QPointF newPos);

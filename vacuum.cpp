@@ -42,6 +42,8 @@ void Vacuum::reset()
                                             QPen(Qt::black), QBrush(Qt::red));
     position = {0, 200.0};
     setVacuumPosition(position);
+    lastTrailPoint = QPointF(position.x, position.y);
+
 }
 
 
@@ -322,7 +324,6 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
 
     Vector2D candidate;
 
-    // Select movement algorithm
     if (currentAlgorithm.toLower() == "wallfollow") {
         candidate = moveWallFollow(position, velocity, speed);
     } else if (currentAlgorithm.toLower() == "spiral") {
@@ -342,7 +343,6 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
         candidate = moveRandomly(position, velocity, speed);
     }
 
-    // Collision handling
     bool hit = collisionSystem->handleCollision(candidate, radius);
     if (hit) {
         qreal angle = QRandomGenerator::global()->bounded(360.0);
@@ -351,19 +351,43 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
         if (collisionSystem->handleCollision(candidate, radius)) return;
     }
 
-    // Move vacuum
     position = candidate;
     vacuumGraphic->setPos(position.x, position.y);
 
-    // Trail
-    static QPointF lastPoint = vacuumGraphic->pos();
     QPointF now(position.x, position.y);
-    QPen pen(Qt::blue); pen.setWidth(6);
+    QPointF roundedPos(std::round(now.x() / 10.0) * 10.0, std::round(now.y() / 10.0) * 10.0);
+    QString posKey = QString::number(roundedPos.x()) + "," + QString::number(roundedPos.y());
+
+    visitCount[posKey]++;
+    int visits = visitCount[posKey];
+
+    int baseGreen = std::max(0, 255 - visits * 25);
+    double normalizedSpeed = static_cast<double>(speed) / 18.0;
+    normalizedSpeed = std::clamp(normalizedSpeed, 0.0, 1.0);
+    int speedAdjustedGreen = static_cast<int>(baseGreen * (0.5 + 0.5 * normalizedSpeed));
+    speedAdjustedGreen = std::clamp(speedAdjustedGreen, 0, 255);
+
+    QColor color;
+    if (floorType == "Hard") {
+        color = QColor(0, speedAdjustedGreen, 0);
+    } else if (floorType == "Loop Pile") {
+        color = QColor(0, 0, speedAdjustedGreen);
+    } else if (floorType == "Cut Pile") {
+        color = QColor(speedAdjustedGreen, 0, 0);
+    } else if (floorType == "Frieze-cut Pile") {
+        color = QColor(speedAdjustedGreen, speedAdjustedGreen, 0);
+    } else {
+        color = QColor(0, speedAdjustedGreen, 0);
+    }
+
+    static QPointF lastPoint = vacuumGraphic->pos();
+    QPen pen(color); pen.setWidth(6);
     scene->addLine(QLineF(lastPoint, now), pen);
     lastPoint = now;
 
     batteryLife--;
 }
+
 
 Vector2D Vacuum::moveRandomly(Vector2D currentPos, Vector2D& velocity, int speed)
 {
@@ -381,34 +405,48 @@ Vector2D Vacuum::moveWallFollow(Vector2D currentPos, Vector2D& velocity, int spe
     constexpr int maxRotations = 24;
     static double wallFollowAngle = 0.0;
 
-    auto isValid = [&](const Vector2D& pos) {
+    auto isValid = [&](const Vector2D& pos) -> bool {
         Vector2D test = pos;
         return !collisionSystem->handleCollision(test, vacuumRadius);
     };
 
+    // Try normal movement first
     Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
     if (isValid(next)) {
         wallFollowAngle = std::atan2(velocity.y, velocity.x);
         return next;
     }
 
+    // Try rotating until a clear direction is found
     for (int i = 0; i < maxRotations; ++i) {
         wallFollowAngle += rotateStep;
         if (wallFollowAngle > 2 * M_PI) wallFollowAngle -= 2 * M_PI;
 
-        Vector2D tryVel = { std::cos(wallFollowAngle), std::sin(wallFollowAngle) };
-        Vector2D tryNext = { currentPos.x + tryVel.x * speed, currentPos.y + tryVel.y * speed };
+        Vector2D tryVel;
+        tryVel.x = std::cos(wallFollowAngle);
+        tryVel.y = std::sin(wallFollowAngle);
+
+        Vector2D tryNext;
+        tryNext.x = currentPos.x + tryVel.x * speed;
+        tryNext.y = currentPos.y + tryVel.y * speed;
 
         if (isValid(tryNext)) {
             double len = std::hypot(tryVel.x, tryVel.y);
-            velocity = { tryVel.x / len, tryVel.y / len };
+            if (len != 0) {
+                velocity.x = tryVel.x / len;
+                velocity.y = tryVel.y / len;
+            }
             return tryNext;
         }
     }
 
-    velocity = { -velocity.x, -velocity.y };
+    // Fully blocked — bounce back
+    velocity.x = -velocity.x;
+    velocity.y = -velocity.y;
     return currentPos;
 }
+
+
 
 Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 {
