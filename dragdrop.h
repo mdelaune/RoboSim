@@ -169,8 +169,8 @@ class DragRoom : public QObject, public QGraphicsRectItem, protected DragBase
 {
     Q_OBJECT
 public:
-    const qreal MIN_ROOM_WIDTH = 100.0;
-    const qreal MIN_ROOM_HEIGHT = 100.0;
+    const qreal MIN_ROOM_WIDTH = 35.0;
+    const qreal MIN_ROOM_HEIGHT = 35.0;
 
     DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room *room, long id);
     bool checkRoomIntersection(const QRectF &newRect);

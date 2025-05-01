@@ -153,8 +153,8 @@ public:
     House(QGraphicsScene *scene);
 
     static House* instance;
-    const double MIN_TOTAL_AREA = 56000.0;
-    const double MAX_TOTAL_AREA = 2240000.0;
+    const double MIN_TOTAL_AREA = 200.0;
+    const double MAX_TOTAL_AREA = 8000.0;
 
     void loadPlan(QString plan);
 
@@ -201,7 +201,7 @@ public:
     QVector<Door> doors;
     QVector<Obstruction> obstructions;
     QString flooring;
-    HouseVacuum *vacuum;
+    HouseVacuum *vacuum = nullptr;
 
     Room* getRoomById(long id);
 

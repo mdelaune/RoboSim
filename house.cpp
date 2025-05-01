@@ -676,6 +676,7 @@ void House::loadNonInteractivePlan(QString plan)
 void House::createNewFloorplan()
 {
     clear();
+
     floorplan_name = "Untitled";
     floor_covering = "hard_floor";  // Default flooring
 
@@ -1127,6 +1128,7 @@ int House::validateTotalAreaBeforeSave()
 
 bool House::doRoomsShareWall(Room& room1, Room& room2)
 {
+    qDebug() << "check rooms share wall";
     QRectF rect1 = room1.get_rectRoom();
     QRectF rect2 = room2.get_rectRoom();
 
@@ -1149,6 +1151,7 @@ bool House::doRoomsShareWall(Room& room1, Room& room2)
 
 bool House::validateRoomConnectivity()
 {
+    qDebug() << "check room connectivity";
     if (rooms.size() <= 1) {
         // If there's only one room or no rooms, there's nothing to check
         return true;
@@ -1207,6 +1210,7 @@ bool House::doRoomsIntersect(Room& room1, Room& room2)
 
 bool House::validateNoRoomIntersections()
 {
+    qDebug() << "check intersections ";
     if (rooms.size() <= 1) {
         // If there's only one room or no rooms, there's no intersection possible
         return true;
@@ -1226,6 +1230,7 @@ bool House::validateNoRoomIntersections()
 }
 bool House::validateDoorsOnWalls()
 {
+    qDebug() << "check doors on walls";
     for (Door& door : doors) {
         // Get the door line
         QLineF doorLine = door.get_door();
@@ -1300,6 +1305,7 @@ bool House::validateDoorsOnWalls()
 
 bool House::validateEveryRoomHasDoor()
 {
+    qDebug() << "check every room has door";
     // If there's only one room, it doesn't need a door
     if (rooms.size() <= 1) {
         return true;
@@ -1414,6 +1420,7 @@ bool House::doesObstructionIntersectRoom(Obstruction& obstruction, Room& room)
 // Add this method to the House class to validate all obstructions
 bool House::validateObstructionPlacements()
 {
+    qDebug() << "chek obstruction place";
     for (Obstruction& obstruction : obstructions) {
         if (!isObstructionInsideAnyRoom(obstruction)) {
             qDebug() << "ERROR: Obstruction" << obstruction.getId()
@@ -1586,11 +1593,21 @@ qreal pointToSegmentDistance(const QPointF& p, const QLineF& line)
 
 bool House::isVacuumPositionValid()
 {
-    if (!vacuum) return false;
+    qDebug() << "check vacuum position";
+    if (vacuum == nullptr)
+    {
+        return false;
+    }
 
     QPointF center = vacuum->get_center();
     qreal radius = vacuum->get_radius(); // make sure you have a getter for this
     QRectF vacuumRect(center.x() - radius, center.y() - radius, radius * 2, radius * 2);
+
+
+    if (!std::isfinite(center.x()) || !std::isfinite(center.y())) {
+        qDebug() << "Vacuum position is not a valid point (NaN or Inf)";
+        return false;
+    }
 
     // 1. Check: Vacuum must be inside a room
     bool insideRoom = false;

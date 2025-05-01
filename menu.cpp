@@ -75,10 +75,23 @@ void Menu::menuSave()
         return;
     }
 
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        nullptr,
+        "Confirm Save",
+        "Are you sure you want to save this floorplan?\n\nThis will overwrite changes previously nade to this file.",
+        QMessageBox::Yes | QMessageBox::No
+        );
+
+    if (reply != QMessageBox::Yes) {
+        return; // User chose No
+    }
+
+    // Proceed with saving
     if (!filename.isEmpty()) {
         saveToFile(filename);
         qDebug() << "SAVE";
     }
+
 }
 
 void Menu::menuSaveAs()
@@ -194,6 +207,7 @@ bool Menu::errorChecks()
 
     if(!m_house->isVacuumPositionValid())
     {
+        qDebug() << "check vacuum";
         QMessageBox errorBox;
         errorBox.setWindowTitle("Floor Plan Error");
         errorBox.setIcon(QMessageBox::Warning);
