@@ -673,12 +673,12 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 
     return next;
 }
-
-
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
-    const double shiftDistance = (radius * 2) -1; // * 0.5;
+    constexpr double vacuumRadius = 6.4;
+    constexpr double shiftDistance = (vacuumRadius * 2) - 1;
 
+    // Fallback to random mode if too close to room bounds (avoid being stuck)
     bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
                     currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
 
@@ -686,48 +686,57 @@ Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
         return moveRandomly(currentPos, velocity, speed);
     }
 
+    // Compute horizontal move
     Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
 
+    // Horizontal boundary check
     if (!movingUpward) {
-        if (movingRight && (next.x + radius) >= snakeRightBound) {
+        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
             movingRight = false;
-            next.x = snakeRightBound - radius;
+            next.x = snakeRightBound - vacuumRadius;
             next.y = currentPos.y + shiftDistance;
-        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
+        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
             movingRight = true;
-            next.x = snakeLeftBound + radius;
+            next.x = snakeLeftBound + vacuumRadius;
             next.y = currentPos.y + shiftDistance;
         }
 
-        if ((next.y + radius) >= snakeBottomBound) {
-            next.y = snakeBottomBound - radius;
+        if ((next.y + vacuumRadius) >= snakeBottomBound) {
+            next.y = snakeBottomBound - vacuumRadius;
             movingUpward = true;
-            movingDown = false;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     } else {
-        if (movingRight && (next.x + radius) >= snakeRightBound) {
+        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
             movingRight = false;
-            next.x = snakeRightBound - radius;
+            next.x = snakeRightBound - vacuumRadius;
             next.y = currentPos.y - shiftDistance;
-        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
+        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
             movingRight = true;
-            next.x = snakeLeftBound + radius;
+            next.x = snakeLeftBound + vacuumRadius;
             next.y = currentPos.y - shiftDistance;
         }
 
-        if ((next.y - radius) <= snakeTopBound) {
-            next.y = snakeTopBound + radius;
+        if ((next.y - vacuumRadius) <= snakeTopBound) {
+            next.y = snakeTopBound + vacuumRadius;
             movingUpward = false;
-            movingDown = true;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     }
 
-    next.x = std::clamp(next.x, snakeLeftBound + radius, snakeRightBound - radius);
-    next.y = std::clamp(next.y, snakeTopBound + radius, snakeBottomBound - radius);
+    // Clamp within room bounds
+    next.x = std::clamp(next.x, snakeLeftBound + vacuumRadius, snakeRightBound - vacuumRadius);
+    next.y = std::clamp(next.y, snakeTopBound + vacuumRadius, snakeBottomBound - vacuumRadius);
+
+    // ✅ Check for collision
+    if (collisionSystem->handleCollision(next, vacuumRadius)) {
+        // If collision, fallback to random pathing temporarily
+        qreal angle = QRandomGenerator::global()->bounded(360.0);
+        velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
+        return moveRandomly(currentPos, velocity, speed);
+    }
 
     return next;
 }

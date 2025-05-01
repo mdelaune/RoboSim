@@ -105,7 +105,7 @@ void SimWindow::updateBatteryLifeLabel()
     QString timeString = QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
     ui->secondsLeftLabel->setText(timeString);
     ui->coverSF->setText(QString::number(vacuum->getCoveredArea(), 'g',4));
-    double perD = vacuum->getCoveredArea()/house->getOpenArea() * 100;
+    double perD = vacuum->getCoveredArea()/house->getOpenArea() * 50;
     ui->perCleaned->setText(QString::number(perD, 'g' ,4) + " %");
 
 
