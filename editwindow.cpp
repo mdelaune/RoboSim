@@ -10,15 +10,16 @@ EditWindow::EditWindow(QWidget *parent)
     , ui(new Ui::EditWindow)
 {
     ui->setupUi(this);
-
-    // setupScene();
-    // setupToolButtons();
-    // setupMenu();
+    ui->graphicsView->scale(3,3);
 }
 
 EditWindow::~EditWindow()
 {
     delete ui;
+    delete m_menu;
+    delete scene;
+    delete house;
+    delete edit;
 }
 
 void EditWindow::setupMenu()

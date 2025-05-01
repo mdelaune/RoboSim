@@ -158,8 +158,8 @@ void Draw::changeFlooring()
 
 void Draw::addVacuum()
 {
-    QPointF center(0,50);
-    int radius = 15;
+    QPointF center(0,80);
+    int radius = 10;
     HouseVacuum *vacuum = new HouseVacuum(center, radius);
 
     // Add the vacuum to your house model

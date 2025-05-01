@@ -489,6 +489,32 @@ void House::drawObstructions()
 
 void House::drawSimulationPlan()
 {
+
+    // QColor fillColor;
+    // Qt::BrushStyle pattern = Qt::NoBrush;
+
+    // if (floor_covering == "hard_floor") {
+    //     fillColor = QColor(196, 164, 132, 127);
+    //     pattern = Qt::CrossPattern;
+    // } else if (floor_covering == "cut_pile") {
+    //     fillColor = QColor(200, 0, 0, 127);
+    //     pattern = Qt::Dense6Pattern;
+    // } else if (floor_covering == "loop_pile") {
+    //     fillColor = QColor(50, 50, 255, 127);
+    //     pattern = Qt::Dense7Pattern;
+    // } else if (floor_covering == "frieze_cut") {
+    //     fillColor = QColor(255, 255, 200, 127);
+    //     pattern = Qt::Dense5Pattern;
+    // }
+
+    // QBrush roomBrush(fillColor, pattern);
+
+    // for (const Room& room : rooms) {
+    //     QRectF rect = room.get_rectRoom();
+    //     QGraphicsRectItem* roomItem = m_scene->addRect(rect, wall_pen, roomBrush);
+    //     roomItem->setZValue(0); // Ensure it's below other items
+    // }
+
     for(int i = 0; i < rooms.size(); i++)
     {
         m_scene->addRect(rooms[i].get_rectRoom(), wall_pen);
@@ -589,7 +615,6 @@ void House::loadPlan(QString plan)
         next_floorplan_id = floorplan_id + 1;
     }
 
-
     QJsonArray roomsArray = root.value("rooms").toArray();
     loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
     drawRooms();
@@ -646,7 +671,6 @@ void House::loadNonInteractivePlan(QString plan)
     drawSimulationPlan();
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
-
 }
 
 void House::createNewFloorplan()
@@ -855,6 +879,8 @@ int House::getOpenArea()
         coveredArea += static_cast<int>(obstruction.get_floorCoverage());
     }
 
+    coveredArea /= 23.3;
+
     for (int i = 0; i < rooms.size(); ++i) {
         Room& currentRoom = rooms[i];
         QRectF currentRect = currentRoom.get_rectRoom();
@@ -879,6 +905,8 @@ int House::getOpenArea()
             totalArea += currentRect.width() * currentRect.height();
         }
     }
+
+    totalArea /= 23.3;
 
     return totalArea - coveredArea;
 }
