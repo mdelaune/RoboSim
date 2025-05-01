@@ -133,33 +133,42 @@ QList<int> SummaryWindow::getLeastCovRun(){
 }
 
 QList<int> SummaryWindow::getAvgTime(){
-    QList<int> timeAvg= {0,0,0};
+
+    int hour = 0;
+    int min = 0;
+    int sec = 0;
     bool ok;
 
-    for (int i = 1; i < data.size(); i++){
-        for (int j = 1; j < data[i].runs.size(); j++){
+    for (int i = 0; i < data.size(); i++){
+        for (int j = 0; j < data[i].runs.size(); j++){
+            qDebug() << data[i].runs[j].exists;
             if (data[i].runs[j].exists){
-                timeAvg[0] += (data[i].runs[j].time[0].toInt(&ok));
-                timeAvg[1] += (data[i].runs[j].time[1].toInt(&ok));
-                timeAvg[2] += (data[i].runs[j].time[2].toInt(&ok));
+                hour += (data[i].runs[j].time[0].toInt(&ok));
+                min += (data[i].runs[j].time[1].toInt(&ok));
+                sec += (data[i].runs[j].time[2].toInt(&ok));
             }
         }
     }
 
-    timeAvg[0] /= data.size();
-    timeAvg[1] /= data.size();
-    timeAvg[2] /= data.size();
 
-    if (timeAvg[2] > 59){
-        timeAvg[1] +=1;
-        timeAvg[2] = timeAvg[2] % 60;
-    }
-    if (timeAvg[1] > 59){
-        timeAvg[0] +=1;
-        timeAvg[1] = timeAvg[1] % 60;
-    }
 
-    return timeAvg;
+    hour /= data.size();
+    min /= data.size();
+    sec /= data.size();
+
+    if (sec > 59){
+        sec +=1;
+        min = sec % 60;
+    }
+    if (min > 59){
+        min +=1;
+        hour = min % 60;
+    }
+    QList<int> avgTimeCalc;
+    avgTimeCalc.append(hour);
+    avgTimeCalc.append(min);
+    avgTimeCalc.append(sec);
+    return avgTimeCalc;
 }
 float SummaryWindow::getAvgCover(){
     float coverAvg = 0;
@@ -268,7 +277,7 @@ void SummaryWindow::updateText(){
 
 
     QList<int> at = getAvgTime();
-    ui->avgTime->setText(QString::number(at[0]) + ":" + QString::number(at[1]) + "." + QString::number(at[2]));
+    ui->avgTime->setText(QString::number(at[0]).rightJustified(2, '0') + ":" + QString::number(at[1]).rightJustified(2, '0') + ":" + QString::number(at[2]).rightJustified(2, '0'));
     ui->avgCover->setText(QString::number(getAvgCover()));
     ui->avgPerCl->setText(QString::number(getAvgPerCl())+"%");
 
