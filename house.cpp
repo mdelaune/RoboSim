@@ -915,10 +915,10 @@ int House::getOpenArea()
 
 void House::clear()
 {
-    if(vacuum != nullptr)
-    {
-        delete vacuum;
-    }
+    // if(vacuum != nullptr)
+    // {
+    //     delete vacuum;
+    // }
     m_scene->clearSelection();
     m_scene->clear();
     rooms.clear();
