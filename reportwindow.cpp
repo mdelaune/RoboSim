@@ -12,6 +12,7 @@ ReportWindow::ReportWindow(QWidget *parent)
     , ui(new Ui::ReportWindow)
 {
     ui->setupUi(this);
+    this->setFocus();
     data = new RunData();
 }
 

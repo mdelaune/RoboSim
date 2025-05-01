@@ -6,7 +6,6 @@
 #include <QPointF>
 #include <QBrush>
 #include <QString>
-#include <cstdio>
 #include <QtMath>
 
 struct Vector2D {
@@ -69,11 +68,11 @@ public:
     void setVacuumEfficiency(int vacuumEff);
     void setWhiskerEfficiency(int whiskerEff);
     void setSpeed(int inchesPerSecond);
-    void setPathingAlgorithm(const QString &algorithm);  // Changed to accept a list of algorithms
+    void setPathingAlgorithm(const QString &algorithm);
     void setVacuumPosition(Vector2D& position);
     void setHousePath(QString& path);
-    // Getters
 
+    // Getters
     int getBatteryLife() const;
     int getVacuumEfficiency() const;
     int getWhiskerEfficiency() const;
@@ -82,20 +81,15 @@ public:
     QGraphicsEllipseItem* getGraphic() const;
     const Vector2D &getPosition() const;
     Vector2D& getVelocity() const;
-    int getElapsedTime() const;
     double getCoveredArea() const;
 
+    // Movement
     void updateMovementandTrail(QGraphicsScene* scene);
     void reset();
     Vector2D moveRandomly(Vector2D position, Vector2D& velocity, int speed);
     Vector2D moveWallFollow(Vector2D currentPos, Vector2D& velocity, int speed);
     Vector2D moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed);
     Vector2D moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed);
-
-
-    // signals:
-    //     void positionUpdated(QPointF newPos);
-    //     void batteryDepleted();
 
 private:
     const double diameter = 12.8;
@@ -118,7 +112,6 @@ private:
     Vector2D velocity;
     CollisionSystem* collisionSystem;
 
-    int elapsedTime = 0;
     double coveredArea = 0.0;
     double spiralAngle = 0.0;
     double spiralRadius = 1.0;
