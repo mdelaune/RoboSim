@@ -9,8 +9,11 @@
 
 Door::Door() : m_origin(QPointF(0,0)), m_size(45)
 {
-    m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
-    m_entry = QLineF(m_origin, QPointF(m_origin.x() + m_size, m_origin.y()));
+    m_doorEnd = QPointF(m_origin.x(), m_origin.y() + m_size);
+    m_entryEnd = QPointF(m_origin.x() + m_size, m_origin.y());
+
+    m_door = QLineF(m_origin, m_doorEnd);
+    m_entry = QLineF(m_origin, m_entryEnd);
 }
 
 Door::Door(QPointF origin, QPointF doorEnd, QPointF entryEnd)
