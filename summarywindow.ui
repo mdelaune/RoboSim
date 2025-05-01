@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1095</width>
-    <height>984</height>
+    <height>1046</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -105,7 +105,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -136,7 +136,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -167,7 +167,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -198,7 +198,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -259,7 +259,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -290,7 +290,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -321,7 +321,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -445,7 +445,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -486,7 +486,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -520,7 +520,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -554,7 +554,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -569,7 +569,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -584,7 +584,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -599,7 +599,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -633,7 +633,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -686,7 +686,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -701,7 +701,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -735,7 +735,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -750,7 +750,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -765,7 +765,7 @@ border-radius: 16px;
            <property name="font">
             <font>
              <family>Verdana</family>
-             <pointsize>12</pointsize>
+             <pointsize>16</pointsize>
             </font>
            </property>
            <property name="styleSheet">
