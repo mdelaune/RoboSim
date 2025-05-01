@@ -129,6 +129,8 @@ private:
     QList<Vector2D> cleanedCoords;
     QPointF lastTrailPoint;
 
+    QMap<QString, int> visitCount;
+
 };
 
 #endif // VACUUM_H

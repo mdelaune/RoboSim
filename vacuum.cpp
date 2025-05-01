@@ -297,16 +297,21 @@ bool CollisionSystem::handleCollision(Vector2D& pos, double radius)
         }
     }
 
-    // helper to skip door gaps
     auto doorGap = [&](double wallPos, double orthPos, bool horiz){
+        // allow any candidate within 'radius' of the hinge‐line
+        const double tol = radius + 0.1;
         for (auto &d : doors) {
             if (horiz) {
-                if (std::abs(wallPos - d.origin.y) < 1e-3 &&
-                    orthPos >= d.origin.x && orthPos <= d.origin.x + 45.0)
+                // horizontal door at y = d.origin.y, spans x in [origin.x, origin.x+45]
+                if (std::abs(wallPos - d.origin.y) <= tol &&
+                    orthPos >= d.origin.x  - tol &&
+                    orthPos <= d.origin.x + 45.0 + tol)
                     return true;
             } else {
-                if (std::abs(wallPos - d.origin.x) < 1e-3 &&
-                    orthPos <= d.origin.y && orthPos >= d.origin.y - 45.0)
+                // vertical door at x = d.origin.x, spans y in [origin.y, origin.y+45]
+                if (std::abs(wallPos - d.origin.x) <= tol &&
+                    orthPos >= d.origin.y  - tol &&
+                    orthPos <= d.origin.y + 45.0 + tol)
                     return true;
             }
         }
@@ -428,12 +433,10 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     if (batteryLife <= 0 || !vacuumGraphic)
         return;
 
+    // 1) Pick your full‐target based on the chosen algorithm
     Vector2D fullTarget;
     QString alg = currentAlgorithm.toLower();
-    if (alg == "random") {
-        fullTarget = moveRandomly(position, velocity, speed);
-    }
-    else if (alg == "wall follow") {
+    if (alg == "wall follow") {
         fullTarget = moveWallFollow(position, velocity, speed);
     }
     else if (alg == "spiral") {
@@ -442,9 +445,9 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     else if (alg == "snaking") {
         const Room2D* room = collisionSystem->getCurrentRoom(position);
         if (room) {
-            snakeLeftBound = room->topLeft.x;
-            snakeRightBound = room->bottomRight.x;
-            snakeTopBound = room->topLeft.y;
+            snakeLeftBound   = room->topLeft.x;
+            snakeRightBound  = room->bottomRight.x;
+            snakeTopBound    = room->topLeft.y;
             snakeBottomBound = room->bottomRight.y;
         }
         fullTarget = moveSnaking(position, velocity, speed);
@@ -453,39 +456,65 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
         fullTarget = moveRandomly(position, velocity, speed);
     }
 
+    // 2) Compute micro-steps so we never move more than radius per iteration
+    double radius = diameter / 2.0;
     Vector2D delta { fullTarget.x - position.x,
                    fullTarget.y - position.y };
     double  dist   = std::hypot(delta.x, delta.y);
-    double  radius = diameter / 2.0;
     int     steps  = std::max(1, int(std::ceil(dist / radius)));
     Vector2D stepDelta { delta.x / steps, delta.y / steps };
 
+    // 3) Walk those steps, handling collisions at each micro-step
     for (int i = 0; i < steps; ++i)
     {
         Vector2D candidate { position.x + stepDelta.x,
                            position.y + stepDelta.y };
 
-        if (collisionSystem->handleCollision(candidate, radius))
+        bool hit = collisionSystem->handleCollision(candidate, radius);
+        if (hit)
         {
-            if (alg == "random") {
+            if (alg == "random")
+            {
+                // -- bounce: pick a new random heading
                 qreal angle = QRandomGenerator::global()->bounded(360.0);
-                velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
+                velocity = {
+                    std::cos(qDegreesToRadians(angle)),
+                    std::sin(qDegreesToRadians(angle))
+                };
+
+                // -- rebuild a fresh fullTarget & stepDelta
+                fullTarget = moveRandomly(position, velocity, speed);
+                delta      = { fullTarget.x - position.x,
+                         fullTarget.y - position.y };
+                dist       = std::hypot(delta.x, delta.y);
+                steps      = std::max(1, int(std::ceil(dist / radius)));
+                stepDelta  = { delta.x / steps, delta.y / steps };
+
+                // restart the loop so we respect the new stepDelta
+                i = -1;
+                continue;
             }
-            break;
+            else
+            {
+                // non-random alg: stop stepping on first collision
+                break;
+            }
         }
 
+        // -- commit this micro-step
         position = candidate;
 
-        // draw trail segment
+        // -- draw trail
         QPointF now(position.x, position.y);
-        QPen pen(QColor(0,0, 255, vacuumEfficiency)); pen.setWidth(12);
+        QPen pen(QColor(0, 0, 255, vacuumEfficiency));
+        pen.setWidth(12);
         scene->addLine(QLineF(lastTrailPoint, now), pen);
         lastTrailPoint = now;
     }
 
+    // 4) Finally, update the graphic and record coverage
     vacuumGraphic->setPos(position.x, position.y);
 
-    // Cover Sq Ft
     bool add = true;
     for (auto &pt : cleanedCoords) {
         if (int(pt.x) >= int(position.x) - 6 &&
@@ -503,6 +532,7 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
 
     batteryLife--;
 }
+
 
 Vector2D Vacuum::moveRandomly(Vector2D currentPos, Vector2D& velocity, int speed)
 {
@@ -647,57 +677,84 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
-    const double shiftDistance = radius * 0.5;
+    constexpr double vacuumRadius = 6.4;
+    constexpr double shiftDistance = vacuumRadius * 0.5;
+    constexpr int randomFrames = 60; // How many frames random walk lasts
+    constexpr int revisitThreshold = 4;
 
-    bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
-                    currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
+    static QString mode = "snaking";  // or "random"
+    static int modeTimer = 0;
 
-    if (nearWall && QRandomGenerator::global()->bounded(100) < 10) {
+    // Track visits for hybrid decision
+    QPointF rounded(std::round(currentPos.x / 10.0) * 10.0,
+                    std::round(currentPos.y / 10.0) * 10.0);
+    QString key = QString::number(rounded.x()) + "," + QString::number(rounded.y());
+    int visits = digittoint[key];
+
+    // --- Mode switching
+    if (mode == "snaking" && visits >= revisitThreshold) {
+        mode = "random";
+        modeTimer = randomFrames;
+        qDebug() << "Switching to RANDOM mode";
+    }
+    else if (mode == "random") {
+        modeTimer--;
+        if (modeTimer <= 0) {
+            mode = "snaking";
+            qDebug() << "Switching back to SNAKING mode";
+        }
+    }
+
+    // --- RANDOM mode behavior
+    if (mode == "random") {
         return moveRandomly(currentPos, velocity, speed);
     }
 
-    Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
+    // --- SNAKING pattern behavior (same as improved version)
+    Vector2D next = {
+        currentPos.x + velocity.x * speed,
+        currentPos.y + velocity.y * speed
+    };
+
+    bool hitRight = movingRight && (next.x + vacuumRadius >= snakeRightBound);
+    bool hitLeft  = !movingRight && (next.x - vacuumRadius <= snakeLeftBound);
 
     if (!movingUpward) {
-        if (movingRight && (next.x + radius) >= snakeRightBound) {
-            movingRight = false;
-            next.x = snakeRightBound - radius;
-            next.y = currentPos.y + shiftDistance;
-        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
-            movingRight = true;
-            next.x = snakeLeftBound + radius;
+        if (hitRight || hitLeft) {
+            movingRight = !movingRight;
+            next.x = movingRight
+                         ? snakeLeftBound + vacuumRadius
+                         : snakeRightBound - vacuumRadius;
             next.y = currentPos.y + shiftDistance;
         }
 
-        if ((next.y + radius) >= snakeBottomBound) {
-            next.y = snakeBottomBound - radius;
+        if ((next.y + vacuumRadius) >= snakeBottomBound) {
+            next.y = snakeBottomBound - vacuumRadius;
             movingUpward = true;
-            movingDown = false;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
-    } else {
-        if (movingRight && (next.x + radius) >= snakeRightBound) {
-            movingRight = false;
-            next.x = snakeRightBound - radius;
-            next.y = currentPos.y - shiftDistance;
-        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
-            movingRight = true;
-            next.x = snakeLeftBound + radius;
+    }
+    else {
+        if (hitRight || hitLeft) {
+            movingRight = !movingRight;
+            next.x = movingRight
+                         ? snakeLeftBound + vacuumRadius
+                         : snakeRightBound - vacuumRadius;
             next.y = currentPos.y - shiftDistance;
         }
 
-        if ((next.y - radius) <= snakeTopBound) {
-            next.y = snakeTopBound + radius;
+        if ((next.y - vacuumRadius) <= snakeTopBound) {
+            next.y = snakeTopBound + vacuumRadius;
             movingUpward = false;
-            movingDown = true;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     }
 
-    next.x = std::clamp(next.x, snakeLeftBound + radius, snakeRightBound - radius);
-    next.y = std::clamp(next.y, snakeTopBound + radius, snakeBottomBound - radius);
+    // Clamp to room bounds
+    next.x = std::clamp(next.x, snakeLeftBound + vacuumRadius, snakeRightBound - vacuumRadius);
+    next.y = std::clamp(next.y, snakeTopBound + vacuumRadius, snakeBottomBound - vacuumRadius);
 
     return next;
 }
