@@ -18,7 +18,6 @@ SimWindow::SimWindow(House* housePtr, QWidget *parent)
     view->setScene(scene);
 
     house->setScene(scene);
-    //house->loadPlan(house_path);
     house->drawSimulationPlan();
 
     vacuum = new Vacuum(scene);
@@ -51,6 +50,9 @@ void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whisk
     this->whiskerEfficiency = whiskerEfficiency;
     this->speed = speed;
     pendingAlgorithms = selectedAlgorithms;
+
+    vacuum->setHousePath(house_path);
+    qDebug() << "HOUSE PATH TEST" << house_path;
 
     currentAlgorithmIndex = 0;
     allRunsCompleted = false;
