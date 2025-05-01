@@ -137,11 +137,6 @@ const Vector2D& Vacuum::getPosition() const
     return position;
 }
 
-int Vacuum::getElapsedTime() const
-{
-    return elapsedTime;
-}
-
 double Vacuum::getCoveredArea() const
 {
     return cleanedCoords.size(); //coveredArea;
@@ -318,89 +313,216 @@ bool CollisionSystem::handleCollision(Vector2D& pos, double radius)
         return false;
     };
 
-    // --- Wall collisions (early return each time) ---
-    if (pos.y - radius < top    && pos.x >= left && pos.x <= right && !doorGap(top,    pos.x, true)) {
-        pos.y = top + radius;    return true;
-    }
-    if (pos.y + radius > bottom && pos.x >= left && pos.x <= right && !doorGap(bottom, pos.x, true)) {
-        pos.y = bottom - radius; return true;
-    }
-    if (pos.x - radius < left   && pos.y >= top  && pos.y <= bottom&& !doorGap(left,   pos.y, false)) {
-        pos.x = left + radius;   return true;
-    }
-    if (pos.x + radius > right  && pos.y >= top  && pos.y <= bottom&& !doorGap(right,  pos.y, false)) {
-        pos.x = right - radius;  return true;
+    bool corrected = false;
+
+    // Top wall
+    if (pos.y - radius < top &&
+        pos.x >= left && pos.x <= right &&
+        !doorGap(top, pos.x, /*horizontal=*/true))
+    {
+        pos.y = top + radius;
+        corrected = true;
     }
 
-    return false;
+    // Bottom wall
+    if (pos.y + radius > bottom &&
+        pos.x >= left && pos.x <= right &&
+        !doorGap(bottom, pos.x, /*horizontal=*/true))
+    {
+        pos.y = bottom - radius;
+        corrected = true;
+    }
+
+    // Left wall
+    if (pos.x - radius < left &&
+        pos.y >= top && pos.y <= bottom &&
+        !doorGap(left, pos.y, /*horizontal=*/false))
+    {
+        pos.x = left + radius;
+        corrected = true;
+    }
+
+    // Right wall
+    if (pos.x + radius > right &&
+        pos.y >= top && pos.y <= bottom &&
+        !doorGap(right, pos.y, /*horizontal=*/false))
+    {
+        pos.x = right - radius;
+        corrected = true;
+    }
+
+    return corrected;
+
+
+    // //--- Wall collisions (early return each time) ---
+    // if (pos.y - radius < top    && pos.x >= left && pos.x <= right && !doorGap(top,    pos.x, true)) {
+    //     pos.y = top + radius;    return true;
+    // }
+    // if (pos.y + radius > bottom && pos.x >= left && pos.x <= right && !doorGap(bottom, pos.x, true)) {
+    //     pos.y = bottom - radius; return true;
+    // }
+    // if (pos.x - radius < left   && pos.y >= top  && pos.y <= bottom&& !doorGap(left,   pos.y, false)) {
+    //     pos.x = left + radius;   return true;
+    // }
+    // if (pos.x + radius > right  && pos.y >= top  && pos.y <= bottom&& !doorGap(right,  pos.y, false)) {
+    //     pos.x = right - radius;  return true;
+    // }
+
+    // return false;
 }
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 // VACUUM MOVEMENT BELOW
 //---------------------------------------------------------------------------------------------------------------------------------------
+// void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
+// {
+//     if (batteryLife <= 0 || !vacuumGraphic) return;
+
+//     Vector2D candidate;
+
+//     // Select movement algorithm
+//     if (currentAlgorithm.toLower() == "wall follow") {
+//         candidate = moveWallFollow(position, velocity, speed);
+//     } else if (currentAlgorithm.toLower() == "spiral") {
+//         candidate = moveSpiral(position, velocity, speed);
+//     } else if (currentAlgorithm.toLower() == "snaking") {
+//         const Room2D* room = collisionSystem->getCurrentRoom(position);
+//         if (room) {
+//             snakeLeftBound = room->topLeft.x;
+//             snakeRightBound = room->bottomRight.x;
+//             snakeTopBound = room->topLeft.y;
+//             snakeBottomBound = room->bottomRight.y;
+//         }
+//         candidate = moveSnaking(position, velocity, speed);
+//     } else if (currentAlgorithm.toLower() == "random") {
+//         candidate = moveRandomly(position, velocity, speed);
+//     } else {
+//         candidate = moveRandomly(position, velocity, speed);
+//     }
+
+//     // Collision handling
+//     bool hit = collisionSystem->handleCollision(candidate, radius);
+//     if (hit) {
+//         qreal angle = QRandomGenerator::global()->bounded(360.0);
+//         velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
+//         candidate = moveRandomly(position, velocity, speed);
+//         if (collisionSystem->handleCollision(candidate, radius)) return;
+//     }
+
+//     // Move vacuum
+//     position = candidate;
+//     vacuumGraphic->setPos(position.x, position.y);
+
+//     // Trail
+//     static QPointF lastPoint = vacuumGraphic->pos();
+//     QPointF now(position.x, position.y);
+//     QPen pen(QColor(0,0,255,vacuumEfficiency)); pen.setWidth(12);
+//     scene->addLine(QLineF(lastPoint, now), pen);
+//     lastPoint = now;
+
+//     // Cover Sq Ft
+//     bool add = true;
+
+//     for (int i = 0; i < cleanedCoords.size(); i++){
+//         if (static_cast<int>(cleanedCoords[i].x) >= static_cast<int>(position.x) - 6 and
+//             static_cast<int>(cleanedCoords[i].x) <= static_cast<int>(position.x) + 6 and
+//             static_cast<int>(cleanedCoords[i].y) >= static_cast<int>(position.y) - 6 and
+//             static_cast<int>(cleanedCoords[i].y) <= static_cast<int>(position.y) + 6) {
+//             add = false;
+//         }
+//     }
+
+//     if (add == true){
+//         cleanedCoords.append(position);
+//     }
+
+//     batteryLife--;
+// }
+
 void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
 {
-    if (batteryLife <= 0 || !vacuumGraphic) return;
+    if (batteryLife <= 0 || !vacuumGraphic)
+        return;
 
-    Vector2D candidate;
+    // 1) Pick the “full-step” target based on the current algorithm
+    Vector2D fullTarget;
+    QString alg = currentAlgorithm.toLower();
+    if (alg == "random") {
+        fullTarget = moveRandomly(position, velocity, speed);
+    }
+    else if (alg == "wall follow") {
+        fullTarget = moveWallFollow(position, velocity, speed);
+    }
+    else if (alg == "spiral") {
+        fullTarget = moveSpiral(position, velocity, speed);
+    }
+    else if (alg == "snaking") {
+        fullTarget = moveSnaking(position, velocity, speed);
+    }
+    else {
+        fullTarget = moveRandomly(position, velocity, speed);
+    }
 
-    // Select movement algorithm
-    if (currentAlgorithm.toLower() == "wall follow") {
-        candidate = moveWallFollow(position, velocity, speed);
-    } else if (currentAlgorithm.toLower() == "spiral") {
-        candidate = moveSpiral(position, velocity, speed);
-    } else if (currentAlgorithm.toLower() == "snaking") {
-        const Room2D* room = collisionSystem->getCurrentRoom(position);
-        if (room) {
-            snakeLeftBound = room->topLeft.x;
-            snakeRightBound = room->bottomRight.x;
-            snakeTopBound = room->topLeft.y;
-            snakeBottomBound = room->bottomRight.y;
+    // 2) Compute delta & break into micro-steps
+    Vector2D delta { fullTarget.x - position.x,
+                   fullTarget.y - position.y };
+    double  dist   = std::hypot(delta.x, delta.y);
+    double  radius = diameter / 2.0;
+    int     steps  = std::max(1, int(std::ceil(dist / radius)));
+    Vector2D stepDelta { delta.x / steps, delta.y / steps };
+
+    // 3) March forward one micro-step at a time
+    static QPointF lastPoint = vacuumGraphic->pos();
+    for (int i = 0; i < steps; ++i)
+    {
+        Vector2D candidate { position.x + stepDelta.x,
+                           position.y + stepDelta.y };
+
+        if (collisionSystem->handleCollision(candidate, radius))
+        {
+            // algorithm-specific bounce:
+            if (alg == "random") {
+                qreal angle = QRandomGenerator::global()->bounded(360.0);
+                velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
+            }
+            else {
+                // for all other algs just reverse
+                velocity.x = -velocity.x;
+                velocity.y = -velocity.y;
+            }
+            break;  // stop this frame
         }
-        candidate = moveSnaking(position, velocity, speed);
-    } else if (currentAlgorithm.toLower() == "random") {
-        candidate = moveRandomly(position, velocity, speed);
-    } else {
-        candidate = moveRandomly(position, velocity, speed);
+
+        position = candidate;
+
+        // draw trail segment
+        QPointF now(position.x, position.y);
+        QPen pen(QColor(0,0, 255, vacuumEfficiency)); pen.setWidth(12);
+        scene->addLine(QLineF(lastPoint, now), pen);
+        lastPoint = now;
     }
 
-    // Collision handling
-    bool hit = collisionSystem->handleCollision(candidate, radius);
-    if (hit) {
-        qreal angle = QRandomGenerator::global()->bounded(360.0);
-        velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
-        candidate = moveRandomly(position, velocity, speed);
-        if (collisionSystem->handleCollision(candidate, radius)) return;
-    }
-
-    // Move vacuum
-    position = candidate;
+    // 4) Commit final position
     vacuumGraphic->setPos(position.x, position.y);
 
-    // Trail
-    static QPointF lastPoint = vacuumGraphic->pos();
-    QPointF now(position.x, position.y);
-    QPen pen(QColor(0,0,255,vacuumEfficiency)); pen.setWidth(12);
-    scene->addLine(QLineF(lastPoint, now), pen);
-    lastPoint = now;
-
-    // Cover Sq Ft
+    // 5) **Cover Sq Ft** tracking
     bool add = true;
-
-    for (int i = 0; i < cleanedCoords.size(); i++){
-        if (static_cast<int>(cleanedCoords[i].x) >= static_cast<int>(position.x) - 6 and
-            static_cast<int>(cleanedCoords[i].x) <= static_cast<int>(position.x) + 6 and
-            static_cast<int>(cleanedCoords[i].y) >= static_cast<int>(position.y) - 6 and
-            static_cast<int>(cleanedCoords[i].y) <= static_cast<int>(position.y) + 6) {
+    for (auto &pt : cleanedCoords) {
+        if (int(pt.x) >= int(position.x) - 6 &&
+            int(pt.x) <= int(position.x) + 6 &&
+            int(pt.y) >= int(position.y) - 6 &&
+            int(pt.y) <= int(position.y) + 6)
+        {
             add = false;
+            break;
         }
     }
-
-    if (add == true){
+    if (add) {
         cleanedCoords.append(position);
     }
 
+    // 6) Drain battery
     batteryLife--;
 }
 
@@ -415,14 +537,13 @@ Vector2D Vacuum::moveRandomly(Vector2D currentPos, Vector2D& velocity, int speed
 
 Vector2D Vacuum::moveWallFollow(Vector2D currentPos, Vector2D& velocity, int speed)
 {
-    constexpr double vacuumRadius = 6.4;
     constexpr double rotateStep = M_PI / 12.0;
     constexpr int maxRotations = 24;
     static double wallFollowAngle = 0.0;
 
     auto isValid = [&](const Vector2D& pos) {
         Vector2D test = pos;
-        return !collisionSystem->handleCollision(test, vacuumRadius);
+        return !collisionSystem->handleCollision(test, radius);
     };
 
     Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
@@ -451,7 +572,6 @@ Vector2D Vacuum::moveWallFollow(Vector2D currentPos, Vector2D& velocity, int spe
 
 Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 {
-    constexpr double vacuumRadius = 6.4;
     constexpr double angleIncrement = 0.1;
     constexpr double radiusGrowthRate = 0.02;
 
@@ -465,7 +585,7 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 
     auto isValidMove = [&](const Vector2D& pos) {
         Vector2D test = pos;
-        return !collisionSystem->handleCollision(test, vacuumRadius);
+        return !collisionSystem->handleCollision(test, radius);
     };
 
     if (!isValidMove(next)) {
@@ -491,8 +611,7 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
-    constexpr double vacuumRadius = 6.4;
-    const double shiftDistance = vacuumRadius * 0.5;
+    const double shiftDistance = radius * 0.5;
 
     bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
                     currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
@@ -504,36 +623,36 @@ Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
     Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
 
     if (!movingUpward) {
-        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
+        if (movingRight && (next.x + radius) >= snakeRightBound) {
             movingRight = false;
-            next.x = snakeRightBound - vacuumRadius;
+            next.x = snakeRightBound - radius;
             next.y = currentPos.y + shiftDistance;
-        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
+        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
             movingRight = true;
-            next.x = snakeLeftBound + vacuumRadius;
+            next.x = snakeLeftBound + radius;
             next.y = currentPos.y + shiftDistance;
         }
 
-        if ((next.y + vacuumRadius) >= snakeBottomBound) {
-            next.y = snakeBottomBound - vacuumRadius;
+        if ((next.y + radius) >= snakeBottomBound) {
+            next.y = snakeBottomBound - radius;
             movingUpward = true;
             movingDown = false;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     } else {
-        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
+        if (movingRight && (next.x + radius) >= snakeRightBound) {
             movingRight = false;
-            next.x = snakeRightBound - vacuumRadius;
+            next.x = snakeRightBound - radius;
             next.y = currentPos.y - shiftDistance;
-        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
+        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
             movingRight = true;
-            next.x = snakeLeftBound + vacuumRadius;
+            next.x = snakeLeftBound + radius;
             next.y = currentPos.y - shiftDistance;
         }
 
-        if ((next.y - vacuumRadius) <= snakeTopBound) {
-            next.y = snakeTopBound + vacuumRadius;
+        if ((next.y - radius) <= snakeTopBound) {
+            next.y = snakeTopBound + radius;
             movingUpward = false;
             movingDown = true;
         }
@@ -541,8 +660,8 @@ Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     }
 
-    next.x = std::clamp(next.x, snakeLeftBound + vacuumRadius, snakeRightBound - vacuumRadius);
-    next.y = std::clamp(next.y, snakeTopBound + vacuumRadius, snakeBottomBound - vacuumRadius);
+    next.x = std::clamp(next.x, snakeLeftBound + radius, snakeRightBound - radius);
+    next.y = std::clamp(next.y, snakeTopBound + radius, snakeBottomBound - radius);
 
     return next;
 }
