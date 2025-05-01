@@ -46,6 +46,9 @@ public:
     Door* getDoor(){return m_door;}
     void updateLines();
 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+
+    QPainterPath shape();
 
 signals:
     void doorPositionChanged(int id, QPointF newOrigin);
@@ -55,6 +58,7 @@ private slots:
 
 protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
 private:
     Door *m_door;

@@ -33,6 +33,7 @@ Door::Door(QJsonObject door) : m_size(45)
 
 void Door::updateLines()
 {
+    // Simply update line objects using the current endpoints
     m_door = QLineF(m_origin, m_doorEnd);
     m_entry = QLineF(m_origin, m_entryEnd);
 }
@@ -69,31 +70,33 @@ float Door::get_size()
 
 void Door::set_origin(QPointF origin)
 {
+    // Calculate vectors (offsets) before changing origin
     QPointF doorOffset = m_doorEnd - m_origin;
     QPointF entryOffset = m_entryEnd - m_origin;
 
     // Update origin
     m_origin = origin;
 
-    // Move endpoints by the same amount to maintain the door shape
+    // Apply same offsets to maintain door shape and orientation
     m_doorEnd = m_origin + doorOffset;
     m_entryEnd = m_origin + entryOffset;
 
-    // Update the line objects
-    updateLines();
+    // Update the line objects directly
+    m_door = QLineF(m_origin, m_doorEnd);
+    m_entry = QLineF(m_origin, m_entryEnd);
 }
 
 void Door::set_doorEnd(QPointF doorEnd)
 {
     m_doorEnd = doorEnd;
-    m_size = QLineF(m_origin, m_doorEnd).length(); // Update size
-    updateLines();
+    m_door = QLineF(m_origin, m_doorEnd);
 }
 
+// Door::set_entryEnd - Modified version
 void Door::set_entryEnd(QPointF entryEnd)
 {
     m_entryEnd = entryEnd;
-    updateLines();
+    m_entry = QLineF(m_origin, m_entryEnd);
 }
 
 
@@ -545,7 +548,7 @@ void House::loadPlan(QString plan)
     loadEntities<Obstruction>(obstructionsArray, obstructions, [](QJsonObject& obj){ return Obstruction(obj); });
     drawObstructions();
 
-    drawSimulationPlan();
+
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
 
@@ -582,11 +585,11 @@ void House::loadNonInteractivePlan(QString plan)
 
     QJsonArray doorsArray = root.value("doors").toArray();
     loadEntities<Door>(doorsArray, doors, [](QJsonObject& obj){ return Door(obj); });
-    drawDoors();
 
     QJsonArray obstructionsArray = root.value("obstructions").toArray();
     loadEntities<Obstruction>(obstructionsArray, obstructions, [](QJsonObject& obj){ return Obstruction(obj); });
 
+    drawSimulationPlan();
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
 
@@ -626,13 +629,13 @@ QJsonDocument House::toJson()
     for(int i = 0; i < rooms.size(); i++)
     {
         QJsonObject object
-            {
-                {"shape", rooms[i].get_shape()},
-                {"x_topLeft", rooms[i].get_topLeft().x()},
-                {"y_topLeft", rooms[i].get_topLeft().y()},
-                {"x_bottomRight", rooms[i].get_bottomRight().x()},
-                {"y_bottomRight", rooms[i].get_bottomRight().y()}
-            };
+        {
+            {"shape", rooms[i].get_shape()},
+            {"x_topLeft", rooms[i].get_topLeft().x()},
+            {"y_topLeft", rooms[i].get_topLeft().y()},
+            {"x_bottomRight", rooms[i].get_bottomRight().x()},
+            {"y_bottomRight", rooms[i].get_bottomRight().y()}
+        };
 
         roomsArray.append(object);
         qDebug() << roomsArray;
@@ -641,14 +644,14 @@ QJsonDocument House::toJson()
     for(int i = 0; i < obstructions.size(); i++)
     {
         QJsonObject object
-            {
-                {"is_chest", obstructions[i].get_isChest()},
-                {"type", obstructions[i].get_type()}, // Add this line to store the type
-                {"x_topLeft", obstructions[i].get_topLeft().x()},
-                {"y_topLeft", obstructions[i].get_topLeft().y()},
-                {"x_bottomRight", obstructions[i].get_bottomRight().x()},
-                {"y_bottomRight", obstructions[i].get_bottomRight().y()},
-            };
+        {
+            {"is_chest", obstructions[i].get_isChest()},
+            {"type", obstructions[i].get_type()}, // Add this line to store the type
+            {"x_topLeft", obstructions[i].get_topLeft().x()},
+            {"y_topLeft", obstructions[i].get_topLeft().y()},
+            {"x_bottomRight", obstructions[i].get_bottomRight().x()},
+            {"y_bottomRight", obstructions[i].get_bottomRight().y()},
+        };
 
         obstructionsArray.append(object);
         qDebug() << obstructionsArray;
@@ -657,28 +660,28 @@ QJsonDocument House::toJson()
     for(int i = 0; i < doors.size(); i++)
     {
         QJsonObject object
-            {
-                {"x", doors[i].get_origin().x()},
-                {"y", doors[i].get_origin().y()},
-                {"doorX", doors[i].get_doorEnd().x()},
-                {"doorY", doors[i].get_doorEnd().y()},
-                {"entryX", doors[i].get_entryEnd().x()},
-                {"entryY", doors[i].get_entryEnd().y()}
-            };
+        {
+            {"x", doors[i].get_origin().x()},
+            {"y", doors[i].get_origin().y()},
+            {"doorX", doors[i].get_doorEnd().x()},
+            {"doorY", doors[i].get_doorEnd().y()},
+            {"entryX", doors[i].get_entryEnd().x()},
+            {"entryY", doors[i].get_entryEnd().y()}
+        };
 
         doorsArray.append(object);
         qDebug() << doorsArray;
     }
 
     QJsonObject root
-        {
-            {"vacuum_pos", vacuumPos},
-            {"floorplan_id", floorplan_id},
-            {"flooring", floor_covering},
-            {"doors", doorsArray},
-            {"obstructions", obstructionsArray},
-            {"rooms", roomsArray}
-        };
+    {
+        {"vacuum_pos", vacuumPos},
+        {"floorplan_id", floorplan_id},
+        {"flooring", floor_covering},
+        {"doors", doorsArray},
+        {"obstructions", obstructionsArray},
+        {"rooms", roomsArray}
+    };
 
     QJsonDocument doc = QJsonDocument(root);
     return doc;
@@ -953,10 +956,10 @@ void House::rotate()
             // Get the associated Door object
             Door* doorData = dragDoor->getDoor();
             if (doorData) {
-                // Get current positions in scene coordinates
-                QPointF origin = dragDoor->getOrigin();
-                QPointF doorEnd = dragDoor->getDoorEnd();
-                QPointF entryEnd = dragDoor->getEntryEnd();
+                // Get current positions
+                QPointF origin = doorData->get_origin();
+                QPointF doorEnd = doorData->get_doorEnd();
+                QPointF entryEnd = doorData->get_entryEnd();
 
                 // Calculate vectors relative to origin
                 QPointF doorVector = doorEnd - origin;
@@ -967,7 +970,7 @@ void House::rotate()
                 QPointF rotatedDoorVector(doorVector.y(), -doorVector.x());
                 QPointF rotatedEntryVector(entryVector.y(), -entryVector.x());
 
-                // Calculate new endpoint positions in scene coordinates
+                // Calculate new endpoint positions
                 QPointF newDoorEnd = origin + rotatedDoorVector;
                 QPointF newEntryEnd = origin + rotatedEntryVector;
 
@@ -977,6 +980,14 @@ void House::rotate()
 
                 // Update the visual representation
                 dragDoor->updateLines();
+
+                // Make sure the dragDoor position is synchronized with the Door model
+                // This depends on the DragDoor implementation, but generally:
+                dragDoor->setPos(origin);
+
+                qDebug() << "After rotation - Origin:" << origin
+                         << "DoorEnd:" << newDoorEnd
+                         << "EntryEnd:" << newEntryEnd;
             }
         }
     }

@@ -23,6 +23,8 @@ public:
     QPointF get_entryEnd();
     QLineF  get_door();
     QLineF  get_entry();
+    void set_door(QLineF door){m_door = door;}
+    void set_entry(QLineF entry){m_entry = entry;}
     float get_size();
 
     void set_origin(QPointF origin);
@@ -36,6 +38,8 @@ public:
     void setId(int id) { m_id = id; }
     int getId() const { return m_id; }
     void updateLines();
+
+    void updatePosition(QPointF newOrigin);
 
 private:
     QPointF m_origin;
