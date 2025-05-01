@@ -93,6 +93,10 @@ public:
     Vector2D moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed);
     QString floorType = "Hard";
     QMap<QString, int> visitCount;
+    bool spiralInRandomMode = false;
+    int spiralRandomCooldown = 0;
+
+
 QPointF lastTrailPoint;
     Vector2D moveWallFollowWithRandom(Vector2D currentPos, Vector2D& velocity, int speed);
 

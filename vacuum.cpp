@@ -475,47 +475,81 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 {
     constexpr double vacuumRadius = 6.4;
     constexpr double angleIncrement = 0.07;
-    constexpr double radiusGrowthRate = 0.015;
+    constexpr double radiusGrowthRate = 0.03;
+    constexpr double minDistanceFromWall = 18.0;
     constexpr double maxSpiralRadius = 60.0;
-    constexpr double randomChanceOnBlock = 15.0;  // chance ONLY when blocked
+    constexpr int randomFallbackFrames = 5;
+    constexpr int randomTriggerChance = 20; // % chance spiral *actually* switches when blocked
 
+    static bool spiralInRandomMode = false;
+    static int spiralRandomCooldown = 0;
+
+    // Step 1: Check if we should still be in fallback random mode
+    if (spiralInRandomMode) {
+        spiralRandomCooldown--;
+        if (spiralRandomCooldown <= 0)
+            spiralInRandomMode = false;
+        else
+            return moveRandomly(currentPos, velocity, speed); // 🔁 TEMP switch
+    }
+
+    // Step 2: Proximity probe (are we near a wall?)
+    auto tooCloseToWall = [&]() {
+        int blocked = 0;
+        for (int i = 0; i < 8; ++i) {
+            double angle = i * M_PI / 4.0;
+            Vector2D probe = {
+                currentPos.x + std::cos(angle) * minDistanceFromWall,
+                currentPos.y + std::sin(angle) * minDistanceFromWall
+            };
+            if (collisionSystem->handleCollision(probe, vacuumRadius)) {
+                blocked++;
+            }
+        }
+        return blocked > 2;
+    };
+
+    // Step 3: Rarely trigger fallback random if too close
+    if (tooCloseToWall() && QRandomGenerator::global()->bounded(100) < randomTriggerChance) {
+        spiralInRandomMode = true;
+        spiralRandomCooldown = randomFallbackFrames;
+        return moveRandomly(currentPos, velocity, speed);
+    }
+
+    // Step 4: Continue normal spiral
     spiralAngle += angleIncrement;
     spiralRadius += radiusGrowthRate;
 
+    if (spiralRadius > maxSpiralRadius) {
+        spiralRadius = 1.0;
+        spiralAngle = 0.0;
+    }
+
     double dx = std::cos(spiralAngle) * spiralRadius;
     double dy = std::sin(spiralAngle) * spiralRadius;
-
     Vector2D next = { currentPos.x + dx, currentPos.y + dy };
 
-    auto isValidMove = [&](Vector2D pos) {
+    auto isValid = [&](Vector2D pos) {
         return !collisionSystem->handleCollision(pos, vacuumRadius);
     };
 
-    if (!isValidMove(next)) {
-        // ✅ Only inject random when blocked
-        if (QRandomGenerator::global()->bounded(100) < randomChanceOnBlock) {
-            return moveRandomly(currentPos, velocity, speed);
-        }
-
-        // fallback bounce
-        double bounceAngle = (std::rand() % 60 - 30) * (M_PI / 180.0);
-        spiralAngle += bounceAngle;
-
+    if (!isValid(next)) {
+        // Slight bounce
+        spiralAngle += (std::rand() % 60 - 30) * (M_PI / 180.0);
         dx = std::cos(spiralAngle) * spiralRadius;
         dy = std::sin(spiralAngle) * spiralRadius;
-
         next = { currentPos.x + dx, currentPos.y + dy };
 
-        if (!isValidMove(next)) {
+        if (!isValid(next)) {
             spiralRadius = std::max(1.0, spiralRadius - 0.5);
             return currentPos;
         }
     }
 
+    // Normalize velocity
     double len = std::hypot(dx, dy);
-    if (len != 0) {
+    if (len != 0)
         velocity = { dx / len, dy / len };
-    }
 
     return next;
 }
@@ -523,66 +557,81 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
     constexpr double vacuumRadius = 6.4;
-    const double shiftDistance = vacuumRadius * 0.5;
-    constexpr double edgeTrigger = 10.0; // how close to edge triggers random
+    constexpr double shiftDistance = vacuumRadius * 0.5;
+    constexpr int randomFrames = 60; // How many frames random walk lasts
+    constexpr int revisitThreshold = 4;
 
-    // --- Random escape logic at boundaries (suggested in PDF)
-    bool nearEdge = currentPos.x - snakeLeftBound < edgeTrigger ||
-                    snakeRightBound - currentPos.x < edgeTrigger ||
-                    currentPos.y - snakeTopBound < edgeTrigger ||
-                    snakeBottomBound - currentPos.y < edgeTrigger;
+    static QString mode = "snaking";  // or "random"
+    static int modeTimer = 0;
 
-    if (nearEdge && QRandomGenerator::global()->bounded(100) < 10) {
+    // Track visits for hybrid decision
+    QPointF rounded(std::round(currentPos.x / 10.0) * 10.0,
+                    std::round(currentPos.y / 10.0) * 10.0);
+    QString key = QString::number(rounded.x()) + "," + QString::number(rounded.y());
+    int visits = visitCount[key];
+
+    // --- Mode switching
+    if (mode == "snaking" && visits >= revisitThreshold) {
+        mode = "random";
+        modeTimer = randomFrames;
+        qDebug() << "Switching to RANDOM mode";
+    }
+    else if (mode == "random") {
+        modeTimer--;
+        if (modeTimer <= 0) {
+            mode = "snaking";
+            qDebug() << "Switching back to SNAKING mode";
+        }
+    }
+
+    // --- RANDOM mode behavior
+    if (mode == "random") {
         return moveRandomly(currentPos, velocity, speed);
     }
 
-    // --- Compute candidate move
-    Vector2D next = { currentPos.x + velocity.x * speed,
-                     currentPos.y + velocity.y * speed };
+    // --- SNAKING pattern behavior (same as improved version)
+    Vector2D next = {
+        currentPos.x + velocity.x * speed,
+        currentPos.y + velocity.y * speed
+    };
 
-    // --- Downward snaking phase
+    bool hitRight = movingRight && (next.x + vacuumRadius >= snakeRightBound);
+    bool hitLeft  = !movingRight && (next.x - vacuumRadius <= snakeLeftBound);
+
     if (!movingUpward) {
-        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
-            movingRight = false;
-            next.x = snakeRightBound - vacuumRadius;
-            next.y = currentPos.y + shiftDistance;
-        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
-            movingRight = true;
-            next.x = snakeLeftBound + vacuumRadius;
+        if (hitRight || hitLeft) {
+            movingRight = !movingRight;
+            next.x = movingRight
+                         ? snakeLeftBound + vacuumRadius
+                         : snakeRightBound - vacuumRadius;
             next.y = currentPos.y + shiftDistance;
         }
 
         if ((next.y + vacuumRadius) >= snakeBottomBound) {
             next.y = snakeBottomBound - vacuumRadius;
             movingUpward = true;
-            movingDown = false;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     }
-
-    // --- Upward snaking phase
     else {
-        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
-            movingRight = false;
-            next.x = snakeRightBound - vacuumRadius;
-            next.y = currentPos.y - shiftDistance;
-        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
-            movingRight = true;
-            next.x = snakeLeftBound + vacuumRadius;
+        if (hitRight || hitLeft) {
+            movingRight = !movingRight;
+            next.x = movingRight
+                         ? snakeLeftBound + vacuumRadius
+                         : snakeRightBound - vacuumRadius;
             next.y = currentPos.y - shiftDistance;
         }
 
         if ((next.y - vacuumRadius) <= snakeTopBound) {
             next.y = snakeTopBound + vacuumRadius;
             movingUpward = false;
-            movingDown = true;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     }
 
-    // --- Clamp position to bounds
+    // Clamp to room bounds
     next.x = std::clamp(next.x, snakeLeftBound + vacuumRadius, snakeRightBound - vacuumRadius);
     next.y = std::clamp(next.y, snakeTopBound + vacuumRadius, snakeBottomBound - vacuumRadius);
 
