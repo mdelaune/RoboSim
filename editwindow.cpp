@@ -42,6 +42,7 @@ void EditWindow::setupMenu()
     connect(ui->action_About, &QAction::triggered, m_menu, &Menu::menuAbout);
 
 }
+
 void EditWindow::setupScene()
 {
     scene = new QGraphicsScene(this);
@@ -49,27 +50,41 @@ void EditWindow::setupScene()
     house = new House(scene);
     QString default_plan = ":/Default/default_plan.json";
     house->loadPlan(default_plan);
+    house->setNewID();
     setupMenu();
     setupToolButtons();
+    ui->floorID->setText("Floorplan ID: " + QString::number(house->getFloorplanId()));
 }
 
-void EditWindow::setupSceneFromFile(){
-    scene = new QGraphicsScene(this);
-    ui->graphicsView->setScene(scene);
-    house = new House(scene);
-    //house->file_name =
+bool EditWindow::setupSceneFromFile(){
     QString plan = QFileDialog::getOpenFileName(this, "Select Floorplan File", "C://", "JSON (*.json)");
-    house->loadPlan(plan);
-    setupMenu();
-    setupToolButtons();
+
+    QFile planFile(plan);
+    if (planFile.open(QIODevice::ReadOnly)){
+        scene = new QGraphicsScene(this);
+        ui->graphicsView->setScene(scene);
+        house = new House(scene);
+        house->setScene(scene);
+        house->loadPlan(plan);
+        setupMenu();
+        setupToolButtons();
+        ui->floorID->setText("Floorplan ID: " + QString::number(house->getFloorplanId()));
+        return true;
+    }
+    else{
+        return false;
+    }
+
 }
 
 void EditWindow::setupToolButtons()
 {
+
     ui->btn_squareRoom->setIcon(QIcon(":/Images/Images/square.png"));
     ui->btn_rectangleRoom->setIcon(QIcon(":/Images/Images/rectangle.png"));
     ui->btn_door->setIcon(QIcon(":/Images/Images/door.png"));
     ui->btn_vacuum->setIcon(QIcon(":/Images/Images/vacuum.png"));
+
 
     ui->btn_Chest->setIcon(QIcon(":/Images/Images/chest.png"));
     ui->btn_Table->setIcon(QIcon(":/Images/Images/table.png"));

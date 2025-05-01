@@ -156,6 +156,9 @@ public:
 
     void loadPlan(QString plan);
 
+    void setScene(QGraphicsScene* scene);
+    QGraphicsScene* getScene() const;
+
     void addRoom(Room room);
     void addObstruction(Obstruction obstruction);
     void addDoor(Door door);
@@ -202,6 +205,8 @@ public:
 
     Room* getRoomById(long id);
 
+    void setNewID();
+
     int validateTotalAreaBeforeSave();
     bool doRoomsShareWall(Room& room1, Room& room2);
     bool validateRoomConnectivity();
@@ -237,13 +242,19 @@ private:
     int floorplan_id;
     int next_floorplan_id;
 
+
     QGraphicsScene *m_scene;
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
     int scene_object_id = 1;
     int total_area;
+    int cover_area;
 
     QString floor_covering = "hard_floor";
+
+    QList<QRectF> getRooms() const;
+    QList<Obstruction> getObstructions() const;
+    QList<QPointF> getDoors() const;
 };
 
 #endif // HOUSE_H

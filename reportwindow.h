@@ -18,7 +18,7 @@ public:
     explicit ReportWindow(QWidget *parent = nullptr);
     ~ReportWindow();
     QString file_name;
-    void setupSceneFromFile();
+    bool setupSceneFromFile();
     void updateText();
     QString selectedAlg;
     // QMainWindow *mw;

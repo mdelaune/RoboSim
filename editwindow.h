@@ -20,14 +20,15 @@ public:
     explicit EditWindow(QWidget *parent = nullptr);
     ~EditWindow();
     void setupScene();
-    void setupSceneFromFile();
+    bool setupSceneFromFile();
     void setupMenu();
     void setupToolButtons();
+
+    House *house;
 
 private:
     Ui::EditWindow *ui;
     Menu *m_menu;
-    House *house;
     Draw *edit;
     QGraphicsScene *scene;
     // void setupMenu();

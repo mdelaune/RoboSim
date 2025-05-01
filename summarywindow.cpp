@@ -3,6 +3,7 @@
 
 #include <QDebug>
 #include <QFileDialog>
+#include <QMessageBox>
 
 SummaryWindow::SummaryWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -282,14 +283,30 @@ void SummaryWindow::updateText(){
 }
 
 
-void SummaryWindow::setupSceneFromFiles(){
+bool SummaryWindow::setupSceneFromFiles(){
     file_names = QFileDialog::getOpenFileNames(this, "Select Floorplans to Summarize", "C://", "text (*.txt)");
-
-    for (int i = 0; i < file_names.size(); i++){
-        RunData rep;
-        rep.parseFile(file_names[i]);
-        data.append(rep);
+    if (file_names.size() != 0){
+        QString matchID = "";
+        for (int i = 0; i < file_names.size(); i++){
+            RunData rep;
+            rep.parseFile(file_names[i]);
+            if (matchID == ""){
+                matchID = rep.id;
+            }
+            if (matchID == rep.id){
+                data.append(rep);
+            }
+            else{
+                QMessageBox errorMsg;
+                errorMsg.setText("Selected files do not belong to same floorplan. Please try again.");
+                errorMsg.exec();
+                return false;
+            }
+        }
+        updateText();
+        return true;
     }
-
-    updateText();
+    else{
+        return false;
+    }
 }

@@ -1,439 +1,509 @@
 #include "vacuum.h"
-#include <QTimer>
-#include <QPointF>
-#include <QRectF>
-#include <QDebug>
+#include <QtGui/qpen.h>
+#include <iostream>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
+#include <QtCore/QFile>
+#include <QString>
 #include <cmath>
-#include <cstdlib>
+#include <iostream>
+#include <QRandomGenerator>
 
-Vacuum::Vacuum(QGraphicsScene *scene, QObject *parent)
-    : QObject(parent),
-    scene(scene),
-    speed(12.0),
-    batteryLife(150 * 60),
-    remainingBattery(batteryLife),
-    floorType("Hard"),
-    pathingAlgorithm("Random"),
-    currentPosition(scene->width() / 2, scene->height() / 2),
-    velocity(speed, 0),
-    cleaningEfficiency(0.9),
-    whiskerEfficiency(0.3),
-    stoppedByUser(false),
-    movingRight(true),
-    wallDirection(0),
-    spiralAngle(0),
-    spiralRadius(1),
-    spiraling(true),
-    wallFollowing(false),
-    wallFollowCounter(0),
-    speedMultiplier(1)
+Vacuum::Vacuum(QGraphicsScene* scene)
 {
-    lastTrailPoint = currentPosition;
-    snakeTarget = currentPosition;
-    snakingInitialized = false;
+    batteryLife = 150;
+    speed = 12;
+    whiskerEfficiency = 30;
+    currentAlgorithm = "Random";
+    velocity = {0.0, 0.0};
+    this->scene = scene;
 
-    connect(&movementTimer, &QTimer::timeout, this, &Vacuum::tick);
-    movementTimer.start(16);
-
-    setFloorType(floorType);
-
-    vacuumItem = scene->addEllipse(currentPosition.x(), currentPosition.y(), 10, 10,
-                                   Qt::NoPen, QBrush(Qt::red));
-
-    double angle = (rand() % 360) * M_PI / 180.0;
-    velocity.setX(std::cos(angle) * speed);
-    velocity.setY(std::sin(angle) * speed);
-
-    //allAlgorithms = {"Random", "WallFollow", "Snaking", "Spiral"};
+    collisionSystem = new CollisionSystem();
+    collisionSystem->loadFromJson(":/Default/default_plan.json");
 }
 
-void Vacuum::setRoomAndDoor(const QRectF &room, const QRectF &door) {
-    roomRect = room;
-    doorRect = door;
+// A method to reset the vacuum and add back into the simulation for multiple runs
+void Vacuum::reset()
+{
+    vacuumGraphic = scene->addEllipse(-diameter/2, -diameter/2, diameter, diameter,
+                                      QPen(Qt::black), QBrush(Qt::red));
+    if (scene && vacuumGraphic)
+    {
+        scene->removeItem(vacuumGraphic);
+        delete vacuumGraphic;
+        vacuumGraphic = nullptr;
+    }
+    else
+    {
+        qWarning() << "Scene or vacuumGraphic is null.";
+    }
+    vacuumGraphic = scene->addEllipse(-diameter/2, -diameter/2, diameter, diameter,
+                                            QPen(Qt::black), QBrush(Qt::red));
+    position = {0, 200.0};
+    setVacuumPosition(position);
 }
 
-void Vacuum::setSpeed(double inchesPerSecond) {
-    if (inchesPerSecond >= 6.0 && inchesPerSecond <= 18.0)
-        speed = inchesPerSecond;
-}
 
-void Vacuum::setBatteryLife(int minutes) {
-    if (minutes >= 90 && minutes <= 200) {
+// Setters
+void Vacuum::setBatteryLife(int minutes)
+{
+    if (minutes >= 1 && minutes <= 200)
+    {
         batteryLife = minutes * 60;
-        remainingBattery = batteryLife;
     }
 }
 
-void Vacuum::setPathingAlgorithm(const QString &algorithm) {
-    if (completedAlgorithms.contains(algorithm)) {
-        qDebug() << "Algorithm '" << algorithm << "' already completed. Please press Start to run it again.";
-        return;
+void Vacuum::setVacuumEfficiency(int vacuumEff)
+{
+    if (vacuumEff >= 10 && vacuumEff <= 90)
+    {
+        vacuumEfficiency = vacuumEff;
     }
-
-    pathingAlgorithm = algorithm;
-
-    movingRight = true;
-    wallDirection = 0;
-    spiralAngle = 0;
-    spiralRadius = 1;
-    spiraling = true;
-    wallFollowing = false;
-    wallFollowCounter = 0;
-    wallFollowing = atan2(velocity.y(), velocity.x());
-    snakingMode = "vertical";
-    snakingStepCounter = 0;
-    snakingInitialized = false;
 }
 
-void Vacuum::setFloorType(const QString &type) {
-    floorType = type;
-    cleaningEfficiency = (type == "Hard") ? 0.9 :
-                             (type == "Loop Pile") ? 0.75 :
-                             (type == "Cut Pile") ? 0.7 :
-                             (type == "Frieze-cut pile") ? 0.65 : 0.5;
-    whiskerEfficiency = 0.3;
-
-    // cleaningEfficiency = cleaningEfficiency;
-    // whiskerEfficiency = whiskerEfficiency;
-}
-
-void Vacuum::setEfficiency(double vacuumEff, double whiskerEff) {
-    cleaningEfficiency = vacuumEff;
-    whiskerEfficiency = whiskerEff;
-
-    cleaningEfficiency = vacuumEff;
-    whiskerEfficiency = whiskerEff;
-}
-
-int Vacuum::getBatteryLife() const { return batteryLife; }
-double Vacuum::getSpeed() const { return speed; }
-QString Vacuum::getPathingAlgorithm() const { return pathingAlgorithm; }
-QPointF Vacuum::getCurrentPosition() const { return currentPosition; }
-
-void Vacuum::start() {
-    stoppedByUser = false;
-    movementTimer.start(16);
-}
-
-void Vacuum::stop() {
-    stoppedByUser = true;
-    movementTimer.stop();
-}
-
-void Vacuum::tick() {
-    // 🔁 Check for stop by user or battery depleted
-    if (stoppedByUser || remainingBattery <= 0) {
-        stop();
-        qDebug() << "Battery depleted!";
-        emit batteryDepleted();
-        return;
+void Vacuum::setWhiskerEfficiency(int whiskerEff)
+{
+    if (whiskerEff >= 10 && whiskerEff <= 50)
+    {
+        whiskerEfficiency = whiskerEff;
     }
+}
 
-    // ⏱ If running timed multi-algorithm mode ("All")
-    if (timedExecutionEnabled) {
-        algorithmTickCount++;
-        globalTickCount++;
+void Vacuum::setSpeed(int inchesPerSecond)
+{
+    if (inchesPerSecond >= 6 && inchesPerSecond <= 18)
+    {
+        speed = inchesPerSecond;
+    }
+}
 
-        if (globalTickCount >= maxGlobalTicks) {
-            stop(); // ⛔️ Stops movementTimer
-            timedExecutionEnabled = false;
-            qDebug() << "🛑 Simulation ended after 10 minutes.";
-            emit batteryDepleted();
-            return; // ⛔️ Exit immediately
-        }
+void Vacuum::setPathingAlgorithm(const QString& algorithm)
+{
+    currentAlgorithm = algorithm;
+}
 
-        if (algorithmTickCount >= maxAlgorithmTicks) {
-            completedAlgorithms.insert(pathingAlgorithm);
-            algorithmTickCount = 0;
+void Vacuum::setVacuumPosition(Vector2D& startPosition)
+{
+    vacuumGraphic->setPos(startPosition.x, startPosition.y);
+    startPosition.x = vacuumGraphic->pos().x();
+    startPosition.y = vacuumGraphic->pos().y();
 
-            int currentIndex = allAlgorithms.indexOf(pathingAlgorithm);
-            if (currentIndex + 1 < allAlgorithms.size()) {
-                QString nextAlg = allAlgorithms.at(currentIndex + 1);
-                qDebug() << "🔄 Switching to next algorithm:" << nextAlg;
-                setPathingAlgorithm(nextAlg);
-            } else {
-                stop();
-                timedExecutionEnabled = false;
-                qDebug() << "✅ All algorithms completed early.";
-                emit batteryDepleted();
-                return;
-            }
+}
+
+// Getters
+int Vacuum::getBatteryLife() const
+{
+    return batteryLife;
+}
+
+int Vacuum::getVacuumEfficiency() const
+{
+    return vacuumEfficiency;
+}
+
+int Vacuum::getWhiskerEfficiency() const
+{
+    return whiskerEfficiency;
+}
+
+int Vacuum::getSpeed() const
+{
+    return speed;
+}
+
+QString Vacuum::getPathingAlgorithm() const
+{
+    return currentAlgorithm;
+}
+
+QGraphicsEllipseItem* Vacuum::getGraphic() const
+{
+    return vacuumGraphic;
+}
+
+const Vector2D& Vacuum::getPosition() const
+{
+    return position;
+}
+
+int Vacuum::getElapsedTime() const
+{
+    return elapsedTime;
+}
+
+double Vacuum::getCoveredArea() const
+{
+    return coveredArea;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+// COLLISON SYSTEM BELOW
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+const Room2D* CollisionSystem::getCurrentRoom(const Vector2D& pos) const
+{
+    for (const auto& room : rooms) {
+        if (pos.x >= room.topLeft.x && pos.x <= room.bottomRight.x &&
+            pos.y >= room.topLeft.y && pos.y <= room.bottomRight.y) {
+            return &room;
         }
     }
-
-    // Run the selected algorithm
-    if (pathingAlgorithm == "Random") {
-        moveRandomly();
-    } else if (pathingAlgorithm == "Snaking") {
-        moveSnaking();
-    } else if (pathingAlgorithm == "WallFollow") {
-        static bool activated = false;
-        if (!activated) {
-            moveRandomly();
-            if (!checkBounds(currentPosition + velocity)) {
-                activated = true;
-            }
-        } else {
-            moveWallFollowing();
-        }
-    } else if (pathingAlgorithm == "Bounce") {
-        moveBounce();
-    } else if (pathingAlgorithm == "Spiral") {
-        moveSpiral();
-    }
-
-    updatePosition();
-    remainingBattery--;
-
-    // 🕒 Time display
-    int minutes = remainingBattery / 60;
-    int seconds = remainingBattery % 60;
-    qDebug().noquote() << QString("Battery Time Left: %1:%2")
-                              .arg(minutes, 2, 10, QChar('0'))
-                              .arg(seconds, 2, 10, QChar('0'));
+    return nullptr;
 }
 
-void Vacuum::moveRandomly() {
-    QPointF nextPos = currentPosition + velocity;
-
-    if (!checkBounds(nextPos)) {
-        double angle = (rand() % 360) * M_PI / 180.0;
-        velocity.setX(std::cos(angle) * speed);
-        velocity.setY(std::sin(angle) * speed);
-    }
+static double clamp(double value, double minVal, double maxVal)
+{
+    return std::max(minVal, std::min(maxVal, value));
 }
 
-void Vacuum::moveSnaking() {
-    const int margin = 10;
-    const int rowStep = 3;
-
-    double leftBound = roomRect.left() + margin;
-
-    double rightBound = roomRect.right() - margin;
-    double topBound = roomRect.top() + margin;
-    double bottomBound = roomRect.bottom() - margin;
-
-    if (!snakingInitialized) {
-        currentPosition.setX(rightBound);
-        currentPosition.setY(topBound);
-        velocity = QPointF(-speed, 0);
-        snakingInitialized = true;
-        snakingDown = true;
-    }
-
-    QPointF nextPos = currentPosition + velocity;
-
-    if (!checkBounds(nextPos)) {
-        double nextY = currentPosition.y() + (snakingDown ? rowStep : -rowStep);
-
-        if (nextY > bottomBound) {
-            nextY = bottomBound;
-            snakingDown = false;
-        } else if (nextY < topBound) {
-            nextY = topBound;
-            snakingDown = true;
-        }
-
-        velocity.setX(-velocity.x());
-        velocity.setY(0);
-        currentPosition.setY(nextY);
-        return;
-    }
-
-    velocity.setY(0);
-}
-
-void Vacuum::moveWallFollowing() {
-    static double wallFollowAngle = 0.0;
-    QPointF nextPos = currentPosition + velocity;
-
-    if (checkBounds(nextPos)) return;
-
-    for (int i = 0; i < 36; ++i) {
-        wallFollowAngle += M_PI / 18;
-        if (wallFollowAngle > 2 * M_PI) wallFollowAngle -= 2 * M_PI;
-
-        QPointF tryVel(std::cos(wallFollowAngle) * speed,
-                       std::sin(wallFollowAngle) * speed);
-        QPointF tryPos = currentPosition + tryVel;
-
-        if (checkBounds(tryPos)) {
-            velocity = tryVel;
-            return;
-        }
-    }
-
-    velocity = -velocity;
-}
-
-void Vacuum::moveBounce() {
-    QPointF nextPos = currentPosition + velocity;
-    if (!checkBounds(nextPos)) handleWallCollision();
-}
-
-void Vacuum::moveSpiral() {
-    if (roomRect.contains(currentPosition)) {
-        spiralAngle += 0.15;
-        spiralRadius += 0.05;
-        velocity.setX(std::cos(spiralAngle) * spiralRadius);
-        velocity.setY(std::sin(spiralAngle) * spiralRadius);
-    } else {
-        spiralAngle = 0;
-        spiralRadius = 1;
-        double angle = (rand() % 360) * M_PI / 180.0;
-        velocity.setX(std::cos(angle) * speed);
-        velocity.setY(std::sin(angle) * speed);
-    }
-}
-
-void Vacuum::handleWallCollision() {
-    double angle = atan2(velocity.y(), velocity.x());
-    int sign = (rand() % 2 == 0) ? 1 : -1;
-    angle += sign * (M_PI / 6);
-    velocity.setX(std::cos(angle) * speed);
-    velocity.setY(std::sin(angle) * speed);
-}
-
-void Vacuum::updatePosition() {
-    QPointF newPosition = currentPosition + velocity;
-    QRectF nextRect(newPosition.x(), newPosition.y(), 10, 10);
-    bool throughDoor = doorRect.intersects(nextRect);
-
-    // if (!roomRect.contains(nextRect) && !throughDoor) {
-    //     if (nextRect.left() < roomRect.left() - 2 || nextRect.right() > roomRect.right() + 2 ||
-    //         nextRect.top() < roomRect.top() - 2 || nextRect.bottom() > roomRect.bottom() + 2) {
-    //         qDebug() << "Blocked move: outside room";
-    //         return;
-    //     }
-    // }
-
-    // if (checkBounds(newPosition)) {
-    //     QPoint gridCoord(static_cast<int>(currentPosition.x()) / cellSize,
-    //                      static_cast<int>(currentPosition.y()) / cellSize);
-
-    //     //int &visits = cellVisitCount[gridCoord];
-    //     //visits++;
-
-    //     // int darkness = qBound(50, 255 - visits * 25, 200);
-    //     // QColor grayShade(darkness, darkness, darkness);
-    //     // QPen trailPen(grayShade);
-    //     // trailPen.setWidth(2);
-
-    //     // scene->addLine(QLineF(lastTrailPoint, currentPosition), trailPen);
-    //     // lastTrailPoint = currentPosition;
-    //     // cleanedCells.insert(gridCoord);
-
-    //     // currentPosition = newPosition;
-    //     // vacuumItem->setRect(currentPosition.x(), currentPosition.y(), 10, 10);
-    // }
-}
-
-bool Vacuum::checkBounds(const QPointF &newPosition) {
-    QRectF nextRect(newPosition.x(), newPosition.y(), 10, 10);
-
-    if (!scene->sceneRect().contains(nextRect))
+bool CollisionSystem::loadFromJson(const QString& filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        std::cerr << "Failed to open JSON file: " << filePath.toStdString() << std::endl;
         return false;
+    }
 
-    if (!roomRect.contains(nextRect) && !doorRect.intersects(nextRect))
+    QByteArray jsonData = file.readAll();
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        std::cerr << "JSON parse error: " << parseError.errorString().toStdString() << std::endl;
         return false;
+    }
 
-    for (auto *obstacle : std::as_const(obstacles)) {
-        if (obstacle->rect().intersects(nextRect))
-            return false;
+    QJsonObject root = doc.object();
+
+    // Parse rooms
+    QJsonArray roomsArray = root["rooms"].toArray();
+    for (const QJsonValue& val : roomsArray) {
+        QJsonObject obj = val.toObject();
+        QPointF p1(obj["x_topLeft"].toDouble(), obj["y_topLeft"].toDouble());
+        QPointF p2(obj["x_bottomRight"].toDouble(), obj["y_bottomRight"].toDouble());
+
+        Room2D room;
+        room.topLeft.x = std::min(p1.x(), p2.x());
+        room.topLeft.y = std::min(p1.y(), p2.y());
+        room.bottomRight.x = std::max(p1.x(), p2.x());
+        room.bottomRight.y = std::max(p1.y(), p2.y());
+        rooms.push_back(room);
+    }
+
+    // Parse doors
+    QJsonArray doorsArray = root["doors"].toArray();
+    for (const QJsonValue& val : doorsArray) {
+        QJsonObject obj = val.toObject();
+        Door2D door;
+        door.origin.x = obj["x"].toDouble();
+        door.origin.y = obj["y"].toDouble();
+        doors.push_back(door);
+    }
+
+    // Parse obstructions
+    QJsonArray obsArray = root["obstructions"].toArray();
+    for (const QJsonValue& val : obsArray) {
+        QJsonObject obj = val.toObject();
+        QPointF p1(obj["x_topLeft"].toDouble(), obj["y_topLeft"].toDouble());
+        QPointF p2(obj["x_bottomRight"].toDouble(), obj["y_bottomRight"].toDouble());
+
+        Obstruction2D obstruction;
+        obstruction.isChest = obj["is_chest"].toBool();
+        obstruction.topLeft.x = std::min(p1.x(), p2.x());
+        obstruction.topLeft.y = std::min(p1.y(), p2.y());
+        obstruction.bottomRight.x = std::max(p1.x(), p2.x());
+        obstruction.bottomRight.y = std::max(p1.y(), p2.y());
+        obstructions.push_back(obstruction);
     }
 
     return true;
+
 }
 
-void Vacuum::setSpeedMultiplier(int multiplier) {
-    speedMultiplier = multiplier;
+// Corrects pos if it overlaps a wall or chest. Returns true if any correction was done.
+bool CollisionSystem::handleCollision(Vector2D& pos, double radius)
+{
+    // 1) find the room this candidate is in (or just outside)
+    const Room2D* room = getCurrentRoom(pos);
+    if (!room) {
+        for (const auto &r : rooms) {
+            double left   = std::min(r.topLeft.x,    r.bottomRight.x);
+            double right  = std::max(r.topLeft.x,    r.bottomRight.x);
+            double top    = std::min(r.topLeft.y,    r.bottomRight.y);
+            double bottom = std::max(r.topLeft.y,    r.bottomRight.y);
 
-    // Adjust timer rate: higher speed = faster ticks
-    int interval = 16 / multiplier;
-    movementTimer.setInterval(qMax(1, interval));
+            if (pos.x + radius > left && pos.x - radius < right &&
+                pos.y + radius > top  && pos.y - radius < bottom)
+            {
+                room = &r;
+                break;
+            }
+        }
+    }
+    // if still no room, give up—vacuum must be completely outside any known area
+    if (!room) return false;
 
-    // Scale cleaning efficiency (higher speed = less effective)
-    double scale = 1.0 / multiplier;
-    cleaningEfficiency = cleaningEfficiency * scale;
-    whiskerEfficiency = baseWhiskerEfficiency * scale;
+    // 2) now apply your chest + wall corrections exactly as before
+    double left   = std::min(room->topLeft.x,    room->bottomRight.x);
+    double right  = std::max(room->topLeft.x,    room->bottomRight.x);
+    double top    = std::min(room->topLeft.y,    room->bottomRight.y);
+    double bottom = std::max(room->topLeft.y,    room->bottomRight.y);
 
-    // Update velocity vector based on new speed and direction
-    double angle = atan2(velocity.y(), velocity.x());
-    velocity.setX(std::cos(angle) * speed * multiplier);
-    velocity.setY(std::sin(angle) * speed * multiplier);
-}
+    // --- Chest collisions ---
+    for (auto &obs : obstructions) {
+        if (!obs.isChest) continue;
+        if (obs.bottomRight.x < left || obs.topLeft.x > right ||
+            obs.bottomRight.y < top  || obs.topLeft.y > bottom)
+            continue;
 
-void Vacuum::advanceToNextAlgorithm() {
-    for (const QString &alg : std::as_const(selectedAlgs)) {
-        if (!completedAlgorithms.contains(alg)) {
-            qDebug() << "Switching to next algorithm:" << alg;
-            setPathingAlgorithm(alg);
-            setBatteryLife(150);
-            remainingBattery = batteryLife;
-            start();
-            return;
+        double oL = std::min(obs.topLeft.x, obs.bottomRight.x);
+        double oR = std::max(obs.topLeft.x, obs.bottomRight.x);
+        double oT = std::min(obs.topLeft.y, obs.bottomRight.y);
+        double oB = std::max(obs.topLeft.y, obs.bottomRight.y);
+
+        if (pos.x + radius > oL && pos.x - radius < oR &&
+            pos.y + radius > oT && pos.y - radius < oB)
+        {
+            double overlapX = std::min((pos.x+radius)-oL, oR-(pos.x-radius));
+            double overlapY = std::min((pos.y+radius)-oT, oB-(pos.y-radius));
+
+            if (overlapX < overlapY) {
+                if ((pos.x - oL) < (oR - pos.x)) pos.x -= overlapX;
+                else                               pos.x += overlapX;
+            } else {
+                if ((pos.y - oT) < (oB - pos.y)) pos.y -= overlapY;
+                else                               pos.y += overlapY;
+            }
+            return true;
         }
     }
 
-    qDebug() << "All algorithms completed. Simulation finished.";
-    stoppedByUser = true;
-    movementTimer.stop();
-    emit batteryDepleted();
-}
+    // helper to skip door gaps
+    auto doorGap = [&](double wallPos, double orthPos, bool horiz){
+        for (auto &d : doors) {
+            if (horiz) {
+                if (std::abs(wallPos - d.origin.y) < 1e-3 &&
+                    orthPos >= d.origin.x && orthPos <= d.origin.x + 45.0)
+                    return true;
+            } else {
+                if (std::abs(wallPos - d.origin.x) < 1e-3 &&
+                    orthPos >= d.origin.y && orthPos <= d.origin.y + 45.0)
+                    return true;
+            }
+        }
+        return false;
+    };
 
-void Vacuum::rotateVacuum(double angleDelta) {
-    currentRotation += angleDelta;
-    vacuumItem->setRotation(currentRotation);
-}
-
-void Vacuum::setObstacles(const QList<QGraphicsRectItem*>& obs) {
-    obstacles = obs;
-}
-
-QGraphicsEllipseItem* Vacuum::getVacuumItem() const {
-    return vacuumItem;
-}
-
-double Vacuum::getCoveragePercent(int roomWidth, int roomHeight, const QList<QGraphicsRectItem*>& obstacles) const {
-    QSet<QPoint> blockedCells;
-
-    // for (QGraphicsRectItem* obs : obstacles) {
-    //     QRectF rect = obs->rect();
-    //     for (int x = rect.left(); x <= rect.right(); x += cellSize) {
-    //         for (int y = rect.top(); y <= rect.bottom(); y += cellSize) {
-    //             blockedCells.insert(QPoint(x / cellSize, y / cellSize));
-    //         }
-    //     }
-    // }
-
-    // int totalCells = (roomWidth / cellSize) * (roomHeight / cellSize);
-    // int cleanableCells = totalCells - blockedCells.size();
-    // int cleaned = 0;
-
-    // for (const QPoint& cell : cleanedCells) {
-    //     if (!blockedCells.contains(cell)) {
-    //         cleaned++;
-    //     }
-    // }
-
-    //return cleanableCells > 0 ? (cleaned * 100.0 / cleanableCells) : 0.0;
-
-    return 0.0;
-}
-
-void Vacuum::runTimedAlgorithms() {
-    timedExecutionEnabled = true;
-    completedAlgorithms.clear();
-    algorithmTickCount = 0;
-    globalTickCount = 0;          // ⏱ Start fresh
-    maxAlgorithmTicks = 36000;    // can still leave this, but won't be used here
-    setPathingAlgorithm(allAlgorithms.first());
-    start();
-}
-
-// MDELAUNE 4/22: This is where im getting errors, is not setting selected algs to selection. i prev had them j assigned instead of in a loop but that didnt work either.
-void Vacuum::setSelectedAlgs(QStringList selection){
-    for (int i = 0; i < selection.size(); i++){
-        selectedAlgs.append(selection[i]);
+    // --- Wall collisions (early return each time) ---
+    if (pos.y - radius < top    && pos.x >= left && pos.x <= right && !doorGap(top,    pos.x, true)) {
+        pos.y = top + radius;    return true;
     }
+    if (pos.y + radius > bottom && pos.x >= left && pos.x <= right && !doorGap(bottom, pos.x, true)) {
+        pos.y = bottom - radius; return true;
+    }
+    if (pos.x - radius < left   && pos.y >= top  && pos.y <= bottom&& !doorGap(left,   pos.y, false)) {
+        pos.x = left + radius;   return true;
+    }
+    if (pos.x + radius > right  && pos.y >= top  && pos.y <= bottom&& !doorGap(right,  pos.y, false)) {
+        pos.x = right - radius;  return true;
+    }
+
+    return false;
+}
+
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+// VACUUM MOVEMENT BELOW
+//---------------------------------------------------------------------------------------------------------------------------------------
+void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
+{
+    if (batteryLife <= 0 || !vacuumGraphic) return;
+
+    Vector2D candidate;
+
+    // Select movement algorithm
+    if (currentAlgorithm.toLower() == "wallfollow") {
+        candidate = moveWallFollow(position, velocity, speed);
+    } else if (currentAlgorithm.toLower() == "spiral") {
+        candidate = moveSpiral(position, velocity, speed);
+    } else if (currentAlgorithm.toLower() == "snaking") {
+        const Room2D* room = collisionSystem->getCurrentRoom(position);
+        if (room) {
+            snakeLeftBound = room->topLeft.x;
+            snakeRightBound = room->bottomRight.x;
+            snakeTopBound = room->topLeft.y;
+            snakeBottomBound = room->bottomRight.y;
+        }
+        candidate = moveSnaking(position, velocity, speed);
+    } else if (currentAlgorithm.toLower() == "random") {
+        candidate = moveRandomly(position, velocity, speed);
+    } else {
+        candidate = moveRandomly(position, velocity, speed);
+    }
+
+    // Collision handling
+    bool hit = collisionSystem->handleCollision(candidate, radius);
+    if (hit) {
+        qreal angle = QRandomGenerator::global()->bounded(360.0);
+        velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
+        candidate = moveRandomly(position, velocity, speed);
+        if (collisionSystem->handleCollision(candidate, radius)) return;
+    }
+
+    // Move vacuum
+    position = candidate;
+    vacuumGraphic->setPos(position.x, position.y);
+
+    // Trail
+    static QPointF lastPoint = vacuumGraphic->pos();
+    QPointF now(position.x, position.y);
+    QPen pen(Qt::blue); pen.setWidth(6);
+    scene->addLine(QLineF(lastPoint, now), pen);
+    lastPoint = now;
+
+    batteryLife--;
+}
+
+Vector2D Vacuum::moveRandomly(Vector2D currentPos, Vector2D& velocity, int speed)
+{
+    if (velocity.x == 0 && velocity.y == 0) {
+        qreal angle = QRandomGenerator::global()->bounded(360.0);
+        velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
+    }
+    return currentPos + velocity * speed;
+}
+
+Vector2D Vacuum::moveWallFollow(Vector2D currentPos, Vector2D& velocity, int speed)
+{
+    constexpr double vacuumRadius = 6.4;
+    constexpr double rotateStep = M_PI / 12.0;
+    constexpr int maxRotations = 24;
+    static double wallFollowAngle = 0.0;
+
+    auto isValid = [&](const Vector2D& pos) {
+        Vector2D test = pos;
+        return !collisionSystem->handleCollision(test, vacuumRadius);
+    };
+
+    Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
+    if (isValid(next)) {
+        wallFollowAngle = std::atan2(velocity.y, velocity.x);
+        return next;
+    }
+
+    for (int i = 0; i < maxRotations; ++i) {
+        wallFollowAngle += rotateStep;
+        if (wallFollowAngle > 2 * M_PI) wallFollowAngle -= 2 * M_PI;
+
+        Vector2D tryVel = { std::cos(wallFollowAngle), std::sin(wallFollowAngle) };
+        Vector2D tryNext = { currentPos.x + tryVel.x * speed, currentPos.y + tryVel.y * speed };
+
+        if (isValid(tryNext)) {
+            double len = std::hypot(tryVel.x, tryVel.y);
+            velocity = { tryVel.x / len, tryVel.y / len };
+            return tryNext;
+        }
+    }
+
+    velocity = { -velocity.x, -velocity.y };
+    return currentPos;
+}
+
+Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
+{
+    constexpr double vacuumRadius = 6.4;
+    constexpr double angleIncrement = 0.1;
+    constexpr double radiusGrowthRate = 0.02;
+
+    spiralAngle += angleIncrement;
+    spiralRadius += radiusGrowthRate;
+
+    double dx = std::cos(spiralAngle) * spiralRadius;
+    double dy = std::sin(spiralAngle) * spiralRadius;
+
+    Vector2D next = { currentPos.x + dx, currentPos.y + dy };
+
+    auto isValidMove = [&](const Vector2D& pos) {
+        Vector2D test = pos;
+        return !collisionSystem->handleCollision(test, vacuumRadius);
+    };
+
+    if (!isValidMove(next)) {
+        double bounceAngle = (std::rand() % 60 - 30) * (M_PI / 180.0);
+        spiralAngle += bounceAngle;
+        dx = std::cos(spiralAngle) * spiralRadius;
+        dy = std::sin(spiralAngle) * spiralRadius;
+        next = { currentPos.x + dx, currentPos.y + dy };
+        if (!isValidMove(next)) {
+            spiralRadius = std::max(1.0, spiralRadius - 0.5);
+            next = currentPos;
+        }
+    }
+
+    double len = std::hypot(dx, dy);
+    if (len != 0) {
+        velocity.x = dx / len;
+        velocity.y = dy / len;
+    }
+
+    return next;
+}
+
+Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
+{
+    constexpr double vacuumRadius = 6.4;
+    const double shiftDistance = vacuumRadius * 0.5;
+
+    bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
+                    currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
+
+    if (nearWall && QRandomGenerator::global()->bounded(100) < 10) {
+        return moveRandomly(currentPos, velocity, speed);
+    }
+
+    Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
+
+    if (!movingUpward) {
+        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
+            movingRight = false;
+            next.x = snakeRightBound - vacuumRadius;
+            next.y = currentPos.y + shiftDistance;
+        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
+            movingRight = true;
+            next.x = snakeLeftBound + vacuumRadius;
+            next.y = currentPos.y + shiftDistance;
+        }
+
+        if ((next.y + vacuumRadius) >= snakeBottomBound) {
+            next.y = snakeBottomBound - vacuumRadius;
+            movingUpward = true;
+            movingDown = false;
+        }
+
+        velocity = { movingRight ? 1.0 : -1.0, 0.0 };
+    } else {
+        if (movingRight && (next.x + vacuumRadius) >= snakeRightBound) {
+            movingRight = false;
+            next.x = snakeRightBound - vacuumRadius;
+            next.y = currentPos.y - shiftDistance;
+        } else if (!movingRight && (next.x - vacuumRadius) <= snakeLeftBound) {
+            movingRight = true;
+            next.x = snakeLeftBound + vacuumRadius;
+            next.y = currentPos.y - shiftDistance;
+        }
+
+        if ((next.y - vacuumRadius) <= snakeTopBound) {
+            next.y = snakeTopBound + vacuumRadius;
+            movingUpward = false;
+            movingDown = true;
+        }
+
+        velocity = { movingRight ? 1.0 : -1.0, 0.0 };
+    }
+
+    next.x = std::clamp(next.x, snakeLeftBound + vacuumRadius, snakeRightBound - vacuumRadius);
+    next.y = std::clamp(next.y, snakeTopBound + vacuumRadius, snakeBottomBound - vacuumRadius);
+
+    return next;
 }

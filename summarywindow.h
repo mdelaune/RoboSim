@@ -16,7 +16,7 @@ class SummaryWindow : public QMainWindow
 public:
     explicit SummaryWindow(QWidget *parent = nullptr);
     ~SummaryWindow();
-    void setupSceneFromFiles();
+    bool setupSceneFromFiles();
     void updateText();
 
 
