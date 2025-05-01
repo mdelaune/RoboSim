@@ -77,6 +77,8 @@ public:
     void setId(int id) { m_id = id; }
     int getId() const { return m_id; }
 
+    QPointF get_legPos(int index);
+
 private:
     QPointF m_top_left;
     QPointF m_bottom_right;

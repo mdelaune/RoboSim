@@ -229,6 +229,15 @@ void Obstruction::set_legs(QRectF *legs)
     }
 }
 
+QPointF Obstruction::get_legPos(int index)
+{
+    if (index >= 0 && index < 4) {
+        return m_legs[index].center();
+    }
+    return QPointF(); // Invalid
+}
+
+
 void Obstruction::set_legsRadius(int size)
 {
     // Top-left corner leg
