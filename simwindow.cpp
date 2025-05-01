@@ -127,11 +127,11 @@ void SimWindow::fiftySpeedPushed()
 void SimWindow::writeReport(){
     save_path = QFileDialog::getExistingDirectory(this, "Select Report Save Location", "C://", QFileDialog::ShowDirsOnly);
     qDebug() << save_path;
-    QFile file(save_path+"/"+simData->id+".txt");
+    QFile file(save_path+"/"+simData->id+ "-" + QString::number(simData->report_id) + ".txt");
     if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
         stream << simData->id << Qt::endl;
-        stream << simData->sTime[0]<< ":" << simData->sTime[1]<< "." << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
+        stream << simData->sTime[0]<< ":" << simData->sTime[1]<< ":" << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
         stream << simData->totalSF << Qt::endl;
         qDebug() << simData->runs[0].exists;
         if (simData->runs[0].exists){
@@ -146,7 +146,7 @@ void SimWindow::writeReport(){
         }
         if (simData->runs[1].exists){
             simData->runs[1].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[1].alg+ ".png";
-            stream << "random " << simData->runs[1].getTimeString(simData->runs[1].time) << " " << simData->runs[1].coverSF  << " " << simData->runs[1].heatmapPath << Qt::endl;
+            stream << "spiral " << simData->runs[1].getTimeString(simData->runs[1].time) << " " << simData->runs[1].coverSF  << " " << simData->runs[1].heatmapPath << Qt::endl;
             simData->runs[1].heatmap.save(simData->runs[1].heatmapPath,"PNG");
         }
         else{
@@ -154,7 +154,7 @@ void SimWindow::writeReport(){
         }
         if (simData->runs[2].exists){
             simData->runs[2].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[2].alg+ ".png";
-            stream << "random " << simData->runs[2].getTimeString(simData->runs[2].time) << " " << simData->runs[2].coverSF  << " " << simData->runs[2].heatmapPath << Qt::endl;
+            stream << "snaking " << simData->runs[2].getTimeString(simData->runs[2].time) << " " << simData->runs[2].coverSF  << " " << simData->runs[2].heatmapPath << Qt::endl;
             simData->runs[2].heatmap.save(simData->runs[2].heatmapPath,"PNG");
         }
         else{
@@ -162,7 +162,7 @@ void SimWindow::writeReport(){
         }
         if (simData->runs[3].exists){
             simData->runs[3].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[3].alg+ ".png";
-            stream << "random " << simData->runs[3].getTimeString(simData->runs[3].time) << " " << simData->runs[3].coverSF  << " " << simData->runs[3].heatmapPath << Qt::endl;
+            stream << "wallfollow " << simData->runs[3].getTimeString(simData->runs[3].time) << " " << simData->runs[3].coverSF  << " " << simData->runs[3].heatmapPath << Qt::endl;
             simData->runs[3].heatmap.save(simData->runs[3].heatmapPath,"PNG");
         }
         else{
@@ -187,7 +187,6 @@ void SimWindow::writeRun(){
         run.alg = "wallfollow";
     }
     run.exists = true;
-    //qDebug()<< runTimer.elapsed();
     int batRuntime = batteryStartLife - batteryLife;
     int m = batRuntime/60;
     run.time.append(QString::number(m/60));

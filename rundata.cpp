@@ -10,7 +10,7 @@ Run::Run(){
 }
 
 QString Run::getTimeString(QStringList time){
-    return time[0] + ":" + time[1] + "." + time[2];
+    return time[0] + ":" + time[1] + ":" + time[2];
 }
 
 RunData::RunData(){}
@@ -109,16 +109,27 @@ void RunData::parseFile(QString file_name){
         return;
     }
 
-    QStringList filedata[7];
+    QStringList filedata[3];
+    QString algdata[4];
+
     int n = 0;
+    int m =0;
 
 
     QTextStream ts(&file);
     while (!ts.atEnd()){
-        QString line = ts.readLine();
-        QStringList data = line.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
-        filedata[n] = data;
-        n +=1;
+        if (n<3){
+            QString line = ts.readLine();
+            QStringList data = line.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
+            filedata[n] = data;
+            n++;
+        }
+        else{
+            QString line = ts.readLine();
+            algdata[m] = line;
+            m++;
+
+        }
     }
 
     bool ok;
@@ -136,25 +147,34 @@ void RunData::parseFile(QString file_name){
     //QString totalString = filedata[2][0] + "." + filedata[2][1];
     totalSF = filedata[2][0]; //totalString;
 
-    for (int i = 3; i < 7; i++){
+    for (int i = 0; i < 4; i++){
         Run run;
-        run.alg = filedata[i][0];
-
-        if (filedata[i].size() > 3){
-            run.time.append(filedata[i][1]);
-            run.time.append(filedata[i][2]);
-            run.time.append(filedata[i][3]);
-            run.coverSF = filedata[i][4] + "." + filedata[i][5];
-            run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
-            run.heatmapPath = filedata[i][5];
-            for (int j = 6; j < filedata[i].size(); j++){
-                run.heatmapPath.append(filedata[i][j]);
-            }
+        QStringList runString = algdata[i].split(' ');
+        if (runString.size() >2){
+            qDebug() << runString[i].size();
+            run.alg = runString[0];
+            run.time = runString[1].split(':');
+            run.coverSF = runString[2];
+            run.heatmapPath = runString[3];
+            qDebug() << run.heatmapPath;
             run.exists = true;
         }
-        else{
-            run.exists = false;
-        }
+        else run.exists = false;
+
+        // if (filedata[i].size() > 3){
+        //     run.time = runString[0].split("")
+        //     run.coverSF = filedata[i][4] + "." + filedata[i][5];
+        //     run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
+        //     run.heatmapPath = filedata[i][6];
+        //     for (int j = 7; j < filedata[i].size(); j++){
+        //         run.heatmapPath.append(filedata[i][j]);
+        //     }
+        //     run.exists = true;
+        //     qDebug() << run.heatmapPath;
+        // }
+        // else{
+        //     run.exists = false;
+        // }
 
         runs.append(run);
     }
