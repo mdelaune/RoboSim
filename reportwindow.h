@@ -19,6 +19,7 @@ public:
     ~ReportWindow();
     QString file_name;
     bool setupSceneFromFile();
+    bool setupSceneFromSim(QString sim_file_path);
     void updateText();
     QString selectedAlg;
     // QMainWindow *mw;
