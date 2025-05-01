@@ -136,10 +136,10 @@ void SimWindow::fiftySpeedPushed()
     setSimulationSpeed(50);
 }
 
-void SimWindow::writeReport(){
+QString SimWindow::writeReport(){
     save_path = QFileDialog::getExistingDirectory(this, "Select Report Save Location", "C://", QFileDialog::ShowDirsOnly);
-    qDebug() << save_path;
-    QFile file(save_path+"/"+simData->id+ "-" + QString::number(simData->report_id) + ".txt");
+    QString pathToSavedReport = save_path+"/"+simData->id+ "-" + QString::number(simData->report_id) + ".txt";
+    QFile file(pathToSavedReport);
     if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
         stream << simData->id << " " << simData->report_id << Qt::endl;
@@ -183,6 +183,8 @@ void SimWindow::writeReport(){
         }
 
     }
+
+    return pathToSavedReport;
 }
 
 void SimWindow::writeRun(){
@@ -236,8 +238,15 @@ void SimWindow::stopSimulation(){
     QString timeString = time.toString();
     simData->eTime = timeString.split(':');
 
-    writeReport();
+
+    repWin = new ReportWindow(this);
+    QString newPath = writeReport();
+    bool fileSelected = repWin->setupSceneFromSim(newPath);
+    if (fileSelected){
+        repWin->showMaximized();
+    }
     this->close();
+
 }
 
 void SimWindow::on_stopButton_clicked()
