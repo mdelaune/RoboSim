@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QRegularExpression>
+#include <QRandomGenerator>
 
 Run::Run(){
 
@@ -139,12 +140,16 @@ void RunData::parseFile(QString file_name){
         Run run;
         run.alg = filedata[i][0];
 
-        if (filedata[i][1] != "0"){
+        if (filedata[i].size() > 3){
             run.time.append(filedata[i][1]);
             run.time.append(filedata[i][2]);
             run.time.append(filedata[i][3]);
             run.coverSF = filedata[i][4] + "." + filedata[i][5];
             run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
+            run.heatmapPath = filedata[i][5];
+            for (int j = 6; j < filedata[i].size(); j++){
+                run.heatmapPath.append(filedata[i][j]);
+            }
             run.exists = true;
         }
         else{
@@ -156,4 +161,8 @@ void RunData::parseFile(QString file_name){
 
     file.close();
     setEndValues();
+}
+
+void RunData::setNewID(){
+    report_id = QRandomGenerator::global()->bounded(10000, 99999);
 }
