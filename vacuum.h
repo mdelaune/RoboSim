@@ -133,6 +133,8 @@ private:
 
     QGraphicsScene* scene;
 
+    QList<Vector2D> cleanedCoords;
+
 };
 
 #endif // VACUUM_H

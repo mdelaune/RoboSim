@@ -143,9 +143,10 @@ void ReportWindow::on_snakingAlg_clicked()
 }
 
 
-void ReportWindow::on_wallFollowAlg_clicked()
+void ReportWindow::on_wallfollowAlg_clicked()
 {
     selectedAlg = "wallfollow";
     updateText();
 }
+
 
