@@ -488,10 +488,10 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     // Cover Sq Ft
     bool add = true;
     for (auto &pt : cleanedCoords) {
-        if (int(pt.x) >= int(position.x) - 6 &&
-            int(pt.x) <= int(position.x) + 6 &&
-            int(pt.y) >= int(position.y) - 6 &&
-            int(pt.y) <= int(position.y) + 6)
+        if (int(pt.x) >= int(position.x) - 12 &&
+            int(pt.x) <= int(position.x) + 12 &&
+            int(pt.y) >= int(position.y) - 12 &&
+            int(pt.y) <= int(position.y) + 12)
         {
             add = false;
             break;
