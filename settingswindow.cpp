@@ -83,7 +83,7 @@ void SettingsWindow::setupLineEdits()
     ui->whiskerEfficiencyEdit->setText("30");
     ui->speedEdit->setText("12");
 
-    ui->batteryLifeEdit->setValidator(new QIntValidator(1, 200, this));
+    ui->batteryLifeEdit->setValidator(new QIntValidator(90, 200, this));
     ui->vacuumEfficiencyEdit->setValidator(new QIntValidator(10, 90, this));
     ui->whiskerEfficiencyEdit->setValidator(new QIntValidator(10, 50, this));
     ui->speedEdit->setValidator(new QIntValidator(6, 18, this));
@@ -95,7 +95,7 @@ bool SettingsWindow::validateInputs()
     QString errorMessages;
 
     int batteryLife = ui->batteryLifeEdit->text().toInt();
-    if (batteryLife < 1 || batteryLife > 200) {
+    if (batteryLife < 90 || batteryLife > 200) {
         errorMessages += "Battery life must be between 90–200\n";
         hasError = true;
     }

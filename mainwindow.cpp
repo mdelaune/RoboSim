@@ -11,7 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setFocus();
     ui->runSim->setEnabled(false);
+    ui->robSet->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -90,6 +92,11 @@ void MainWindow::on_runSim_clicked()
 
 void MainWindow::updateRunSimButtonState()
 {
+    if (floorplanCreated)
+    {
+        ui->robSet->setEnabled(true);
+    }
+
     if (floorplanCreated && robotSetup)
     {
         ui->runSim->setEnabled(true);

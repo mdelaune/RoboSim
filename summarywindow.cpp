@@ -200,7 +200,7 @@ float SummaryWindow::getAvgPerCl(){
         }
     }
 
-    return perAvg/count *100;
+    return perAvg/count;
 }
 
 void SummaryWindow::updateText(){
@@ -280,13 +280,6 @@ void SummaryWindow::updateText(){
     ui->avgTime->setText(QString::number(at[0]).rightJustified(2, '0') + ":" + QString::number(at[1]).rightJustified(2, '0') + ":" + QString::number(at[2]).rightJustified(2, '0'));
     ui->avgCover->setText(QString::number(getAvgCover()));
     ui->avgPerCl->setText(QString::number(getAvgPerCl())+"%");
-
-    // QStringList keyString;
-    // for (int i = 0; i < data.size(); i++){
-    //     keyString.append("  " +QString::number(i) + QString::number(data[i].report_id));//"-> " + data[i].sDate[0] + "/" + data[i].sDate[1] + "/" + data[i].sDate[2]);
-    // }
-
-    // ui->key->setText(keyString.join("\n"));
 
     this->show();
 }

@@ -14,13 +14,10 @@ SimWindow::SimWindow(House* housePtr, QWidget *parent)
     view->setRenderHint(QPainter::Antialiasing);
     view->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    view->scale(1.5, 1.5);
-
     scene = new QGraphicsScene(this);
     view->setScene(scene);
 
     house->setScene(scene);
-    house->drawSimulationPlan();
 
     vacuum = new Vacuum(scene);
 
@@ -284,7 +281,7 @@ void SimWindow::resetScene()
 {
     scene->clear(); // Clears all items from the scene
     house->setScene(scene); // Sets the simulation window scene as the current scene
-    house->drawSimulationPlan(); // Redraws the house layout
+    house->loadPlan(house_path); // Redraws the house layout
 
     // Ensure vacuum exists and is properly reset
     if (vacuum != nullptr)
@@ -295,7 +292,6 @@ void SimWindow::resetScene()
         vacuum->setWhiskerEfficiency(whiskerEfficiency);
         vacuum->setSpeed(speed);
 
-        // ✅ NEW: set the vacuum's current algorithm
         if (currentAlgorithmIndex < pendingAlgorithms.size()) {
             vacuum->setPathingAlgorithm(pendingAlgorithms[currentAlgorithmIndex]);
         }
