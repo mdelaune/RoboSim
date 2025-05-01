@@ -451,8 +451,10 @@ Vector2D Vacuum::moveWallFollow(Vector2D currentPos, Vector2D& velocity, int spe
 Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 {
     constexpr double vacuumRadius = 6.4;
-    constexpr double angleIncrement = 0.1;
-    constexpr double radiusGrowthRate = 0.02;
+    constexpr double angleIncrement = 0.07;
+    constexpr double radiusGrowthRate = 0.015;
+    constexpr double maxSpiralRadius = 60.0;
+    constexpr double randomChanceOnBlock = 15.0;  // chance ONLY when blocked
 
     spiralAngle += angleIncrement;
     spiralRadius += radiusGrowthRate;
@@ -462,31 +464,39 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
 
     Vector2D next = { currentPos.x + dx, currentPos.y + dy };
 
-    auto isValidMove = [&](const Vector2D& pos) {
-        Vector2D test = pos;
-        return !collisionSystem->handleCollision(test, vacuumRadius);
+    auto isValidMove = [&](Vector2D pos) {
+        return !collisionSystem->handleCollision(pos, vacuumRadius);
     };
 
     if (!isValidMove(next)) {
+        // ✅ Only inject random when blocked
+        if (QRandomGenerator::global()->bounded(100) < randomChanceOnBlock) {
+            return moveRandomly(currentPos, velocity, speed);
+        }
+
+        // fallback bounce
         double bounceAngle = (std::rand() % 60 - 30) * (M_PI / 180.0);
         spiralAngle += bounceAngle;
+
         dx = std::cos(spiralAngle) * spiralRadius;
         dy = std::sin(spiralAngle) * spiralRadius;
+
         next = { currentPos.x + dx, currentPos.y + dy };
+
         if (!isValidMove(next)) {
             spiralRadius = std::max(1.0, spiralRadius - 0.5);
-            next = currentPos;
+            return currentPos;
         }
     }
 
     double len = std::hypot(dx, dy);
     if (len != 0) {
-        velocity.x = dx / len;
-        velocity.y = dy / len;
+        velocity = { dx / len, dy / len };
     }
 
     return next;
 }
+
 
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
