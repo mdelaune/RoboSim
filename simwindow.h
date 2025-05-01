@@ -52,7 +52,6 @@ private:
     void writeReport();
     void writeRun();
 
-    int batteryStartLife;
     int batteryLife;
     int vacuumEfficiency;
     int whiskerEfficiency;
