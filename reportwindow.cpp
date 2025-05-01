@@ -32,16 +32,14 @@ void ReportWindow::updateText(){
     ui->startTime->setText(sTimeText);
 
     QString eDateText = data->eDate[0] +"/" + data->eDate[1]+ "/" + data->eDate[2]; //QString::number(data->eDate[0]) + "/" + QString::number(data->eDate[1]) + "/" + QString::number(data->eDate[2]);
-    ui->endDate->setText(eDateText);
+    //ui->endDate->setText(eDateText);
 
     QString eTimeText = data->eTime[0] + ":" + data->eTime[1] + "." + data->eTime[2]; //data->getTimeString(data->eTime);
-    ui->endTime->setText(eTimeText);
+    //ui->endTime->setText(eTimeText);
 
     //QString tsfText = data->totalSF;
     ui->totalSqFt->setText(data->totalSF);
     ui->openSqFt->setText(data->openSF);
-
-
 
     if (selectedAlg == "random"){
         ui->runTime->setText(data->runs[0].getTimeString(data->runs[0].time));

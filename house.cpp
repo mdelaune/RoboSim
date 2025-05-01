@@ -868,8 +868,6 @@ int House::getOpenArea()
         }
     }
 
-    total_area = totalArea;
-
     return totalArea - coveredArea;
 }
 
