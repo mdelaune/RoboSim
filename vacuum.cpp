@@ -299,14 +299,20 @@ bool CollisionSystem::handleCollision(Vector2D& pos, double radius)
 
     // helper to skip door gaps
     auto doorGap = [&](double wallPos, double orthPos, bool horiz){
+        // allow any candidate within 'radius' of the hinge‐line
+        const double tol = radius + 0.1;
         for (auto &d : doors) {
             if (horiz) {
-                if (std::abs(wallPos - d.origin.y) < 1e-3 &&
-                    orthPos >= d.origin.x && orthPos <= d.origin.x + 45.0)
+                // horizontal door at y = d.origin.y, spans x in [origin.x, origin.x+45]
+                if (std::abs(wallPos - d.origin.y) <= tol &&
+                    orthPos >= d.origin.x  - tol &&
+                    orthPos <= d.origin.x + 45.0 + tol)
                     return true;
             } else {
-                if (std::abs(wallPos - d.origin.x) < 1e-3 &&
-                    orthPos <= d.origin.y && orthPos >= d.origin.y - 45.0)
+                // vertical door at x = d.origin.x, spans y in [origin.y, origin.y+45]
+                if (std::abs(wallPos - d.origin.x) <= tol &&
+                    orthPos >= d.origin.y  - tol &&
+                    orthPos <= d.origin.y + 45.0 + tol)
                     return true;
             }
         }
