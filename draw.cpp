@@ -64,11 +64,16 @@ void Draw::addDoor()
     int lastIndex = m_house->doors.size() - 1;
     Door* actualDoor = &(m_house->doors[lastIndex]);
 
-    QGraphicsLineItem *doorLine = new QGraphicsLineItem(actualDoor->get_door());
-    QGraphicsLineItem *entryLine = new QGraphicsLineItem(actualDoor->get_entry());
+    // Create line items but don't set their line directly
+    // We'll let DragDoor handle the coordinate transformations
+    QGraphicsLineItem *doorLine = new QGraphicsLineItem();
+    QGraphicsLineItem *entryLine = new QGraphicsLineItem();
 
     // Pass the pointer to the actual door in the house
     DragDoor *doorItem = new DragDoor(doorLine, entryLine, m_scene, m_house, actualDoor);
+
+    // Make sure the door lines are properly initialized with local coordinates
+    doorItem->updateLines();
 
     // Store the ID for reference
     doorItem->setData(0, actualDoor->getId());
@@ -149,4 +154,28 @@ void Draw::changeFlooring()
         m_house->setRoomFillColor("frieze_cut");
         m_house->setFloorCovering("frieze_cut");
     }
+}
+
+void Draw::addVacuum()
+{
+    QPointF center(0,50);
+    int radius = 15;
+    HouseVacuum *vacuum = new HouseVacuum(center, radius);
+
+    // Add the vacuum to your house model
+    m_house->vacuum = vacuum; // Assuming such a method exists
+
+    // Create a rectangle with the center point and radius
+    QRectF circleRect(
+        center.x() - radius,
+        center.y() - radius,
+        radius * 2,
+        radius * 2
+        );
+
+    // Create the draggable vacuum object
+    DragVacuum *dragVacuum = new DragVacuum(circleRect, m_house, vacuum);
+
+    // Add it to the scene
+    m_scene->addItem(dragVacuum);
 }

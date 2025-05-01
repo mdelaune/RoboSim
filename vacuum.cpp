@@ -20,7 +20,6 @@ Vacuum::Vacuum(QGraphicsScene* scene)
     this->scene = scene;
 
     collisionSystem = new CollisionSystem();
-    collisionSystem->loadFromJson(":/Default/default_plan.json");
 }
 
 // A method to reset the vacuum and add back into the simulation for multiple runs
@@ -40,7 +39,7 @@ void Vacuum::reset()
     }
     vacuumGraphic = scene->addEllipse(-diameter/2, -diameter/2, diameter, diameter,
                                             QPen(Qt::black), QBrush(Qt::red));
-    position = {0, 200.0};
+    position = collisionSystem->getVacuumStartPosition();
     setVacuumPosition(position);
     lastTrailPoint = QPointF(position.x, position.y);
 
@@ -48,6 +47,15 @@ void Vacuum::reset()
 
 
 // Setters
+
+void Vacuum::setHousePath(QString& path)
+{
+    housePath = path;
+    if (!collisionSystem->loadFromJson(housePath)) {
+        qWarning() << "Failed to load plan from" << housePath;
+    }
+}
+
 void Vacuum::setBatteryLife(int minutes)
 {
     if (minutes >= 1 && minutes <= 200)
@@ -143,6 +151,12 @@ double Vacuum::getCoveredArea() const
 // COLLISON SYSTEM BELOW
 //---------------------------------------------------------------------------------------------------------------------------------------
 
+Vector2D CollisionSystem::getVacuumStartPosition() const
+{
+
+    return vacuumStart;
+}
+
 const Room2D* CollisionSystem::getCurrentRoom(const Vector2D& pos) const
 {
     for (const auto& room : rooms) {
@@ -161,6 +175,7 @@ static double clamp(double value, double minVal, double maxVal)
 
 bool CollisionSystem::loadFromJson(const QString& filePath)
 {
+    qDebug() << filePath;
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         std::cerr << "Failed to open JSON file: " << filePath.toStdString() << std::endl;
@@ -219,8 +234,14 @@ bool CollisionSystem::loadFromJson(const QString& filePath)
         obstructions.push_back(obstruction);
     }
 
-    return true;
+    if (root.contains("vacuum_pos") && root["vacuum_pos"].isObject()) {
+        QJsonObject v = root["vacuum_pos"].toObject();
+        // assume you have a member Vector2D vacuumStart;
+        vacuumStart.x = v.value("vacuumX").toDouble();
+        vacuumStart.y = v.value("vacuumY").toDouble();
+    }
 
+    return true;
 }
 
 // Corrects pos if it overlaps a wall or chest. Returns true if any correction was done.

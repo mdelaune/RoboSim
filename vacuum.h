@@ -6,6 +6,8 @@
 #include <QPointF>
 #include <QBrush>
 #include <QString>
+#include <cstdio>
+#include <QtMath>
 
 struct Vector2D {
     double x;
@@ -48,10 +50,13 @@ public:
     bool handleCollision(Vector2D& position, double radius);
     const Room2D* getCurrentRoom(const Vector2D& pos) const;
 
+    Vector2D getVacuumStartPosition() const;
+
 private:
     std::vector<Room2D> rooms;
     std::vector<Door2D> doors;
     std::vector<Obstruction2D> obstructions;
+    Vector2D vacuumStart;
 };
 
 class Vacuum
@@ -66,6 +71,7 @@ public:
     void setSpeed(int inchesPerSecond);
     void setPathingAlgorithm(const QString &algorithm);  // Changed to accept a list of algorithms
     void setVacuumPosition(Vector2D& position);
+    void setHousePath(QString& path);
     // Getters
 
     int getBatteryLife() const;
@@ -105,6 +111,8 @@ private:
     int whiskerEfficiency;
     int speed;
     QString currentAlgorithm;
+
+    QString housePath;
 
     QGraphicsEllipseItem *vacuumGraphic;
 

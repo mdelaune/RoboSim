@@ -9,26 +9,53 @@
 
 Door::Door() : m_origin(QPointF(0,0)), m_size(45)
 {
-    m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
-    m_entry = QLineF(m_origin, QPointF(m_origin.x() + m_size, m_origin.y()));
+    m_doorEnd = QPointF(m_origin.x(), m_origin.y() + m_size);
+    m_entryEnd = QPointF(m_origin.x() + m_size, m_origin.y());
+
+    m_door = QLineF(m_origin, m_doorEnd);
+    m_entry = QLineF(m_origin, m_entryEnd);
 }
 
-Door::Door(QPointF origin) : m_origin(origin), m_size(45)
+Door::Door(QPointF origin, QPointF doorEnd, QPointF entryEnd)
+    : m_origin(origin), m_doorEnd(doorEnd), m_entryEnd(entryEnd), m_id(0)
 {
-    m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
-    m_entry = QLineF(m_origin, QPointF(m_origin.x() + m_size, m_origin.y()));
+    // Calculate size from the door line for consistency
+    m_size = QLineF(m_origin, m_doorEnd).length();
+    updateLines();
 }
 
 Door::Door(QJsonObject door) : m_size(45)
 {
     m_origin = QPointF(door.value("x").toInt(), door.value("y").toInt());
-    m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
-    m_entry = QLineF(m_origin, QPointF(m_origin.x() + m_size, m_origin.y()));
+    m_doorEnd = QPointF(door.value("doorX").toInt(), door.value("doorY").toInt());
+    m_entryEnd = QPointF(door.value("entryX").toInt(), door.value("entryY").toInt());
+
+    // Update size based on actual door length
+    m_size = QLineF(m_origin, m_doorEnd).length();
+
+    updateLines();
+}
+
+void Door::updateLines()
+{
+    // Simply update line objects using the current endpoints
+    m_door = QLineF(m_origin, m_doorEnd);
+    m_entry = QLineF(m_origin, m_entryEnd);
 }
 
 QPointF Door::get_origin()
 {
     return m_origin;
+}
+
+QPointF Door::get_doorEnd()
+{
+    return m_doorEnd;
+}
+
+QPointF Door::get_entryEnd()
+{
+    return m_entryEnd;
 }
 
 QLineF Door::get_door()
@@ -48,14 +75,58 @@ float Door::get_size()
 
 void Door::set_origin(QPointF origin)
 {
+    // Calculate vectors (offsets) before changing origin
+    QPointF doorOffset = m_doorEnd - m_origin;
+    QPointF entryOffset = m_entryEnd - m_origin;
+
+    // Update origin
     m_origin = origin;
-    m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
-    m_entry = QLineF(m_origin, QPointF(m_origin.x() + m_size, m_origin.y()));
+
+    // Apply same offsets to maintain door shape and orientation
+    m_doorEnd = m_origin + doorOffset;
+    m_entryEnd = m_origin + entryOffset;
+
+    // Update the line objects directly
+    m_door = QLineF(m_origin, m_doorEnd);
+    m_entry = QLineF(m_origin, m_entryEnd);
 }
+
+void Door::set_doorEnd(QPointF doorEnd)
+{
+    m_doorEnd = doorEnd;
+    m_door = QLineF(m_origin, m_doorEnd);
+}
+
+// Door::set_entryEnd - Modified version
+void Door::set_entryEnd(QPointF entryEnd)
+{
+    m_entryEnd = entryEnd;
+    m_entry = QLineF(m_origin, m_entryEnd);
+}
+
 
 void Door::set_size(float size)
 {
     m_size = size;
+
+    // Adjust the endpoints based on the direction vectors
+    QPointF doorDir = m_doorEnd - m_origin;
+    QPointF entryDir = m_entryEnd - m_origin;
+
+    // Normalize and scale by new size
+    if (!qFuzzyIsNull(doorDir.manhattanLength())) {
+        qreal len = QLineF(QPointF(0, 0), doorDir).length();
+        doorDir = doorDir * (m_size / len);
+        m_doorEnd = m_origin + doorDir;
+    }
+
+    if (!qFuzzyIsNull(entryDir.manhattanLength())) {
+        qreal len = QLineF(QPointF(0, 0), entryDir).length();
+        entryDir = entryDir * (m_size / len);
+        m_entryEnd = m_origin + entryDir;
+    }
+
+    updateLines();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -158,6 +229,15 @@ void Obstruction::set_legs(QRectF *legs)
     }
 }
 
+QPointF Obstruction::get_legPos(int index)
+{
+    if (index >= 0 && index < 4) {
+        return m_legs[index].center();
+    }
+    return QPointF(); // Invalid
+}
+
+
 void Obstruction::set_legsRadius(int size)
 {
     // Top-left corner leg
@@ -255,7 +335,32 @@ QString Room::get_shape()
 
 int House::getTotalArea()
 {
-    return total_area;
+    for (int i = 0; i < rooms.size(); ++i) {
+        Room& currentRoom = rooms[i];
+        QRectF currentRect = currentRoom.get_rectRoom();
+
+        bool isContained = false;
+
+        // Check if currentRoom is fully inside any other room
+        for (int j = 0; j < rooms.size(); ++j) {
+            if (i == j) continue; // don't compare with itself
+
+            Room& otherRoom = rooms[j];
+            QRectF otherRect = otherRoom.get_rectRoom();
+
+            if (otherRect.contains(currentRect)) {
+                isContained = true;
+                break;
+            }
+        }
+
+        // Only add area if not contained
+        if (!isContained) {
+            totalArea += currentRect.width() * currentRect.height();
+        }
+    }
+
+    return totalArea;
 }
 
 QString House::getFloorCovering()
@@ -497,10 +602,51 @@ void House::loadPlan(QString plan)
     loadEntities<Obstruction>(obstructionsArray, obstructions, [](QJsonObject& obj){ return Obstruction(obj); });
     drawObstructions();
 
+
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
 
-    getCoveredArea();
+}
+
+void House::loadNonInteractivePlan(QString plan)
+{
+    clear();
+
+    qDebug() << plan;
+    QFile file(plan);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open file";
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    //TODO: check for errors when reading
+    file.close();
+
+    floorplan_name = plan;
+
+    QJsonObject root = doc.object();
+    floor_covering = root.value("flooring").toString();
+    floorplan_id = root.value("floorplan_id").toInt();
+
+    // Make sure next_floorplan_id stays ahead of any loaded IDs
+    if (floorplan_id >= next_floorplan_id) {
+        next_floorplan_id = floorplan_id + 1;
+    }
+
+    QJsonArray roomsArray = root.value("rooms").toArray();
+    loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
+
+    QJsonArray doorsArray = root.value("doors").toArray();
+    loadEntities<Door>(doorsArray, doors, [](QJsonObject& obj){ return Door(obj); });
+
+    QJsonArray obstructionsArray = root.value("obstructions").toArray();
+    loadEntities<Obstruction>(obstructionsArray, obstructions, [](QJsonObject& obj){ return Obstruction(obj); });
+
+    drawSimulationPlan();
+    setRoomFillColor(floor_covering);
+    m_scene->update(m_scene->sceneRect());
+
 }
 
 void House::createNewFloorplan()
@@ -527,16 +673,23 @@ QJsonDocument House::toJson()
     QJsonArray obstructionsArray = QJsonArray();
     QJsonArray doorsArray = QJsonArray();
 
+
+    QJsonObject vacuumPos
+    {
+        {"vacuumX", vacuum->get_center().x()},
+        {"vacuumY", vacuum->get_center().y()},
+    };
+
     for(int i = 0; i < rooms.size(); i++)
     {
         QJsonObject object
-            {
-                {"shape", rooms[i].get_shape()},
-                {"x_topLeft", rooms[i].get_topLeft().x()},
-                {"y_topLeft", rooms[i].get_topLeft().y()},
-                {"x_bottomRight", rooms[i].get_bottomRight().x()},
-                {"y_bottomRight", rooms[i].get_bottomRight().y()}
-            };
+        {
+            {"shape", rooms[i].get_shape()},
+            {"x_topLeft", rooms[i].get_topLeft().x()},
+            {"y_topLeft", rooms[i].get_topLeft().y()},
+            {"x_bottomRight", rooms[i].get_bottomRight().x()},
+            {"y_bottomRight", rooms[i].get_bottomRight().y()}
+        };
 
         roomsArray.append(object);
         qDebug() << roomsArray;
@@ -545,14 +698,14 @@ QJsonDocument House::toJson()
     for(int i = 0; i < obstructions.size(); i++)
     {
         QJsonObject object
-            {
-                {"is_chest", obstructions[i].get_isChest()},
-                {"type", obstructions[i].get_type()}, // Add this line to store the type
-                {"x_topLeft", obstructions[i].get_topLeft().x()},
-                {"y_topLeft", obstructions[i].get_topLeft().y()},
-                {"x_bottomRight", obstructions[i].get_bottomRight().x()},
-                {"y_bottomRight", obstructions[i].get_bottomRight().y()},
-            };
+        {
+            {"is_chest", obstructions[i].get_isChest()},
+            {"type", obstructions[i].get_type()}, // Add this line to store the type
+            {"x_topLeft", obstructions[i].get_topLeft().x()},
+            {"y_topLeft", obstructions[i].get_topLeft().y()},
+            {"x_bottomRight", obstructions[i].get_bottomRight().x()},
+            {"y_bottomRight", obstructions[i].get_bottomRight().y()},
+        };
 
         obstructionsArray.append(object);
         qDebug() << obstructionsArray;
@@ -561,24 +714,28 @@ QJsonDocument House::toJson()
     for(int i = 0; i < doors.size(); i++)
     {
         QJsonObject object
-            {
-                {"x", doors[i].get_origin().x()},
-                {"y", doors[i].get_origin().y()}
-            };
+        {
+            {"x", doors[i].get_origin().x()},
+            {"y", doors[i].get_origin().y()},
+            {"doorX", doors[i].get_doorEnd().x()},
+            {"doorY", doors[i].get_doorEnd().y()},
+            {"entryX", doors[i].get_entryEnd().x()},
+            {"entryY", doors[i].get_entryEnd().y()}
+        };
 
         doorsArray.append(object);
         qDebug() << doorsArray;
     }
 
     QJsonObject root
-        {
-
-            {"floorplan_id", floorplan_id},
-            {"flooring", floor_covering},
-            {"doors", doorsArray},
-            {"obstructions", obstructionsArray},
-            {"rooms", roomsArray}
-        };
+    {
+        {"vacuum_pos", vacuumPos},
+        {"floorplan_id", floorplan_id},
+        {"flooring", floor_covering},
+        {"doors", doorsArray},
+        {"obstructions", obstructionsArray},
+        {"rooms", roomsArray}
+    };
 
     QJsonDocument doc = QJsonDocument(root);
     return doc;
@@ -587,6 +744,11 @@ QJsonDocument House::toJson()
 QString House::get_floorplanName()
 {
     return floorplan_name;
+}
+
+void House::set_floorplanName(QString name)
+{
+    floorplan_name = name;
 }
 
 void House::setRoomFillColor(QString flooring)
@@ -600,6 +762,14 @@ void House::setRoomFillColor(QString flooring)
             // Check if it's a room
             DragRoom *room = dynamic_cast<DragRoom *>(item);
             if (room)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(196, 164, 132, 127), Qt::CrossPattern);
+                room->setBrush(brush);
+            }
+
+            Room *r = dynamic_cast<Room *>(item);
+            if (r)
             {
                 // Create a brush with cross pattern
                 QBrush brush(QColor(196, 164, 132, 127), Qt::CrossPattern);
@@ -619,6 +789,14 @@ void House::setRoomFillColor(QString flooring)
                 QBrush brush(QColor(200, 0, 0, 127), Qt::Dense6Pattern);
                 room->setBrush(brush);
             }
+
+            Room *r = dynamic_cast<Room *>(item);
+            if (r)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(200, 0, 0, 127), Qt::Dense6Pattern);
+                room->setBrush(brush);
+            }
         }
     }
     else if(flooring == "loop_pile")
@@ -628,6 +806,14 @@ void House::setRoomFillColor(QString flooring)
             // Check if it's a room
             DragRoom *room = dynamic_cast<DragRoom *>(item);
             if (room)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(50, 50, 255, 127), Qt::Dense7Pattern);
+                room->setBrush(brush);
+            }
+
+            Room *r = dynamic_cast<Room *>(item);
+            if (r)
             {
                 // Create a brush with cross pattern
                 QBrush brush(QColor(50, 50, 255, 127), Qt::Dense7Pattern);
@@ -647,20 +833,54 @@ void House::setRoomFillColor(QString flooring)
                 QBrush brush(QColor(255, 255, 200, 127), Qt::Dense5Pattern);
                 room->setBrush(brush);
             }
+
+            Room *r = dynamic_cast<Room *>(item);
+            if (r)
+            {
+                // Create a brush with cross pattern
+                QBrush brush(QColor(255, 255, 200, 127), Qt::Dense5Pattern);
+                room->setBrush(brush);
+            }
         }
     }
 
     m_scene->update(m_scene->sceneRect());
 }
 
-int House::getCoveredArea()
+int House::getOpenArea()
 {
     int coveredArea = 0;
+    totalArea = 0;
     for (Obstruction& obstruction : obstructions) {
         coveredArea += static_cast<int>(obstruction.get_floorCoverage());
     }
-    qDebug() << coveredArea;
-    return coveredArea;
+
+    for (int i = 0; i < rooms.size(); ++i) {
+        Room& currentRoom = rooms[i];
+        QRectF currentRect = currentRoom.get_rectRoom();
+
+        bool isContained = false;
+
+        // Check if currentRoom is fully inside any other room
+        for (int j = 0; j < rooms.size(); ++j) {
+            if (i == j) continue; // don't compare with itself
+
+            Room& otherRoom = rooms[j];
+            QRectF otherRect = otherRoom.get_rectRoom();
+
+            if (otherRect.contains(currentRect)) {
+                isContained = true;
+                break;
+            }
+        }
+
+        // Only add area if not contained
+        if (!isContained) {
+            totalArea += currentRect.width() * currentRect.height();
+        }
+    }
+
+    return totalArea - coveredArea;
 }
 
 void House::clear()
@@ -672,7 +892,6 @@ void House::clear()
     obstructions.clear();
     scene_object_id = 1;
     m_scene->update(m_scene->sceneRect());
-    //floorplan_name = "";
 }
 
 void House::deleteItem()
@@ -787,14 +1006,48 @@ void House::deleteItem()
 void House::rotate()
 {
     for (QGraphicsItem* item : m_scene->selectedItems()) {
-        if (auto door = dynamic_cast<DragDoor*>(item)) {
-            door->setTransformOriginPoint(door->boundingRect().center());
-            door->setRotation(door->rotation() + 90);
-        } else if (auto obs = dynamic_cast<DragObstruction*>(item)) {
-            obs->setTransformOriginPoint(obs->boundingRect().center());
-            obs->setRotation(obs->rotation() + 90);
+        if (auto dragDoor = dynamic_cast<DragDoor*>(item)) {
+            // Get the associated Door object
+            Door* doorData = dragDoor->getDoor();
+            if (doorData) {
+                // Get current positions
+                QPointF origin = doorData->get_origin();
+                QPointF doorEnd = doorData->get_doorEnd();
+                QPointF entryEnd = doorData->get_entryEnd();
+
+                // Calculate vectors relative to origin
+                QPointF doorVector = doorEnd - origin;
+                QPointF entryVector = entryEnd - origin;
+
+                // Perform 90-degree clockwise rotation of the vectors
+                // For clockwise rotation: (x, y) -> (y, -x)
+                QPointF rotatedDoorVector(doorVector.y(), -doorVector.x());
+                QPointF rotatedEntryVector(entryVector.y(), -entryVector.x());
+
+                // Calculate new endpoint positions
+                QPointF newDoorEnd = origin + rotatedDoorVector;
+                QPointF newEntryEnd = origin + rotatedEntryVector;
+
+                // Update the Door model with new endpoints
+                doorData->set_doorEnd(newDoorEnd);
+                doorData->set_entryEnd(newEntryEnd);
+
+                // Update the visual representation
+                dragDoor->updateLines();
+
+                // Make sure the dragDoor position is synchronized with the Door model
+                // This depends on the DragDoor implementation, but generally:
+                dragDoor->setPos(origin);
+
+                qDebug() << "After rotation - Origin:" << origin
+                         << "DoorEnd:" << newDoorEnd
+                         << "EntryEnd:" << newEntryEnd;
+            }
         }
     }
+
+    // Update the scene
+    m_scene->update(m_scene->sceneRect());
 }
 
 int House::validateTotalAreaBeforeSave()
@@ -853,14 +1106,14 @@ bool House::doRoomsShareWall(Room& room1, Room& room2)
         // X-coordinates overlap
         (rect1.left() < rect2.right() && rect2.left() < rect1.right()) &&
         // Y-coordinates are adjacent (bottom of rect1 touches top of rect2 or vice versa)
-        ((qAbs(rect1.bottom() - rect2.top()) < 5.0) || (qAbs(rect2.bottom() - rect1.top()) < 5.0));
+        ((qAbs(rect1.bottom() - rect2.top()) < 15.0) || (qAbs(rect2.bottom() - rect1.top()) < 15.0));
 
     // Check for vertical walls (left/right edges)
     bool sharesVerticalWall =
         // Y-coordinates overlap
         (rect1.top() < rect2.bottom() && rect2.top() < rect1.bottom()) &&
         // X-coordinates are adjacent (right of rect1 touches left of rect2 or vice versa)
-        ((qAbs(rect1.right() - rect2.left()) < 5.0) || (qAbs(rect2.right() - rect1.left()) < 5.0));
+        ((qAbs(rect1.right() - rect2.left()) < 15.0) || (qAbs(rect2.right() - rect1.left()) < 15.0));
 
     return sharesHorizontalWall || sharesVerticalWall;
 }
@@ -910,8 +1163,9 @@ bool House::doRoomsIntersect(Room& room1, Room& room2)
     QRectF rect1 = room1.get_rectRoom();
     QRectF rect2 = room2.get_rectRoom();
 
-    // Check if the rectangles intersect but neither fully contains the other
-    if (rect1.intersects(rect2)) {
+    QRectF overlap = rect1.intersected(rect2);
+    if (overlap.width() > 50 && overlap.height() > 50) {
+        // Considered significant intersection
         // If one rectangle fully contains the other, it's not considered an intersection
         if (rect1.contains(rect2) || rect2.contains(rect1)) {
             return false; // Not an intersection case we're concerned with
@@ -944,8 +1198,15 @@ bool House::validateNoRoomIntersections()
 bool House::validateDoorsOnWalls()
 {
     for (Door& door : doors) {
-        // Get the door's position
-        QPointF doorOrigin = door.get_origin();
+        // Get the door line
+        QLineF doorLine = door.get_door();
+        QPointF doorStart = doorLine.p1();
+        QPointF doorEnd = doorLine.p2();
+
+        // Calculate the midpoint of the door line for better tolerance
+        QPointF doorMidpoint((doorStart.x() + doorEnd.x()) / 2,
+                             (doorStart.y() + doorEnd.y()) / 2);
+
         // Increase tolerance to accommodate small movements
         double tolerance = 25.0;
         bool doorOnWall = false;
@@ -953,38 +1214,54 @@ bool House::validateDoorsOnWalls()
         for (Room& room : rooms) {
             QRectF rect = room.get_rectRoom();
 
-            // Check if door is on left wall
-            if (qAbs(doorOrigin.x() - rect.left()) < tolerance &&
-                doorOrigin.y() >= rect.top() - tolerance && doorOrigin.y() <= rect.bottom() + tolerance) {
+            // Check if any part of the door line is on a wall
+            // Left wall
+            if ((qAbs(doorStart.x() - rect.left()) < tolerance &&
+                 doorStart.y() >= rect.top() - tolerance && doorStart.y() <= rect.bottom() + tolerance) ||
+                (qAbs(doorEnd.x() - rect.left()) < tolerance &&
+                 doorEnd.y() >= rect.top() - tolerance && doorEnd.y() <= rect.bottom() + tolerance) ||
+                (qAbs(doorMidpoint.x() - rect.left()) < tolerance &&
+                 doorMidpoint.y() >= rect.top() - tolerance && doorMidpoint.y() <= rect.bottom() + tolerance)) {
                 doorOnWall = true;
                 break;
             }
 
-            // Check if door is on right wall
-            if (qAbs(doorOrigin.x() - rect.right()) < tolerance &&
-                doorOrigin.y() >= rect.top() - tolerance && doorOrigin.y() <= rect.bottom() + tolerance) {
+            // Right wall
+            if ((qAbs(doorStart.x() - rect.right()) < tolerance &&
+                 doorStart.y() >= rect.top() - tolerance && doorStart.y() <= rect.bottom() + tolerance) ||
+                (qAbs(doorEnd.x() - rect.right()) < tolerance &&
+                 doorEnd.y() >= rect.top() - tolerance && doorEnd.y() <= rect.bottom() + tolerance) ||
+                (qAbs(doorMidpoint.x() - rect.right()) < tolerance &&
+                 doorMidpoint.y() >= rect.top() - tolerance && doorMidpoint.y() <= rect.bottom() + tolerance)) {
                 doorOnWall = true;
                 break;
             }
 
-            // Check if door is on top wall
-            if (qAbs(doorOrigin.y() - rect.top()) < tolerance &&
-                doorOrigin.x() >= rect.left() - tolerance && doorOrigin.x() <= rect.right() + tolerance) {
+            // Top wall
+            if ((qAbs(doorStart.y() - rect.top()) < tolerance &&
+                 doorStart.x() >= rect.left() - tolerance && doorStart.x() <= rect.right() + tolerance) ||
+                (qAbs(doorEnd.y() - rect.top()) < tolerance &&
+                 doorEnd.x() >= rect.left() - tolerance && doorEnd.x() <= rect.right() + tolerance) ||
+                (qAbs(doorMidpoint.y() - rect.top()) < tolerance &&
+                 doorMidpoint.x() >= rect.left() - tolerance && doorMidpoint.x() <= rect.right() + tolerance)) {
                 doorOnWall = true;
                 break;
             }
 
-            // Check if door is on bottom wall
-            if (qAbs(doorOrigin.y() - rect.bottom()) < tolerance &&
-                doorOrigin.x() >= rect.left() - tolerance && doorOrigin.x() <= rect.right() + tolerance) {
+            // Bottom wall
+            if ((qAbs(doorStart.y() - rect.bottom()) < tolerance &&
+                 doorStart.x() >= rect.left() - tolerance && doorStart.x() <= rect.right() + tolerance) ||
+                (qAbs(doorEnd.y() - rect.bottom()) < tolerance &&
+                 doorEnd.x() >= rect.left() - tolerance && doorEnd.x() <= rect.right() + tolerance) ||
+                (qAbs(doorMidpoint.y() - rect.bottom()) < tolerance &&
+                 doorMidpoint.x() >= rect.left() - tolerance && doorMidpoint.x() <= rect.right() + tolerance)) {
                 doorOnWall = true;
                 break;
             }
         }
 
         if (!doorOnWall) {
-            qDebug() << "ERROR: Door at position (" << doorOrigin.x() << ","
-                     << doorOrigin.y() << ") is not placed on any wall!";
+            qDebug() << "ERROR: Door with line from" << doorStart << "to" << doorEnd << "is not placed on any wall!";
             return false;
         }
     }
@@ -1005,39 +1282,70 @@ bool House::validateEveryRoomHasDoor()
         return false;
     }
 
+    if(doors.size() < rooms.size() - 1)
+    {
+        qDebug() << "Not enough doors for the number of rooms";
+        return false;
+    }
+
     // Check each room
     for (Room& room : rooms) {
         QRectF roomRect = room.get_rectRoom();
         bool hasDoor = false;
-        int tolerance = 15.0;
+        double tolerance = 15.0;
+
         // Check if any door is on this room's walls
         for (Door& door : doors) {
-            QPointF doorOrigin = door.get_origin();
+            QLineF doorLine = door.get_door();
+            QPointF doorStart = doorLine.p1();
+            QPointF doorEnd = doorLine.p2();
 
-            // Check if door is on left wall
-            if (qAbs(doorOrigin.x() - roomRect.left()) < tolerance &&
-                doorOrigin.y() >= roomRect.top() && doorOrigin.y() <= roomRect.bottom()) {
+            // Calculate the midpoint of the door line
+            QPointF doorMidpoint((doorStart.x() + doorEnd.x()) / 2,
+                                 (doorStart.y() + doorEnd.y()) / 2);
+
+            // Check all four walls with all parts of the door
+
+            // Left wall check
+            if ((qAbs(doorStart.x() - roomRect.left()) < tolerance &&
+                 doorStart.y() >= roomRect.top() && doorStart.y() <= roomRect.bottom()) ||
+                (qAbs(doorEnd.x() - roomRect.left()) < tolerance &&
+                 doorEnd.y() >= roomRect.top() && doorEnd.y() <= roomRect.bottom()) ||
+                (qAbs(doorMidpoint.x() - roomRect.left()) < tolerance &&
+                 doorMidpoint.y() >= roomRect.top() && doorMidpoint.y() <= roomRect.bottom())) {
                 hasDoor = true;
                 break;
             }
 
-            // Check if door is on right wall
-            if (qAbs(doorOrigin.x() - roomRect.right()) < tolerance &&
-                doorOrigin.y() >= roomRect.top() && doorOrigin.y() <= roomRect.bottom()) {
+            // Right wall check
+            if ((qAbs(doorStart.x() - roomRect.right()) < tolerance &&
+                 doorStart.y() >= roomRect.top() && doorStart.y() <= roomRect.bottom()) ||
+                (qAbs(doorEnd.x() - roomRect.right()) < tolerance &&
+                 doorEnd.y() >= roomRect.top() && doorEnd.y() <= roomRect.bottom()) ||
+                (qAbs(doorMidpoint.x() - roomRect.right()) < tolerance &&
+                 doorMidpoint.y() >= roomRect.top() && doorMidpoint.y() <= roomRect.bottom())) {
                 hasDoor = true;
                 break;
             }
 
-            // Check if door is on top wall
-            if (qAbs(doorOrigin.y() - roomRect.top()) < tolerance &&
-                doorOrigin.x() >= roomRect.left() && doorOrigin.x() <= roomRect.right()) {
+            // Top wall check
+            if ((qAbs(doorStart.y() - roomRect.top()) < tolerance &&
+                 doorStart.x() >= roomRect.left() && doorStart.x() <= roomRect.right()) ||
+                (qAbs(doorEnd.y() - roomRect.top()) < tolerance &&
+                 doorEnd.x() >= roomRect.left() && doorEnd.x() <= roomRect.right()) ||
+                (qAbs(doorMidpoint.y() - roomRect.top()) < tolerance &&
+                 doorMidpoint.x() >= roomRect.left() && doorMidpoint.x() <= roomRect.right())) {
                 hasDoor = true;
                 break;
             }
 
-            // Check if door is on bottom wall
-            if (qAbs(doorOrigin.y() - roomRect.bottom()) < tolerance &&
-                doorOrigin.x() >= roomRect.left() && doorOrigin.x() <= roomRect.right()) {
+            // Bottom wall check
+            if ((qAbs(doorStart.y() - roomRect.bottom()) < tolerance &&
+                 doorStart.x() >= roomRect.left() && doorStart.x() <= roomRect.right()) ||
+                (qAbs(doorEnd.y() - roomRect.bottom()) < tolerance &&
+                 doorEnd.x() >= roomRect.left() && doorEnd.x() <= roomRect.right()) ||
+                (qAbs(doorMidpoint.y() - roomRect.bottom()) < tolerance &&
+                 doorMidpoint.x() >= roomRect.left() && doorMidpoint.x() <= roomRect.right())) {
                 hasDoor = true;
                 break;
             }
@@ -1226,4 +1534,86 @@ bool House::isObstructionInsideAnyRoom(Obstruction& obstruction)
     }
 
     return false; // Not fully contained in any room
+}
+
+qreal pointToSegmentDistance(const QPointF& p, const QLineF& line)
+{
+    QPointF a = line.p1();
+    QPointF b = line.p2();
+
+    QPointF ab = b - a;
+    QPointF ap = p - a;
+
+    qreal abLengthSquared = QPointF::dotProduct(ab, ab);
+    if (abLengthSquared == 0.0)
+        return QLineF(p, a).length(); // line is a point
+
+    qreal t = QPointF::dotProduct(ap, ab) / abLengthSquared;
+    t = qBound(0.0, t, 1.0);
+
+    QPointF projection = a + t * ab;
+    return QLineF(p, projection).length();
+}
+
+bool House::isVacuumPositionValid()
+{
+    if (!vacuum) return false;
+
+    QPointF center = vacuum->get_center();
+    qreal radius = vacuum->get_radius(); // make sure you have a getter for this
+    QRectF vacuumRect(center.x() - radius, center.y() - radius, radius * 2, radius * 2);
+
+    // 1. Check: Vacuum must be inside a room
+    bool insideRoom = false;
+    for (Room& room : rooms) {
+        if (room.get_rectRoom().contains(center)) {
+            insideRoom = true;
+
+            // 2. Also check vacuum isn't intersecting any of the room walls
+            QRectF r = room.get_rectRoom();
+            QVector<QLineF> walls = {
+                QLineF(r.topLeft(), r.topRight()),     // Top
+                QLineF(r.bottomLeft(), r.bottomRight()), // Bottom
+                QLineF(r.topLeft(), r.bottomLeft()),     // Left
+                QLineF(r.topRight(), r.bottomRight())    // Right
+            };
+
+            for (QLineF& wall : walls) {
+                qreal distToWall = pointToSegmentDistance(center, wall);
+                if (distToWall < radius + 1.0) {
+                    qDebug() << "Vacuum intersects or touches a room wall!";
+                    return false;
+                }
+            }
+
+            break;
+        }
+    }
+
+    if (!insideRoom) {
+        qDebug() << "Vacuum is not inside any room!";
+        return false;
+    }
+
+    // 3. Check: Vacuum does not intersect any obstruction
+    for (Obstruction& obs : obstructions) {
+        if (vacuumRect.intersects(obs.get_rect())) {
+            qDebug() << "Vacuum intersects obstruction ID:" << obs.getId();
+            return false;
+        }
+    }
+
+    // 4. Check: Vacuum does not intersect any door line
+    for (Door& door : doors) {
+        QVector<QLineF> doorLines = { door.get_door(), door.get_entry() };
+
+        for (QLineF& line : doorLines) {
+            if (pointToSegmentDistance(center, line) < radius + 1.0) {
+                qDebug() << "Vacuum intersects a door!";
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

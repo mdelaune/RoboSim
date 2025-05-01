@@ -1,3 +1,4 @@
+#include <QStyleOptionGraphicsItem>
 #include "dragdrop.h"
 
 template<typename T>
@@ -13,6 +14,9 @@ T* findParent(QObject* obj)
     return nullptr;
 }
 
+// First, modify how the DragDoor is initialized
+
+// In the constructor, make sure the lines use local coordinates
 DragDoor::DragDoor(QGraphicsLineItem *doorLine,
                    QGraphicsLineItem *entryLine,
                    QGraphicsScene *scene,
@@ -21,6 +25,7 @@ DragDoor::DragDoor(QGraphicsLineItem *doorLine,
                    QObject *parent)
     : QObject(parent), m_doorLine(doorLine), m_entryLine(entryLine)
 {
+    // Existing initialization code
     m_normalDoorPen = QPen(Qt::black, 4);
     m_selectedDoorPen = QPen(Qt::blue, 4);
 
@@ -40,8 +45,35 @@ DragDoor::DragDoor(QGraphicsLineItem *doorLine,
     m_door = door;
     m_scene = scene;
 
+    if (m_door) {
+        // Get the door's data in scene coordinates
+        QLineF doorSceneLine = m_door->get_door();
+        QLineF entrySceneLine = m_door->get_entry();
+
+        // Calculate lines with origin at (0,0) in local coordinates
+        QPointF origin = m_door->get_origin();
+
+        // Create local lines relative to origin
+        QLineF doorLocalLine(QPointF(0, 0),
+                             QPointF(doorSceneLine.p2().x() - origin.x(),
+                                     doorSceneLine.p2().y() - origin.y()));
+
+        QLineF entryLocalLine(QPointF(0, 0),
+                              QPointF(entrySceneLine.p2().x() - origin.x(),
+                                      entrySceneLine.p2().y() - origin.y()));
+
+        m_doorLine->setLine(doorLocalLine);
+        m_entryLine->setLine(entryLocalLine);
+    }
+
+    // Now add lines to group after their positions are fixed
     addToGroup(m_doorLine);
     addToGroup(m_entryLine);
+
+    // Set the position of the group to the door's origin in scene coordinates
+    if (m_door) {
+        setPos(m_door->get_origin());
+    }
 
     setFlags(ItemIsSelectable | ItemIsMovable);
     setZValue(1);
@@ -55,6 +87,33 @@ DragDoor::~DragDoor()
     if (m_scene) {
         disconnect(m_scene, &QGraphicsScene::selectionChanged, this, &DragDoor::updateSelectionStyle);
     }
+}
+
+// Key function to update lines with local coordinates
+void DragDoor::updateLines()
+{
+    if (!m_door || !m_doorLine || !m_entryLine)
+        return;
+
+    // Get the door's origin and lines in scene coordinates
+    QPointF origin = m_door->get_origin();
+    QLineF doorSceneLine = m_door->get_door();
+    QLineF entrySceneLine = m_door->get_entry();
+
+    // Calculate vectors from origin to endpoints
+    QPointF doorEndVector = doorSceneLine.p2() - origin;
+    QPointF entryEndVector = entrySceneLine.p2() - origin;
+
+    // Create local lines that start at 0,0 (group origin)
+    QLineF doorLocalLine(QPointF(0, 0), doorEndVector);
+    QLineF entryLocalLine(QPointF(0, 0), entryEndVector);
+
+    // Update the line items with local coordinates
+    m_doorLine->setLine(doorLocalLine);
+    m_entryLine->setLine(entryLocalLine);
+
+    // Set position to the door's origin in scene coordinates
+    setPos(origin);
 }
 
 void DragDoor::updateSelectionStyle()
@@ -74,22 +133,109 @@ void DragDoor::updateSelectionStyle()
     }
 }
 
-QPointF DragDoor::getOrigin() const
+QPainterPath DragDoor::shape()
 {
-    // The origin is at the scene position of the group
-    return scenePos();
+    QPainterPath path;
+
+    // Use a wider pen for hit detection than for visual display
+    const qreal hitAreaWidth = 12.0; // Make hit area 12 pixels wide
+
+    // Create paths for both lines with wider stroke
+    QPainterPath doorPath;
+    doorPath.moveTo(m_doorLine->line().p1());
+    doorPath.lineTo(m_doorLine->line().p2());
+
+    QPainterPath entryPath;
+    entryPath.moveTo(m_entryLine->line().p1());
+    entryPath.lineTo(m_entryLine->line().p2());
+
+    // Add the stroked paths to create hit areas
+    QPainterPathStroker stroker;
+    stroker.setWidth(hitAreaWidth);
+    path.addPath(stroker.createStroke(doorPath));
+    path.addPath(stroker.createStroke(entryPath));
+
+    return path;
 }
 
+void DragDoor::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    // Create a copy of the option to modify it
+    QStyleOptionGraphicsItem myOption(*option);
+
+    // Remove the StateSelected style from the option's state
+    // This prevents Qt from drawing the default selection rectangle
+    myOption.state &= ~QStyle::State_Selected;
+
+    // Call the base class paint method with our modified option
+    QGraphicsItemGroup::paint(painter, &myOption, widget);
+
+}
+
+// Fixed mouseMoveEvent that properly handles movement
+void DragDoor::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    // Let the parent class handle the standard move
+    QGraphicsItemGroup::mouseMoveEvent(event);
+
+    // After movement, update the door model with our new scene position
+    if (m_door) {
+        // Update door origin to our current position
+        QPointF currentScenePos = scenePos();
+        m_door->set_origin(currentScenePos);
+
+        // The local coordinates of the line endpoints remain the same
+        // We just need to convert them to scene coordinates for the door model
+        QLineF doorLocalLine = m_doorLine->line();
+        QLineF entryLocalLine = m_entryLine->line();
+
+        // Convert local line endpoints to scene coordinates
+        QPointF doorEndScene = mapToScene(doorLocalLine.p2());
+        QPointF entryEndScene = mapToScene(entryLocalLine.p2());
+
+        // Update the door model's lines in scene coordinates
+        m_door->set_door(QLineF(currentScenePos, doorEndScene));
+        m_door->set_entry(QLineF(currentScenePos, entryEndScene));
+    }
+
+    // Ensure scene updates visually
+    scene()->update();
+}
+
+// Properly get the door end point in scene coordinates
+QPointF DragDoor::getDoorEnd()
+{
+    QLineF doorLine = m_doorLine->line();
+    // Map the end point to scene coordinates
+    return m_doorLine->mapToScene(doorLine.p2());
+}
+
+// Properly get the entry end point in scene coordinates
+QPointF DragDoor::getEntryEnd()
+{
+    QLineF entryLine = m_entryLine->line();
+    // Map the end point to scene coordinates
+    return m_entryLine->mapToScene(entryLine.p2());
+}
+
+// Fixed mouseReleaseEvent that updates the door model
 void DragDoor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::OpenHandCursor);
 
-    QPointF newOrigin = scenePos();
-
+    // Update the Door's origin with the new position
     if (m_house && m_door) {
-        // Update the Door's origin with the new position
-        m_door->set_origin(newOrigin);
-        qDebug() << "New Origin: " << newOrigin;
+        m_door->set_origin(scenePos());
+
+        // Get door and entry endpoints in scene coordinates
+        QPointF doorEndScene = getDoorEnd();
+        QPointF entryEndScene = getEntryEnd();
+
+        // Update the door model's lines in scene coordinates
+        m_door->set_door(QLineF(scenePos(), doorEndScene));
+        m_door->set_entry(QLineF(scenePos(), entryEndScene));
+
+        qDebug() << "New Origin: " << scenePos();
     }
 
     QGraphicsItemGroup::mouseReleaseEvent(event);
@@ -158,8 +304,6 @@ void DragObstruction::setSizeConstraints()
         m_maxWidth = 60.0;
         m_maxHeight = 60.0;
     }
-
-
 }
 
 QRectF DragObstruction::boundingRect() const
@@ -349,11 +493,6 @@ void DragObstruction::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mousePressEvent(event);
 }
 
-//next
-//rotate rooms
-//add entry and door coordinates to door class and to json
-//unique floorplan id written and read from json
-
 void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (m_currentHandle != None) {
@@ -409,10 +548,15 @@ void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 newBody.setBottom(newBody.top() + m_maxHeight);
         }
 
+        m_body = newBody;
+        updateLegsPositions(m_body);
+        update();
+
     } else {
         // Let parent handle the standard move
         QGraphicsItem::mouseMoveEvent(event);
     }
+
 }
 
 void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -436,6 +580,86 @@ void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
     m_currentHandle = None;
     QGraphicsItem::mouseReleaseEvent(event);
+}
+
+DragVacuum::DragVacuum(const QRectF &circle, House *house, HouseVacuum *vacuum)
+    : QGraphicsEllipseItem(circle), m_circle(circle)
+{
+    setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+    setCursor(QCursor(Qt::OpenHandCursor));
+
+    m_house = house;
+    m_vacuum = vacuum;
+
+    // Setup visual styling
+    m_normalPen = QPen(Qt::black, 2);
+    m_selectedPen = QPen(Qt::blue, 2);
+    m_normalBrush = QBrush(QColor(0, 150, 200, 127)); // Semi-transparent blue
+    m_selectedBrush = QBrush(QColor(0, 200, 255, 180)); // Brighter blue when selected
+
+    setPen(m_normalPen);
+    setBrush(m_normalBrush);
+}
+
+QRectF DragVacuum::boundingRect() const
+{
+    // No need for extra margin since we don't have resize handles
+    return rect();
+}
+
+void DragVacuum::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    // Set style based on selection state
+    if (isSelected()) {
+        painter->setPen(m_selectedPen);
+        painter->setBrush(m_selectedBrush);
+    } else {
+        painter->setPen(m_normalPen);
+        painter->setBrush(m_normalBrush);
+    }
+
+    // Draw the vacuum circle
+    painter->drawEllipse(rect());
+
+    // Draw the direction indicator (vacuum front)
+    QPointF center = rect().center();
+    QPointF front(center.x(), center.y() - rect().height() * 0.4);
+
+    if (isSelected()) {
+        painter->setPen(QPen(Qt::blue, 3));
+    } else {
+        painter->setPen(QPen(Qt::black, 3));
+    }
+    painter->drawLine(center, front);
+}
+
+void DragVacuum::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::ClosedHandCursor);
+    QGraphicsEllipseItem::mousePressEvent(event);
+}
+
+void DragVacuum::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    // Standard move behavior
+    QGraphicsEllipseItem::mouseMoveEvent(event);
+}
+
+void DragVacuum::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
+
+    // Get the current position in scene coordinates
+    QRectF sceneCircle = mapToScene(rect()).boundingRect();
+
+    // Update the vacuum's position in the data model
+    if (m_house && m_vacuum) {
+        // Assuming Vacuum class has appropriate setters
+        m_vacuum->set_center(sceneCircle.center());
+        // Note: We're not changing the radius since resizing is disabled
+    }
+
+    QGraphicsEllipseItem::mouseReleaseEvent(event);
 }
 
 DragRoom::DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room *room, long id)

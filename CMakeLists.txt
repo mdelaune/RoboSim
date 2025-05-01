@@ -55,6 +55,8 @@ else()
         add_executable(RoboSim
             ${PROJECT_SOURCES}
             dragdrop.h dragdrop.cpp
+            mainwindow.ui
+            editwindow.ui
 
         )
     endif()

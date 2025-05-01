@@ -46,8 +46,6 @@ void Menu::menuOpen()
 
 void Menu::saveToFile(const QString& filename)
 {
-
-
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(nullptr, "Error Opening File",
@@ -56,7 +54,7 @@ void Menu::saveToFile(const QString& filename)
         return;
     }
 
-
+    m_house->set_floorplanName(filename);
 
     QTextStream out(&file);
     out << m_house->toJson().toJson(QJsonDocument::Indented);
@@ -70,7 +68,13 @@ void Menu::menuSave()
         return;
     }
 
-    QString filename = getFilename("Name", true);
+    QString filename = m_house->get_floorplanName();
+    if(filename == "Untitled")
+    {
+        menuSaveAs();
+        return;
+    }
+
     if (!filename.isEmpty()) {
         saveToFile(filename);
         qDebug() << "SAVE";
@@ -83,6 +87,7 @@ void Menu::menuSaveAs()
     {
         return;
     }
+
     QString filename = getFilename("Name", true);
     if (!filename.isEmpty()) {
         saveToFile(filename);
@@ -187,6 +192,17 @@ bool Menu::errorChecks()
         return false;
     }
 
+    if(!m_house->isVacuumPositionValid())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Vacuum position is invalid. Please make sure the vacuum is inside a room and not overlapping with walls, doors, or obstructions.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
 
     return true;
 }

@@ -31,19 +31,19 @@ void ReportWindow::updateText(){
     QString sTimeText = data->sTime[0] + ":" + data->sTime[1] + "." + data->sTime[2]; //TimegetTimeString(data->sTime);
     ui->startTime->setText(sTimeText);
 
-    QString eDateText = data->eDate[0] +"/" + data->eDate[1]+ "/" + data->eDate[2]; //QString::number(data->eDate[0]) + "/" + QString::number(data->eDate[1]) + "/" + QString::number(data->eDate[2]);
-    ui->endDate->setText(eDateText);
+    // QString eDateText = data->eDate[0] +"/" + data->eDate[1]+ "/" + data->eDate[2]; //QString::number(data->eDate[0]) + "/" + QString::number(data->eDate[1]) + "/" + QString::number(data->eDate[2]);
+    // ui->endDate->setText(eDateText);
 
-    QString eTimeText = data->eTime[0] + ":" + data->eTime[1] + "." + data->eTime[2]; //data->getTimeString(data->eTime);
-    ui->endTime->setText(eTimeText);
+    // QString eTimeText = data->eTime[0] + ":" + data->eTime[1] + "." + data->eTime[2]; //data->getTimeString(data->eTime);
+    // ui->endTime->setText(eTimeText);
 
-    QString tsfText = data->totalSF;
-    ui->totalSqFt->setText(tsfText);
-
+    //QString tsfText = data->totalSF;
+    ui->totalSqFt->setText(data->totalSF);
+    ui->openSqFt->setText(data->openSF);
 
     if (selectedAlg == "random"){
         ui->runTime->setText(data->runs[0].getTimeString(data->runs[0].time));
-        ui->coverSqFt->setText(data->runs[0].coverSF);
+        ui->cleanSqFt->setText(data->runs[0].coverSF);
         ui->perCleaned->setText(data->runs[0].coverPer + " %");
         QPixmap map(data->runs[0].heatmapPath);
         ui->heatMap->setScene(new QGraphicsScene(this));
@@ -51,7 +51,7 @@ void ReportWindow::updateText(){
     }
     else if (selectedAlg == "spiral"){
         ui->runTime->setText(data->runs[1].getTimeString(data->runs[1].time));
-        ui->coverSqFt->setText(data->runs[1].coverSF);
+        ui->cleanSqFt->setText(data->runs[1].coverSF);
         ui->perCleaned->setText(data->runs[1].coverPer + " %");
         QPixmap map(data->runs[1].heatmapPath);
         ui->heatMap->setScene(new QGraphicsScene(this));
@@ -59,7 +59,7 @@ void ReportWindow::updateText(){
     }
     else if (selectedAlg == "snaking"){
         ui->runTime->setText(data->runs[2].getTimeString(data->runs[2].time));
-        ui->coverSqFt->setText(data->runs[2].coverSF);
+        ui->cleanSqFt->setText(data->runs[2].coverSF);
         ui->perCleaned->setText(data->runs[2].coverPer + " %");
         QPixmap map(data->runs[2].heatmapPath);
         ui->heatMap->setScene(new QGraphicsScene(this));
@@ -67,7 +67,7 @@ void ReportWindow::updateText(){
     }
     else if (selectedAlg == "wallfollow"){
         ui->runTime->setText(data->runs[3].getTimeString(data->runs[3].time));
-        ui->coverSqFt->setText(data->runs[3].coverSF);
+        ui->cleanSqFt->setText(data->runs[3].coverSF);
         ui->perCleaned->setText(data->runs[3].coverPer + " %");
         QPixmap map(data->runs[3].heatmapPath);
         ui->heatMap->setScene(new QGraphicsScene(this));

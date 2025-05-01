@@ -15,25 +15,36 @@ class Door
 {
 public:
     Door();
-    Door(QPointF origin);
+    Door(QPointF origin, QPointF doorEnd, QPointF entryEnd);
     Door(QJsonObject door);
 
     QPointF get_origin();
+    QPointF get_doorEnd();
+    QPointF get_entryEnd();
     QLineF  get_door();
     QLineF  get_entry();
+    void set_door(QLineF door){m_door = door;}
+    void set_entry(QLineF entry){m_entry = entry;}
     float get_size();
 
     void set_origin(QPointF origin);
+    void set_doorEnd(QPointF doorEnd);
+    void set_entryEnd(QPointF entryEnd);
     void set_size(float size);
 
-    void set_topLeft(QPointF top_left);
-    void set_bottomRight(QPointF bottom_right);
+    //void set_topLeft(QPointF top_left);
+    //void set_bottomRight(QPointF bottom_right);
 
     void setId(int id) { m_id = id; }
     int getId() const { return m_id; }
+    void updateLines();
+
+    void updatePosition(QPointF newOrigin);
 
 private:
     QPointF m_origin;
+    QPointF m_doorEnd;    // End point of the door line
+    QPointF m_entryEnd;
     QLineF  m_door;
     QLineF  m_entry;
     float m_size;
@@ -65,6 +76,8 @@ public:
 
     void setId(int id) { m_id = id; }
     int getId() const { return m_id; }
+
+    QPointF get_legPos(int index);
 
 private:
     QPointF m_top_left;
@@ -113,6 +126,26 @@ private:
 //---------------------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------
 
+class HouseVacuum
+{
+public:
+    HouseVacuum(QPointF center, int radius)
+        : m_center(center), m_radius(radius)
+    {
+    }
+
+    void set_center(QPointF center){m_center = center;}
+    QPointF get_center(){return m_center;}
+    void set_radius(int radius){m_radius = radius;}
+    int get_radius(){return m_radius;}
+
+private:
+    QPointF m_center;
+    int m_radius;
+};
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------
 class House : public QObject
 {
     Q_OBJECT
@@ -120,8 +153,8 @@ public:
     House(QGraphicsScene *scene);
 
     static House* instance;
-    const double MIN_TOTAL_AREA = 40000.0;
-    const double MAX_TOTAL_AREA = 600000.0;
+    const double MIN_TOTAL_AREA = 200000.0;
+    const double MAX_TOTAL_AREA = 800000.0;
 
     void loadPlan(QString plan);
 
@@ -143,6 +176,7 @@ public:
     void rotate();
 
     QString get_floorplanName();
+    void set_floorplanName(QString name);
     QJsonDocument toJson();
 
     template<typename T>
@@ -160,8 +194,6 @@ public:
     void updateDoorPosition(int id, QPointF newOrigin);
     void updateObstructionPosition(int id, QPointF topLeft, QPointF bottomRight);
 
-    int getTotalArea();
-
     QString getFloorCovering();
     void setFloorCovering(QString flooring);
 
@@ -169,6 +201,7 @@ public:
     QVector<Door> doors;
     QVector<Obstruction> obstructions;
     QString flooring;
+    HouseVacuum *vacuum;
 
     Room* getRoomById(long id);
 
@@ -197,7 +230,10 @@ public:
 
     void createNewFloorplan();
 
-    int getCoveredArea();
+    int getOpenArea();
+    int getTotalArea();
+    void loadNonInteractivePlan(QString plan);
+    bool isVacuumPositionValid();
 
 private:
     void loadRooms(QJsonArray roomsArray);
@@ -213,7 +249,7 @@ private:
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
     int scene_object_id = 1;
-    int total_area;
+    int totalArea;
     int cover_area;
 
     QString floor_covering = "hard_floor";

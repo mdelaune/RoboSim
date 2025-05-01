@@ -18,7 +18,6 @@ SimWindow::SimWindow(House* housePtr, QWidget *parent)
     view->setScene(scene);
 
     house->setScene(scene);
-    //house->loadPlan(house_path);
     house->drawSimulationPlan();
 
     vacuum = new Vacuum(scene);
@@ -36,24 +35,7 @@ SimWindow::SimWindow(House* housePtr, QWidget *parent)
     connect(ui->timesFivePushButton, &QPushButton::clicked, this, &SimWindow::fiveSpeedPushed);
     connect(ui->timesFiftyPushButton, &QPushButton::clicked, this, &SimWindow::fiftySpeedPushed);
 
-    simData = new RunData();
-    simData->setNewID();
-    simData->id = QString::number(house->getFloorplanId());
-    QDate date = QDate::currentDate();
-    QString dateString = date.QDate::toString("dd MM yy");
-    simData->sDate = dateString.split(' ');
 
-    QTime time = QTime::currentTime();
-    QString timeString = time.toString();
-    simData->sTime = timeString.split(':');
-
-    simData->totalSF = QString::number(house->getTotalArea()/16000);
-
-    for (int i = 0; i < 4; i++){
-        Run run;
-        run.exists = false;
-        simData->runs.append(run);
-    }
 }
 
 SimWindow::~SimWindow()
@@ -63,15 +45,38 @@ SimWindow::~SimWindow()
 
 void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whiskerEfficiency, int speed, QStringList selectedAlgorithms)
 {
-    this->batteryStartLife = batteryLife;
     this->batteryLife = batteryLife;
     this->vacuumEfficiency = vacuumEfficiency;
     this->whiskerEfficiency = whiskerEfficiency;
     this->speed = speed;
     pendingAlgorithms = selectedAlgorithms;
 
+    vacuum->setHousePath(house_path);
+    qDebug() << "HOUSE PATH TEST" << house_path;
+
     currentAlgorithmIndex = 0;
     allRunsCompleted = false;
+
+    simData = new RunData();
+    simData->setNewID();
+    simData->id = QString::number(house->getFloorplanId());
+    simData->openSF = QString::number(house->getOpenArea()/100);
+    simData->totalSF = QString::number(house->getTotalArea()/100);
+
+
+    QDate date = QDate::currentDate();
+    QString dateString = date.QDate::toString("dd MM yy");
+    simData->sDate = dateString.split(' ');
+
+    QTime time = QTime::currentTime();
+    QString timeString = time.toString();
+    simData->sTime = timeString.split(':');
+
+    for (int i = 0; i < 4; i++){
+        Run run;
+        run.exists = false;
+        simData->runs.append(run);
+    }
 
     startNextRun();
 }
@@ -127,12 +132,13 @@ void SimWindow::fiftySpeedPushed()
 void SimWindow::writeReport(){
     save_path = QFileDialog::getExistingDirectory(this, "Select Report Save Location", "C://", QFileDialog::ShowDirsOnly);
     qDebug() << save_path;
-    QFile file(save_path+"/"+simData->id+".txt");
+    QFile file(save_path+"/"+simData->id+ "-" + QString::number(simData->report_id) + ".txt");
     if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
         stream << simData->id << Qt::endl;
-        stream << simData->sTime[0]<< ":" << simData->sTime[1]<< "." << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
+        stream << simData->sTime[0]<< ":" << simData->sTime[1]<< ":" << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
         stream << simData->totalSF << Qt::endl;
+        stream << simData->openSF << Qt::endl;
         qDebug() << simData->runs[0].exists;
         if (simData->runs[0].exists){
             simData->runs[0].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[0].alg + ".png";
@@ -146,7 +152,7 @@ void SimWindow::writeReport(){
         }
         if (simData->runs[1].exists){
             simData->runs[1].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[1].alg+ ".png";
-            stream << "random " << simData->runs[1].getTimeString(simData->runs[1].time) << " " << simData->runs[1].coverSF  << " " << simData->runs[1].heatmapPath << Qt::endl;
+            stream << "spiral " << simData->runs[1].getTimeString(simData->runs[1].time) << " " << simData->runs[1].coverSF  << " " << simData->runs[1].heatmapPath << Qt::endl;
             simData->runs[1].heatmap.save(simData->runs[1].heatmapPath,"PNG");
         }
         else{
@@ -154,7 +160,7 @@ void SimWindow::writeReport(){
         }
         if (simData->runs[2].exists){
             simData->runs[2].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[2].alg+ ".png";
-            stream << "random " << simData->runs[2].getTimeString(simData->runs[2].time) << " " << simData->runs[2].coverSF  << " " << simData->runs[2].heatmapPath << Qt::endl;
+            stream << "snaking " << simData->runs[2].getTimeString(simData->runs[2].time) << " " << simData->runs[2].coverSF  << " " << simData->runs[2].heatmapPath << Qt::endl;
             simData->runs[2].heatmap.save(simData->runs[2].heatmapPath,"PNG");
         }
         else{
@@ -162,7 +168,7 @@ void SimWindow::writeReport(){
         }
         if (simData->runs[3].exists){
             simData->runs[3].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[3].alg+ ".png";
-            stream << "random " << simData->runs[3].getTimeString(simData->runs[3].time) << " " << simData->runs[3].coverSF  << " " << simData->runs[3].heatmapPath << Qt::endl;
+            stream << "wallfollow " << simData->runs[3].getTimeString(simData->runs[3].time) << " " << simData->runs[3].coverSF  << " " << simData->runs[3].heatmapPath << Qt::endl;
             simData->runs[3].heatmap.save(simData->runs[3].heatmapPath,"PNG");
         }
         else{
@@ -187,13 +193,12 @@ void SimWindow::writeRun(){
         run.alg = "wallfollow";
     }
     run.exists = true;
-    //qDebug()<< runTimer.elapsed();
-    int batRuntime = batteryStartLife - batteryLife;
+    int batRuntime = batteryLife*60 - vacuum->getBatteryLife();
     int m = batRuntime/60;
     run.time.append(QString::number(m/60));
     run.time.append(QString::number(m % 60));
     run.time.append(QString::number(batRuntime % 60));
-    run.coverSF = QString::number(1234.56);
+    run.coverSF = QString::number(1234.56); //-----------------------------------------------------------replace w cover sq ft calc
 
     QPixmap heatmap = ui->graphicsView->grab();
     if (pendingAlgorithms[currentAlgorithmIndex] == "Random"){
@@ -214,8 +219,7 @@ void SimWindow::writeRun(){
     }
 }
 
-void SimWindow::on_stopButton_clicked()
-{
+void SimWindow::stopSimulation(){
     simulationTimer->stop();
     QDate date = QDate::currentDate();
     QString dateString = date.QDate::toString("dd MM yy");
@@ -225,9 +229,14 @@ void SimWindow::on_stopButton_clicked()
     QString timeString = time.toString();
     simData->eTime = timeString.split(':');
 
-    writeRun();
     writeReport();
     this->close();
+}
+
+void SimWindow::on_stopButton_clicked()
+{
+    writeRun();
+    stopSimulation();
 }
 
 // This method is what handles multiple runs for the simulation
@@ -239,6 +248,8 @@ void SimWindow::startNextRun()
             simulationTimer->stop();
             qDebug() << "All runs complete";
             allRunsCompleted = true;
+
+            stopSimulation();
 
             // Optionally close or update UI here
             this->close();
