@@ -14,6 +14,8 @@ SimWindow::SimWindow(House* housePtr, QWidget *parent)
     view->setRenderHint(QPainter::Antialiasing);
     view->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
+    view->scale(1.5, 1.5);
+
     scene = new QGraphicsScene(this);
     view->setScene(scene);
 
@@ -290,16 +292,16 @@ void SimWindow::resetScene()
         }
 
         // Update label
-        if (currentAlgorithmIndex == 0){
+        if (vacuum->getPathingAlgorithm() == "Random"){
             ui->algLabel->setText("Random");
         }
-        if (currentAlgorithmIndex == 1){
+        if (vacuum->getPathingAlgorithm() == "Spiral"){
             ui->algLabel->setText("Spiral");
         }
-        if (currentAlgorithmIndex == 2){
+        if (vacuum->getPathingAlgorithm() == "Snaking"){
             ui->algLabel->setText("Snaking");
         }
-        if (currentAlgorithmIndex == 3){
+        if (vacuum->getPathingAlgorithm() == "Wall Follow"){
             ui->algLabel->setText("Wall Follow");
         }
     }

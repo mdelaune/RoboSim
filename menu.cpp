@@ -192,6 +192,17 @@ bool Menu::errorChecks()
         return false;
     }
 
+    if(!m_house->isVacuumPositionValid())
+    {
+        QMessageBox errorBox;
+        errorBox.setWindowTitle("Floor Plan Error");
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.setText("Invalid Floor Plan");
+        errorBox.setInformativeText("Vacuum position is invalid. Please make sure the vacuum is inside a room and not overlapping with walls, doors, or obstructions.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.exec();
+        return false;
+    }
 
     return true;
 }

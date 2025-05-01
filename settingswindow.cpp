@@ -10,7 +10,6 @@ SettingsWindow::SettingsWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setupAlgorithmList();
-    setupLineEdits();
     this->setFocus();
 
     // Connect START button to handle the final selection
@@ -72,7 +71,14 @@ void SettingsWindow::setupLineEdits()
     ui->speedEdit->setFont(font);
 
     ui->batteryLifeEdit->setText("150");
-    ui->vacuumEfficiencyEdit->setText("90");
+
+    qDebug() << floorCovering;
+
+    if (floorCovering == "hard_floor") ui->vacuumEfficiencyEdit->setText("90");
+    else if (floorCovering == "loop_pile") ui->vacuumEfficiencyEdit->setText("75");
+    else if (floorCovering == "cut_pile") ui->vacuumEfficiencyEdit->setText("70");
+    else if (floorCovering == "frieze_cut") ui->vacuumEfficiencyEdit->setText("65");
+
     ui->whiskerEfficiencyEdit->setText("30");
     ui->speedEdit->setText("12");
 
@@ -148,4 +154,10 @@ void SettingsWindow::handleSaveClicked()
                         ui->speedEdit->text().toInt(),
                         selectedAlgorithms);
     this->close();
+}
+
+void SettingsWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    setupLineEdits();
 }
