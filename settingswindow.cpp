@@ -1,13 +1,8 @@
 #include "settingswindow.h"
 #include "ui_settingswindow.h"
-#include "simwindow.h"
 
-#include <QFont>
-#include <QListWidgetItem>
-#include <QIntValidator>
-#include <QMessageBox>
 #include <QCheckBox>
-#include <QDebug>
+#include<QMessageBox>
 
 SettingsWindow::SettingsWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,7 +14,7 @@ SettingsWindow::SettingsWindow(QWidget *parent)
     this->setFocus();
 
     // Connect START button to handle the final selection
-    connect(ui->pushButtonStart, &QPushButton::clicked, this, &SettingsWindow::handleStartClicked);
+    connect(ui->pushButtonSave, &QPushButton::clicked, this, &SettingsWindow::handleSaveClicked);
 }
 
 SettingsWindow::~SettingsWindow()
@@ -81,7 +76,7 @@ void SettingsWindow::setupLineEdits()
     ui->whiskerEfficiencyEdit->setText("30");
     ui->speedEdit->setText("12");
 
-    ui->batteryLifeEdit->setValidator(new QIntValidator(90, 200, this));
+    ui->batteryLifeEdit->setValidator(new QIntValidator(1, 200, this));
     ui->vacuumEfficiencyEdit->setValidator(new QIntValidator(10, 90, this));
     ui->whiskerEfficiencyEdit->setValidator(new QIntValidator(10, 50, this));
     ui->speedEdit->setValidator(new QIntValidator(6, 18, this));
@@ -93,7 +88,7 @@ bool SettingsWindow::validateInputs()
     QString errorMessages;
 
     int batteryLife = ui->batteryLifeEdit->text().toInt();
-    if (batteryLife < 90 || batteryLife > 200) {
+    if (batteryLife < 1 || batteryLife > 200) {
         errorMessages += "Battery life must be between 90–200\n";
         hasError = true;
     }
@@ -123,7 +118,7 @@ bool SettingsWindow::validateInputs()
     return hasError;
 }
 
-void SettingsWindow::handleStartClicked()
+void SettingsWindow::handleSaveClicked()
 {
 
     if (validateInputs()) {
@@ -147,13 +142,10 @@ void SettingsWindow::handleStartClicked()
         return;
     }
 
-    SimWindow *simWindow = new SimWindow(this);
-    simWindow->startSimulation(ui->batteryLifeEdit->text().toInt(),
-                               ui->vacuumEfficiencyEdit->text().toInt(),
-                               ui->whiskerEfficiencyEdit->text().toInt(),
-                               ui->speedEdit->text().toInt(),
-                               selectedAlgorithms);
-    simWindow->show();
-
+    emit settingsUpdated(ui->batteryLifeEdit->text().toInt(),
+                        ui->vacuumEfficiencyEdit->text().toInt(),
+                        ui->whiskerEfficiencyEdit->text().toInt(),
+                        ui->speedEdit->text().toInt(),
+                        selectedAlgorithms);
     this->close();
 }

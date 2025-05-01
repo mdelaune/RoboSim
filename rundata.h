@@ -12,7 +12,7 @@ class Run
 public:
     Run();
     QString alg;
-    bool exists;
+    bool exists = false;
 
     QStringList time;
 
@@ -21,6 +21,8 @@ public:
 
     QString getTimeString(QStringList time);
 
+    QPixmap heatmap;
+    QString heatmapPath;
 
 };
 
@@ -46,6 +48,9 @@ public:
 
     QList<Run> runs;
     void getEnd();
+
+    void setNewID();
+    int report_id;
 
 private:
     void setEndValues();

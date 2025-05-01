@@ -1,137 +1,129 @@
 #ifndef VACUUM_H
 #define VACUUM_H
 
-//#include <QObject>
-#include <QTimer>
-#include <QPointF>
-#include <QString>
-#include <QGraphicsScene>
-#include <QRectF>
 #include <QGraphicsEllipseItem>
-#include <QStringList>
-#include <QSet>
-//#include <QHash>
-#include <QGraphicsRectItem>
+#include <QGraphicsScene>
+#include <QPointF>
+#include <QBrush>
+#include <QString>
 
-class Vacuum : public QObject {
-    Q_OBJECT
+struct Vector2D {
+    double x;
+    double y;
 
+    // Addition
+    Vector2D operator+(const Vector2D& other) const {
+        return {x + other.x, y + other.y};
+    }
+
+    // Scalar multiplication
+    Vector2D operator*(double scalar) const {
+        return {x * scalar, y * scalar};
+    }
+};
+
+
+struct Room2D
+{
+    Vector2D topLeft;
+    Vector2D bottomRight;
+};
+
+struct Door2D
+{
+    Vector2D origin;
+};
+
+struct Obstruction2D
+{
+    Vector2D topLeft;
+    Vector2D bottomRight;
+    bool isChest;
+};
+
+class CollisionSystem
+{
 public:
-    explicit Vacuum(QGraphicsScene *scene, QObject *parent = nullptr);
-
-    // Settings
-    void setSpeed(double inchesPerSecond);
-    void setBatteryLife(int minutes);
-    void setPathingAlgorithm(const QString &algorithm);
-    void setFloorType(const QString &type);
-    void setEfficiency(double vacuumEff, double whiskerEff);
-    void setRoomAndDoor(const QRectF &room, const QRectF &door);
-    void setSpeedMultiplier(int multiplier);
-    void setObstacles(const QList<QGraphicsRectItem*>& obs);
-    void rotateVacuum(double angleDelta);
-    void advanceToNextAlgorithm();
-    void runTimedAlgorithms();
-
-    // Simulation control
-    void start();
-    void stop();
-
-    // Getters
-    int getBatteryLife() const;
-    double getSpeed() const;
-    QString getPathingAlgorithm() const;
-    QPointF getCurrentPosition() const;
-    QGraphicsEllipseItem* getVacuumItem() const;
-    double getCoveragePercent(int roomWidth, int roomHeight, const QList<QGraphicsRectItem*>& obstacles) const;
-
-    //QHash<QPoint, int> cellVisitCount;
-    QPointF lastTrailPoint;
-    QString snakingMode;
-    int snakingStepCounter;
-
-
-    void setSelectedAlgs(QStringList selection);
-
-signals:
-    void batteryDepleted();
-
-private slots:
-    void tick();
+    bool loadFromJson(const QString& filePath);
+    bool handleCollision(Vector2D& position, double radius);
+    const Room2D* getCurrentRoom(const Vector2D& pos) const;
 
 private:
-    QStringList selectedAlgs;
-    QGraphicsScene *scene;
-    QTimer movementTimer;
-    QGraphicsEllipseItem *vacuumItem;
+    std::vector<Room2D> rooms;
+    std::vector<Door2D> doors;
+    std::vector<Obstruction2D> obstructions;
+};
 
-    double speed;
+class Vacuum
+{
+public:
+    Vacuum(QGraphicsScene* scene);
+    
+    // Setters
+    void setBatteryLife(int minutes);
+    void setVacuumEfficiency(int vacuumEff);
+    void setWhiskerEfficiency(int whiskerEff);
+    void setSpeed(int inchesPerSecond);
+    void setPathingAlgorithm(const QString &algorithm);  // Changed to accept a list of algorithms
+    void setVacuumPosition(Vector2D& position);
+    // Getters
+
+    int getBatteryLife() const;
+    int getVacuumEfficiency() const;
+    int getWhiskerEfficiency() const;
+    int getSpeed() const;
+    QString getPathingAlgorithm() const;
+    QGraphicsEllipseItem* getGraphic() const;
+    const Vector2D &getPosition() const;
+    Vector2D& getVelocity() const;
+    int getElapsedTime() const;
+    double getCoveredArea() const;
+
+    void updateMovementandTrail(QGraphicsScene* scene);
+    void reset();
+    Vector2D moveRandomly(Vector2D position, Vector2D& velocity, int speed);
+    Vector2D moveWallFollow(Vector2D currentPos, Vector2D& velocity, int speed);
+    Vector2D moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed);
+    Vector2D moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed);
+
+
+    // signals:
+    //     void positionUpdated(QPointF newPos);
+    //     void batteryDepleted();
+
+private:
+    const double diameter = 12.8;
+    double radius = diameter/2.0;
+    const double whiskerWidth = 13.5;
+    const double vacuumWidth = 5.8;
+
     int batteryLife;
-    int remainingBattery;
-    QString floorType;
-    QString pathingAlgorithm;
+    int vacuumEfficiency;
+    int whiskerEfficiency;
+    int speed;
+    QString currentAlgorithm;
 
-    QPointF currentPosition;
-    QPointF velocity;
+    QGraphicsEllipseItem *vacuumGraphic;
 
-    double cleaningEfficiency;
-    double whiskerEfficiency;
+    Vector2D position;
+    Vector2D nextPosition;
+    Vector2D velocity;
+    CollisionSystem* collisionSystem;
 
-    bool stoppedByUser;
+    int elapsedTime = 0;
+    double coveredArea = 0.0;
+    double spiralAngle = 0.0;
+    double spiralRadius = 1.0;
+    bool movingRight = true;
+    bool movingDown = true;
+    bool movingUpward = false;
 
-    // Pathing control
-    bool movingRight;
-    int wallDirection;
-    double spiralAngle;
-    double spiralRadius;
-    bool spiraling = true;
-    bool wallFollowing = false;
-    int wallFollowCounter = 0;
-    bool snakingDown = true;
-    double baseCleaningEfficiency = 0.9;
-    double baseWhiskerEfficiency = 0.3;
+    double snakeLeftBound = 0.0;
+    double snakeRightBound = 0.0;
+    double snakeTopBound = 0.0;
+    double snakeBottomBound = 0.0;
 
-
-    double currentRotation = 0.0;
-    QPointF snakeTarget;
-    bool snakingInitialized = false;
-
-    QRectF roomRect;
-    QRectF doorRect;
-
-    // Obstacle info
-    QList<QGraphicsRectItem*> obstacles;
-
-    // Trail tracking
-    QSet<QPoint> cleanedCells;
-    int cellSize = 10;
-
-    // Pathing algorithms
-    void moveRandomly();
-    void moveSnaking();
-    void moveWallFollowing();
-    void moveBounce();
-    void moveSpiral();
-    void onRunAllClicked(); // For the Run All Algorithms button
-
-
-    // Collision/update
-    void handleWallCollision();
-    void updatePosition();
-    bool checkBounds(const QPointF &newPosition);
-
-    // Algorithm completion tracking
-    QStringList allAlgorithms;
-    QSet<QString> completedAlgorithms;
-
-    int algorithmTickCount = 0;     // Tick counter for the current algorithm
-    int maxAlgorithmTicks = 0;
-        // Time limit in ticks for each algorithm
-    bool timedExecutionEnabled = false;
-    int speedMultiplier = 1;  // Default is 1x
-    int globalTickCount = 0;
-    int maxGlobalTicks = 36000; // 10 minutes at 60 FPS
-
-
+    QGraphicsScene* scene;
 
 };
 

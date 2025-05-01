@@ -5,6 +5,8 @@
 #include "house.h"
 #include "dragdrop.h"
 
+#include <QRandomGenerator>
+
 Door::Door() : m_origin(QPointF(0,0)), m_size(45)
 {
     m_door = QLineF(m_origin, QPointF(m_origin.x(), m_origin.y() + m_size));
@@ -358,6 +360,16 @@ House::House(QGraphicsScene *scene)
     loadPlan(defaultPlanLocation);
 }
 
+void House::setScene(QGraphicsScene* scene)
+{
+    m_scene = scene;
+}
+
+QGraphicsScene* House::getScene() const
+{
+    return m_scene;
+}
+
 int House::getFloorplanId() const
 {
     return floorplan_id;
@@ -507,6 +519,10 @@ void House::addDoor(Door door)
     doors.append(door);
 }
 
+void House::setNewID(){
+    floorplan_id = QRandomGenerator::global()->bounded(10000, 99999);
+}
+
 void House::loadPlan(QString plan)
 {
     clear();
@@ -532,6 +548,7 @@ void House::loadPlan(QString plan)
     if (floorplan_id >= next_floorplan_id) {
         next_floorplan_id = floorplan_id + 1;
     }
+
 
     QJsonArray roomsArray = root.value("rooms").toArray();
     loadEntities<Room>(roomsArray, rooms, [](QJsonObject& obj){ return Room(obj); });
@@ -1129,7 +1146,6 @@ bool House::validateNoRoomIntersections()
 
     return true;
 }
-
 bool House::validateDoorsOnWalls()
 {
     for (Door& door : doors) {
