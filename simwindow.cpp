@@ -36,24 +36,7 @@ SimWindow::SimWindow(House* housePtr, QWidget *parent)
     connect(ui->timesFivePushButton, &QPushButton::clicked, this, &SimWindow::fiveSpeedPushed);
     connect(ui->timesFiftyPushButton, &QPushButton::clicked, this, &SimWindow::fiftySpeedPushed);
 
-    simData = new RunData();
-    simData->setNewID();
-    simData->id = QString::number(house->getFloorplanId());
-    QDate date = QDate::currentDate();
-    QString dateString = date.QDate::toString("dd MM yy");
-    simData->sDate = dateString.split(' ');
 
-    QTime time = QTime::currentTime();
-    QString timeString = time.toString();
-    simData->sTime = timeString.split(':');
-
-    simData->totalSF = QString::number(house->getTotalArea()/16000);
-
-    for (int i = 0; i < 4; i++){
-        Run run;
-        run.exists = false;
-        simData->runs.append(run);
-    }
 }
 
 SimWindow::~SimWindow()
@@ -63,7 +46,6 @@ SimWindow::~SimWindow()
 
 void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whiskerEfficiency, int speed, QStringList selectedAlgorithms)
 {
-    this->batteryStartLife = batteryLife;
     this->batteryLife = batteryLife;
     this->vacuumEfficiency = vacuumEfficiency;
     this->whiskerEfficiency = whiskerEfficiency;
@@ -72,6 +54,27 @@ void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whisk
 
     currentAlgorithmIndex = 0;
     allRunsCompleted = false;
+
+    simData = new RunData();
+    simData->setNewID();
+    simData->id = QString::number(house->getFloorplanId());
+    simData->openSF = QString::number(house->getOpenArea()/100);
+    simData->totalSF = QString::number(house->getTotalArea()/100);
+
+
+    QDate date = QDate::currentDate();
+    QString dateString = date.QDate::toString("dd MM yy");
+    simData->sDate = dateString.split(' ');
+
+    QTime time = QTime::currentTime();
+    QString timeString = time.toString();
+    simData->sTime = timeString.split(':');
+
+    for (int i = 0; i < 4; i++){
+        Run run;
+        run.exists = false;
+        simData->runs.append(run);
+    }
 
     startNextRun();
 }
@@ -133,6 +136,7 @@ void SimWindow::writeReport(){
         stream << simData->id << Qt::endl;
         stream << simData->sTime[0]<< ":" << simData->sTime[1]<< ":" << simData->sTime[2] << " " << simData->sDate[1] << ":" << simData->sDate[0] << "." << simData->sDate[2] << Qt::endl;
         stream << simData->totalSF << Qt::endl;
+        stream << simData->openSF << Qt::endl;
         qDebug() << simData->runs[0].exists;
         if (simData->runs[0].exists){
             simData->runs[0].heatmapPath = save_path + "/" + simData->id + "_" + QString::number(simData->report_id) + "-" + simData->runs[0].alg + ".png";
@@ -187,12 +191,12 @@ void SimWindow::writeRun(){
         run.alg = "wallfollow";
     }
     run.exists = true;
-    int batRuntime = batteryStartLife - batteryLife;
+    int batRuntime = batteryLife*60 - vacuum->getBatteryLife();
     int m = batRuntime/60;
     run.time.append(QString::number(m/60));
     run.time.append(QString::number(m % 60));
     run.time.append(QString::number(batRuntime % 60));
-    run.coverSF = QString::number(1234.56);
+    run.coverSF = QString::number(1234.56); //-----------------------------------------------------------replace w cover sq ft calc
 
     QPixmap heatmap = ui->graphicsView->grab();
     if (pendingAlgorithms[currentAlgorithmIndex] == "Random"){
@@ -213,8 +217,7 @@ void SimWindow::writeRun(){
     }
 }
 
-void SimWindow::on_stopButton_clicked()
-{
+void SimWindow::stopSimulation(){
     simulationTimer->stop();
     QDate date = QDate::currentDate();
     QString dateString = date.QDate::toString("dd MM yy");
@@ -229,6 +232,11 @@ void SimWindow::on_stopButton_clicked()
     this->close();
 }
 
+void SimWindow::on_stopButton_clicked()
+{
+    stopSimulation();
+}
+
 // This method is what handles multiple runs for the simulation
 void SimWindow::startNextRun()
 {
@@ -238,6 +246,8 @@ void SimWindow::startNextRun()
             simulationTimer->stop();
             qDebug() << "All runs complete";
             allRunsCompleted = true;
+
+            stopSimulation();
 
             // Optionally close or update UI here
             this->close();

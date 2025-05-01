@@ -109,7 +109,7 @@ void RunData::parseFile(QString file_name){
         return;
     }
 
-    QStringList filedata[3];
+    QStringList filedata[4];
     QString algdata[4];
 
     int n = 0;
@@ -118,7 +118,7 @@ void RunData::parseFile(QString file_name){
 
     QTextStream ts(&file);
     while (!ts.atEnd()){
-        if (n<3){
+        if (n<4){
             QString line = ts.readLine();
             QStringList data = line.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
             filedata[n] = data;
@@ -146,6 +146,7 @@ void RunData::parseFile(QString file_name){
 
     //QString totalString = filedata[2][0] + "." + filedata[2][1];
     totalSF = filedata[2][0]; //totalString;
+    openSF = filedata[3][0];
 
     for (int i = 0; i < 4; i++){
         Run run;
@@ -160,22 +161,6 @@ void RunData::parseFile(QString file_name){
             run.exists = true;
         }
         else run.exists = false;
-
-        // if (filedata[i].size() > 3){
-        //     run.time = runString[0].split("")
-        //     run.coverSF = filedata[i][4] + "." + filedata[i][5];
-        //     run.coverPer = QString::number(run.coverSF.toFloat(&ok)/totalSF.toFloat(&ok));
-        //     run.heatmapPath = filedata[i][6];
-        //     for (int j = 7; j < filedata[i].size(); j++){
-        //         run.heatmapPath.append(filedata[i][j]);
-        //     }
-        //     run.exists = true;
-        //     qDebug() << run.heatmapPath;
-        // }
-        // else{
-        //     run.exists = false;
-        // }
-
         runs.append(run);
     }
 
