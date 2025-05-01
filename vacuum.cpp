@@ -428,12 +428,10 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     if (batteryLife <= 0 || !vacuumGraphic)
         return;
 
+    // 1) Pick your full‐target based on the chosen algorithm
     Vector2D fullTarget;
     QString alg = currentAlgorithm.toLower();
-    if (alg == "random") {
-        fullTarget = moveRandomly(position, velocity, speed);
-    }
-    else if (alg == "wall follow") {
+    if (alg == "wall follow") {
         fullTarget = moveWallFollow(position, velocity, speed);
     }
     else if (alg == "spiral") {
@@ -442,9 +440,9 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     else if (alg == "snaking") {
         const Room2D* room = collisionSystem->getCurrentRoom(position);
         if (room) {
-            snakeLeftBound = room->topLeft.x;
-            snakeRightBound = room->bottomRight.x;
-            snakeTopBound = room->topLeft.y;
+            snakeLeftBound   = room->topLeft.x;
+            snakeRightBound  = room->bottomRight.x;
+            snakeTopBound    = room->topLeft.y;
             snakeBottomBound = room->bottomRight.y;
         }
         fullTarget = moveSnaking(position, velocity, speed);
@@ -453,45 +451,71 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
         fullTarget = moveRandomly(position, velocity, speed);
     }
 
+    // 2) Compute micro-steps so we never move more than radius per iteration
+    double radius = diameter / 2.0;
     Vector2D delta { fullTarget.x - position.x,
                    fullTarget.y - position.y };
     double  dist   = std::hypot(delta.x, delta.y);
-    double  radius = diameter / 2.0;
     int     steps  = std::max(1, int(std::ceil(dist / radius)));
     Vector2D stepDelta { delta.x / steps, delta.y / steps };
 
+    // 3) Walk those steps, handling collisions at each micro-step
     for (int i = 0; i < steps; ++i)
     {
         Vector2D candidate { position.x + stepDelta.x,
                            position.y + stepDelta.y };
 
-        if (collisionSystem->handleCollision(candidate, radius))
+        bool hit = collisionSystem->handleCollision(candidate, radius);
+        if (hit)
         {
-            if (alg == "random") {
+            if (alg == "random")
+            {
+                // -- bounce: pick a new random heading
                 qreal angle = QRandomGenerator::global()->bounded(360.0);
-                velocity = { std::cos(qDegreesToRadians(angle)), std::sin(qDegreesToRadians(angle)) };
+                velocity = {
+                    std::cos(qDegreesToRadians(angle)),
+                    std::sin(qDegreesToRadians(angle))
+                };
+
+                // -- rebuild a fresh fullTarget & stepDelta
+                fullTarget = moveRandomly(position, velocity, speed);
+                delta      = { fullTarget.x - position.x,
+                         fullTarget.y - position.y };
+                dist       = std::hypot(delta.x, delta.y);
+                steps      = std::max(1, int(std::ceil(dist / radius)));
+                stepDelta  = { delta.x / steps, delta.y / steps };
+
+                // restart the loop so we respect the new stepDelta
+                i = -1;
+                continue;
             }
-            break;
+            else
+            {
+                // non-random alg: stop stepping on first collision
+                break;
+            }
         }
 
+        // -- commit this micro-step
         position = candidate;
 
-        // draw trail segment
+        // -- draw trail
         QPointF now(position.x, position.y);
-        QPen pen(QColor(0,0, 255, vacuumEfficiency)); pen.setWidth(12);
+        QPen pen(QColor(0, 0, 255, vacuumEfficiency));
+        pen.setWidth(12);
         scene->addLine(QLineF(lastTrailPoint, now), pen);
         lastTrailPoint = now;
     }
 
+    // 4) Finally, update the graphic and record coverage
     vacuumGraphic->setPos(position.x, position.y);
 
-    // Cover Sq Ft
     bool add = true;
     for (auto &pt : cleanedCoords) {
-        if (int(pt.x) >= int(position.x) - 12 &&
-            int(pt.x) <= int(position.x) + 12 &&
-            int(pt.y) >= int(position.y) - 12 &&
-            int(pt.y) <= int(position.y) + 12)
+        if (int(pt.x) >= int(position.x) - 6 &&
+            int(pt.x) <= int(position.x) + 6 &&
+            int(pt.y) >= int(position.y) - 6 &&
+            int(pt.y) <= int(position.y) + 6)
         {
             add = false;
             break;
