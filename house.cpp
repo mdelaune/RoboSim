@@ -1094,14 +1094,14 @@ bool House::doRoomsShareWall(Room& room1, Room& room2)
         // X-coordinates overlap
         (rect1.left() < rect2.right() && rect2.left() < rect1.right()) &&
         // Y-coordinates are adjacent (bottom of rect1 touches top of rect2 or vice versa)
-        ((qAbs(rect1.bottom() - rect2.top()) < 5.0) || (qAbs(rect2.bottom() - rect1.top()) < 5.0));
+        ((qAbs(rect1.bottom() - rect2.top()) < 15.0) || (qAbs(rect2.bottom() - rect1.top()) < 15.0));
 
     // Check for vertical walls (left/right edges)
     bool sharesVerticalWall =
         // Y-coordinates overlap
         (rect1.top() < rect2.bottom() && rect2.top() < rect1.bottom()) &&
         // X-coordinates are adjacent (right of rect1 touches left of rect2 or vice versa)
-        ((qAbs(rect1.right() - rect2.left()) < 5.0) || (qAbs(rect2.right() - rect1.left()) < 5.0));
+        ((qAbs(rect1.right() - rect2.left()) < 15.0) || (qAbs(rect2.right() - rect1.left()) < 15.0));
 
     return sharesHorizontalWall || sharesVerticalWall;
 }
@@ -1151,8 +1151,9 @@ bool House::doRoomsIntersect(Room& room1, Room& room2)
     QRectF rect1 = room1.get_rectRoom();
     QRectF rect2 = room2.get_rectRoom();
 
-    // Check if the rectangles intersect but neither fully contains the other
-    if (rect1.intersects(rect2)) {
+    QRectF overlap = rect1.intersected(rect2);
+    if (overlap.width() > 50 && overlap.height() > 50) {
+        // Considered significant intersection
         // If one rectangle fully contains the other, it's not considered an intersection
         if (rect1.contains(rect2) || rect2.contains(rect1)) {
             return false; // Not an intersection case we're concerned with
