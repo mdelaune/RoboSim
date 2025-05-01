@@ -80,7 +80,7 @@ void ReportWindow::updateText(){
 }
 
 bool ReportWindow::setupSceneFromSim(QString sim_file_path){
-    qDebug() << "path being used: " <<sim_file_path;
+
     QFile fileTest(sim_file_path);
     if (fileTest.open(QIODevice::ReadOnly)){
         data->parseFile(sim_file_path);
@@ -117,7 +117,6 @@ bool ReportWindow::setupSceneFromSim(QString sim_file_path){
     }
     else{
         return false;
-        qDebug() << "not working";
     }
 }
 
