@@ -115,9 +115,7 @@ bool ReportWindow::setupSceneFromSim(QString sim_file_path){
         updateText();
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 
@@ -157,9 +155,7 @@ bool ReportWindow::setupSceneFromFile(){
         updateText();
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 
