@@ -45,6 +45,7 @@ public:
 
     //QStringList totalRuntime;
     QString totalSF;
+    QString openSF;
 
     QList<Run> runs;
     void getEnd();
