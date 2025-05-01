@@ -6,6 +6,8 @@
 #include <QPointF>
 #include <QBrush>
 #include <QString>
+#include <cstdio>
+#include <QtMath>
 
 struct Vector2D {
     double x;

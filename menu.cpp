@@ -68,7 +68,13 @@ void Menu::menuSave()
         return;
     }
 
-    QString filename = getFilename("Name", true);
+    QString filename = m_house->get_floorplanName();
+    if(filename == "Untitled")
+    {
+        menuSaveAs();
+        return;
+    }
+
     if (!filename.isEmpty()) {
         saveToFile(filename);
         qDebug() << "SAVE";
@@ -81,6 +87,7 @@ void Menu::menuSaveAs()
     {
         return;
     }
+
     QString filename = getFilename("Name", true);
     if (!filename.isEmpty()) {
         saveToFile(filename);

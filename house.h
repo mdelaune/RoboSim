@@ -192,8 +192,6 @@ public:
     void updateDoorPosition(int id, QPointF newOrigin);
     void updateObstructionPosition(int id, QPointF topLeft, QPointF bottomRight);
 
-    int getTotalArea();
-
     QString getFloorCovering();
     void setFloorCovering(QString flooring);
 
@@ -231,6 +229,7 @@ public:
     void createNewFloorplan();
 
     int getOpenArea();
+    int getTotalArea();
     void loadNonInteractivePlan(QString plan);
 
 private:
@@ -247,7 +246,7 @@ private:
     QString defaultPlanLocation = ":/Default/default_plan.json";
 
     int scene_object_id = 1;
-    int total_area;
+    int totalArea;
     int cover_area;
 
     QString floor_covering = "hard_floor";

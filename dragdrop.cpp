@@ -92,28 +92,30 @@ DragDoor::~DragDoor()
 // Key function to update lines with local coordinates
 void DragDoor::updateLines()
 {
-    if (m_door) {
-        // Get the door's origin and lines in scene coordinates
-        QPointF origin = m_door->get_origin();
-        QLineF doorSceneLine = m_door->get_door();
-        QLineF entrySceneLine = m_door->get_entry();
+    if (!m_door || !m_doorLine || !m_entryLine)
+        return;
 
-        // Create local lines that start at 0,0 (group origin)
-        QLineF doorLocalLine(
-            QPointF(0, 0),
-            QPointF(doorSceneLine.p2().x() - origin.x(), doorSceneLine.p2().y() - origin.y())
-            );
+    // Get the door's origin and lines in scene coordinates
+    QPointF origin = m_door->get_origin();
+    QLineF doorSceneLine = m_door->get_door();
+    QLineF entrySceneLine = m_door->get_entry();
 
-        QLineF entryLocalLine(
-            QPointF(0, 0),
-            QPointF(entrySceneLine.p2().x() - origin.x(), entrySceneLine.p2().y() - origin.y())
-            );
+    // Calculate vectors from origin to endpoints
+    QPointF doorEndVector = doorSceneLine.p2() - origin;
+    QPointF entryEndVector = entrySceneLine.p2() - origin;
 
-        // Update the line items with local coordinates
-        m_doorLine->setLine(doorLocalLine);
-        m_entryLine->setLine(entryLocalLine);
-    }
+    // Create local lines that start at 0,0 (group origin)
+    QLineF doorLocalLine(QPointF(0, 0), doorEndVector);
+    QLineF entryLocalLine(QPointF(0, 0), entryEndVector);
+
+    // Update the line items with local coordinates
+    m_doorLine->setLine(doorLocalLine);
+    m_entryLine->setLine(entryLocalLine);
+
+    // Set position to the door's origin in scene coordinates
+    setPos(origin);
 }
+
 void DragDoor::updateSelectionStyle()
 {
     if (!m_doorLine || !m_entryLine)

@@ -64,11 +64,16 @@ void Draw::addDoor()
     int lastIndex = m_house->doors.size() - 1;
     Door* actualDoor = &(m_house->doors[lastIndex]);
 
-    QGraphicsLineItem *doorLine = new QGraphicsLineItem(actualDoor->get_door());
-    QGraphicsLineItem *entryLine = new QGraphicsLineItem(actualDoor->get_entry());
+    // Create line items but don't set their line directly
+    // We'll let DragDoor handle the coordinate transformations
+    QGraphicsLineItem *doorLine = new QGraphicsLineItem();
+    QGraphicsLineItem *entryLine = new QGraphicsLineItem();
 
     // Pass the pointer to the actual door in the house
     DragDoor *doorItem = new DragDoor(doorLine, entryLine, m_scene, m_house, actualDoor);
+
+    // Make sure the door lines are properly initialized with local coordinates
+    doorItem->updateLines();
 
     // Store the ID for reference
     doorItem->setData(0, actualDoor->getId());
