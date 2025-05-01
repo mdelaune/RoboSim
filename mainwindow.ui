@@ -23,7 +23,7 @@
    <string notr="true">background-color: rgba(53, 143, 128, 1);</string>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonIconOnly</enum>
+   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -33,7 +33,7 @@
     </sizepolicy>
    </property>
    <property name="layoutDirection">
-    <enum>Qt::LeftToRight</enum>
+    <enum>Qt::LayoutDirection::LeftToRight</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
@@ -75,10 +75,10 @@
         </property>
         <property name="styleSheet">
          <string notr="true">QTextEdit{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(136, 212, 171, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-color: rgba(103, 185, 154, 1);
 }
 </string>
         </property>
@@ -122,18 +122,18 @@ li.checked::marker { content: &quot;\2612&quot;; }
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(136, 212, 171, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(103, 185, 154, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(103, 185, 154, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 </string>
           </property>
@@ -158,10 +158,10 @@ QPushButton::hover {
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
+           <enum>QSizePolicy::Policy::Fixed</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -190,18 +190,18 @@ QPushButton::hover {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(136, 212, 171, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(103, 185, 154, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(103, 185, 154, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 </string>
           </property>
@@ -224,30 +224,14 @@ QPushButton::hover {
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <spacer name="horizontalSpacer_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>32</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
+           <widget class="QPushButton" name="robSet">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="font">
              <font>
@@ -255,59 +239,40 @@ QPushButton::hover {
               <pointsize>14</pointsize>
              </font>
             </property>
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
+            <property name="mouseTracking">
+             <bool>true</bool>
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(136, 212, 171, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(103, 185, 154, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(103, 185, 154, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 </string>
             </property>
             <property name="text">
-             <string>Current Floorplan ID:  N/A</string>
-            </property>
-            <property name="textFormat">
-             <enum>Qt::RichText</enum>
+             <string>Robot Setup</string>
             </property>
            </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>16</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </item>
         <item>
          <spacer name="horizontalSpacer_3">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
+           <enum>QSizePolicy::Policy::Fixed</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -334,18 +299,18 @@ QPushButton::hover {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(136, 212, 171, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(103, 185, 154, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(103, 185, 154, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 </string>
           </property>
@@ -353,22 +318,6 @@ QPushButton::hover {
            <string>RUN SIMULATION</string>
           </property>
          </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>32</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </item>
@@ -393,18 +342,18 @@ QPushButton::hover {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(136, 212, 171, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(103, 185, 154, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(103, 185, 154, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 </string>
           </property>
@@ -425,10 +374,10 @@ QPushButton::hover {
         <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
+           <enum>QSizePolicy::Policy::Fixed</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -457,18 +406,18 @@ QPushButton::hover {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-	background: rgba(136, 212, 171, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(136, 212, 171, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 QPushButton::hover {
-	background: rgba(103, 185, 154, 1);
-	border-width: 4px;
-	border-style: solid;
-	border-radius: 32px;
-	border-color: rgba(103, 185, 154, 1);
+        background: rgba(103, 185, 154, 1);
+        border-width: 4px;
+        border-style: solid;
+        border-radius: 32px;
+        border-color: rgba(103, 185, 154, 1);
 }
 </string>
           </property>
@@ -498,12 +447,18 @@ QPushButton::hover {
      <x>0</x>
      <y>0</y>
      <width>1082</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">background: rgba(120, 198, 163, 1);</string>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
  </widget>
  <resources/>
