@@ -78,7 +78,7 @@ void Menu::menuSave()
     QMessageBox::StandardButton reply = QMessageBox::question(
         nullptr,
         "Confirm Save",
-        "Are you sure you want to save this floorplan?\n\nThis will overwrite changes previously nade to this file.",
+        "Are you sure you want to save this floorplan?\n\nThis will overwrite changes previously made to this file.",
         QMessageBox::Yes | QMessageBox::No
         );
 
