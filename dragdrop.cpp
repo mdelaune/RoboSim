@@ -304,8 +304,6 @@ void DragObstruction::setSizeConstraints()
         m_maxWidth = 60.0;
         m_maxHeight = 60.0;
     }
-
-
 }
 
 QRectF DragObstruction::boundingRect() const
@@ -495,10 +493,6 @@ void DragObstruction::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mousePressEvent(event);
 }
 
-//next
-//rotate rooms
-//add entry and door coordinates to door class and to json
-
 void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (m_currentHandle != None) {
@@ -554,10 +548,15 @@ void DragObstruction::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 newBody.setBottom(newBody.top() + m_maxHeight);
         }
 
+        m_body = newBody;
+        updateLegsPositions(m_body);
+        update();
+
     } else {
         // Let parent handle the standard move
         QGraphicsItem::mouseMoveEvent(event);
     }
+
 }
 
 void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
