@@ -31,11 +31,11 @@ void ReportWindow::updateText(){
     QString sTimeText = data->sTime[0] + ":" + data->sTime[1] + "." + data->sTime[2]; //TimegetTimeString(data->sTime);
     ui->startTime->setText(sTimeText);
 
-    QString eDateText = data->eDate[0] +"/" + data->eDate[1]+ "/" + data->eDate[2]; //QString::number(data->eDate[0]) + "/" + QString::number(data->eDate[1]) + "/" + QString::number(data->eDate[2]);
-    ui->endDate->setText(eDateText);
+    // QString eDateText = data->eDate[0] +"/" + data->eDate[1]+ "/" + data->eDate[2]; //QString::number(data->eDate[0]) + "/" + QString::number(data->eDate[1]) + "/" + QString::number(data->eDate[2]);
+    // ui->endDate->setText(eDateText);
 
-    QString eTimeText = data->eTime[0] + ":" + data->eTime[1] + "." + data->eTime[2]; //data->getTimeString(data->eTime);
-    ui->endTime->setText(eTimeText);
+    // QString eTimeText = data->eTime[0] + ":" + data->eTime[1] + "." + data->eTime[2]; //data->getTimeString(data->eTime);
+    // ui->endTime->setText(eTimeText);
 
     //QString tsfText = data->totalSF;
     ui->totalSqFt->setText(data->totalSF);
