@@ -344,7 +344,7 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     Vector2D candidate;
 
     // Select movement algorithm
-    if (currentAlgorithm.toLower() == "wallfollow") {
+    if (currentAlgorithm.toLower() == "wall follow") {
         candidate = moveWallFollow(position, velocity, speed);
     } else if (currentAlgorithm.toLower() == "spiral") {
         candidate = moveSpiral(position, velocity, speed);

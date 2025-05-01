@@ -64,12 +64,17 @@ void MainWindow::on_sumRep_clicked()
 
 void MainWindow::on_robSet_clicked()
 {
-    setWin = new SettingsWindow(this);
-    setWin->showMaximized();
-    robotSetup = true;
-    updateRunSimButtonState();
-    connect(setWin, &SettingsWindow::settingsUpdated, this, &MainWindow::onSettingsUpdated);
+    if (editWin)
+    {
+        setWin = new SettingsWindow(this);
+        setWin->floorCovering = editWin->house->getFloorCovering();
 
+        qDebug() << "FloorCovering: " << setWin->floorCovering;
+        setWin->showMaximized();
+        robotSetup = true;
+        updateRunSimButtonState();
+        connect(setWin, &SettingsWindow::settingsUpdated, this, &MainWindow::onSettingsUpdated);
+    }
 }
 
 void MainWindow::on_runSim_clicked()

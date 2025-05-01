@@ -18,12 +18,17 @@ public:
     explicit SettingsWindow(QWidget *parent = nullptr);
     ~SettingsWindow();
 
+    QString floorCovering;
+
 signals:
     void settingsUpdated(int batteryLife,
                          int vacuumEfficiency,
                          int whiskerEfficiency,
                          int speed,
                          QStringList pathingAlgorithms);
+
+protected:
+    void showEvent(QShowEvent *event) override;
 
 private:
     Ui::SettingsWindow *ui;
