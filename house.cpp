@@ -1527,3 +1527,84 @@ bool House::isObstructionInsideAnyRoom(Obstruction& obstruction)
     return false; // Not fully contained in any room
 }
 
+qreal pointToSegmentDistance(const QPointF& p, const QLineF& line)
+{
+    QPointF a = line.p1();
+    QPointF b = line.p2();
+
+    QPointF ab = b - a;
+    QPointF ap = p - a;
+
+    qreal abLengthSquared = QPointF::dotProduct(ab, ab);
+    if (abLengthSquared == 0.0)
+        return QLineF(p, a).length(); // line is a point
+
+    qreal t = QPointF::dotProduct(ap, ab) / abLengthSquared;
+    t = qBound(0.0, t, 1.0);
+
+    QPointF projection = a + t * ab;
+    return QLineF(p, projection).length();
+}
+
+bool House::isVacuumPositionValid()
+{
+    if (!vacuum) return false;
+
+    QPointF center = vacuum->get_center();
+    qreal radius = vacuum->get_radius(); // make sure you have a getter for this
+    QRectF vacuumRect(center.x() - radius, center.y() - radius, radius * 2, radius * 2);
+
+    // 1. Check: Vacuum must be inside a room
+    bool insideRoom = false;
+    for (Room& room : rooms) {
+        if (room.get_rectRoom().contains(center)) {
+            insideRoom = true;
+
+            // 2. Also check vacuum isn't intersecting any of the room walls
+            QRectF r = room.get_rectRoom();
+            QVector<QLineF> walls = {
+                QLineF(r.topLeft(), r.topRight()),     // Top
+                QLineF(r.bottomLeft(), r.bottomRight()), // Bottom
+                QLineF(r.topLeft(), r.bottomLeft()),     // Left
+                QLineF(r.topRight(), r.bottomRight())    // Right
+            };
+
+            for (QLineF& wall : walls) {
+                qreal distToWall = pointToSegmentDistance(center, wall);
+                if (distToWall < radius + 1.0) {
+                    qDebug() << "Vacuum intersects or touches a room wall!";
+                    return false;
+                }
+            }
+
+            break;
+        }
+    }
+
+    if (!insideRoom) {
+        qDebug() << "Vacuum is not inside any room!";
+        return false;
+    }
+
+    // 3. Check: Vacuum does not intersect any obstruction
+    for (Obstruction& obs : obstructions) {
+        if (vacuumRect.intersects(obs.get_rect())) {
+            qDebug() << "Vacuum intersects obstruction ID:" << obs.getId();
+            return false;
+        }
+    }
+
+    // 4. Check: Vacuum does not intersect any door line
+    for (Door& door : doors) {
+        QVector<QLineF> doorLines = { door.get_door(), door.get_entry() };
+
+        for (QLineF& line : doorLines) {
+            if (pointToSegmentDistance(center, line) < radius + 1.0) {
+                qDebug() << "Vacuum intersects a door!";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
