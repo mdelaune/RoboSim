@@ -389,7 +389,10 @@ void Vacuum::updateMovementandTrail(QGraphicsScene* scene)
     bool add = true;
 
     for (int i = 0; i < cleanedCoords.size(); i++){
-        if (static_cast<int>(cleanedCoords[i].x) == static_cast<int>(position.x) and static_cast<int>(cleanedCoords[i].y) == static_cast<int>(position.y)) {
+        if (static_cast<int>(cleanedCoords[i].x) >= static_cast<int>(position.x) - 6 and
+            static_cast<int>(cleanedCoords[i].x) <= static_cast<int>(position.x) + 6 and
+            static_cast<int>(cleanedCoords[i].y) >= static_cast<int>(position.y) - 6 and
+            static_cast<int>(cleanedCoords[i].y) <= static_cast<int>(position.y) + 6) {
             add = false;
         }
     }

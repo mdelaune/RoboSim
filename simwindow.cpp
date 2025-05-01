@@ -62,8 +62,8 @@ void SimWindow::startSimulation(int batteryLife, int vacuumEfficiency, int whisk
     simData = new RunData();
     simData->setNewID();
     simData->id = QString::number(house->getFloorplanId());
-    simData->openSF = QString::number(house->getOpenArea()/100);
-    simData->totalSF = QString::number(house->getTotalArea()/100);
+    simData->openSF = QString::number(house->getOpenArea()/120);
+    simData->totalSF = QString::number(house->getTotalArea()/120);
 
 
     QDate date = QDate::currentDate();
