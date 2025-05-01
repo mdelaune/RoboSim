@@ -66,22 +66,24 @@ void EditWindow::setupSceneFromFile(){
 
 void EditWindow::setupToolButtons()
 {
-    ui->btn_squareRoom->setIcon(QIcon("../../Images/square.png"));
-    ui->btn_rectangleRoom->setIcon(QIcon("../../Images/rectangle.png"));
-    ui->btn_door->setIcon(QIcon("../../Images/door.png"));
+    ui->btn_squareRoom->setIcon(QIcon(":/Images/Images/square.png"));
+    ui->btn_rectangleRoom->setIcon(QIcon(":/Images/Images/rectangle.png"));
+    ui->btn_door->setIcon(QIcon(":/Images/Images/door.png"));
+    ui->btn_vacuum->setIcon(QIcon(":/Images/Images/vacuum.png"));
 
-    ui->btn_Chest->setIcon(QIcon("../../Images/chest.png"));
-    ui->btn_Table->setIcon(QIcon("../../Images/table.png"));
-    ui->btn_Chair->setIcon(QIcon("../../Images/chair.png"));
+    ui->btn_Chest->setIcon(QIcon(":/Images/Images/chest.png"));
+    ui->btn_Table->setIcon(QIcon(":/Images/Images/table.png"));
+    ui->btn_Chair->setIcon(QIcon(":/Images/Images/chair.png"));
 
-    ui->btn_hardFloor->setIcon(QIcon("../../Images/hardfloor.png"));
-    ui->btn_loopPile->setIcon(QIcon("../../Images/looppile.png"));
-    ui->btn_cutPile->setIcon(QIcon("../../Images/cutpile.png"));
-    ui->btn_friezeCut->setIcon(QIcon("../../Images/frieze.png"));
+    ui->btn_hardFloor->setIcon(QIcon(":/Images/Images/hardfloor.png"));
+    ui->btn_loopPile->setIcon(QIcon(":/Images/Images/looppile.png"));
+    ui->btn_cutPile->setIcon(QIcon(":/Images/Images/cutpile.png"));
+    ui->btn_friezeCut->setIcon(QIcon(":/Images/Images/frieze.png"));
 
     ui->btn_squareRoom->setIconSize(QSize(32, 32));
     ui->btn_rectangleRoom->setIconSize(QSize(32,32));
     ui->btn_door->setIconSize(QSize(32,32));
+    ui->btn_vacuum->setIconSize(QSize(32,32));
 
     ui->btn_Chest->setIconSize(QSize(32,32));
     ui->btn_Table->setIconSize(QSize(32,32));
@@ -96,6 +98,7 @@ void EditWindow::setupToolButtons()
     connect(ui->btn_squareRoom, &QToolButton::clicked, edit, &Draw::addSquareRoom);
     connect(ui->btn_rectangleRoom, &QToolButton::clicked, edit, &Draw::addRectRoom);
     connect(ui->btn_door, &QToolButton::clicked, edit, &Draw::addDoor);
+    connect(ui->btn_vacuum, &QToolButton::clicked, edit, &Draw::addVacuum);
 
     connect(ui->btn_clear, &QPushButton::clicked, house, &House::clear);
     connect(ui->btn_delete, &QPushButton::clicked, house, &House::deleteItem);

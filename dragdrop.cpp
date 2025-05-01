@@ -463,6 +463,86 @@ void DragObstruction::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
+DragVacuum::DragVacuum(const QRectF &circle, House *house, HouseVacuum *vacuum)
+    : QGraphicsEllipseItem(circle), m_circle(circle)
+{
+    setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+    setCursor(QCursor(Qt::OpenHandCursor));
+
+    m_house = house;
+    m_vacuum = vacuum;
+
+    // Setup visual styling
+    m_normalPen = QPen(Qt::black, 2);
+    m_selectedPen = QPen(Qt::blue, 2);
+    m_normalBrush = QBrush(QColor(0, 150, 200, 127)); // Semi-transparent blue
+    m_selectedBrush = QBrush(QColor(0, 200, 255, 180)); // Brighter blue when selected
+
+    setPen(m_normalPen);
+    setBrush(m_normalBrush);
+}
+
+QRectF DragVacuum::boundingRect() const
+{
+    // No need for extra margin since we don't have resize handles
+    return rect();
+}
+
+void DragVacuum::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    // Set style based on selection state
+    if (isSelected()) {
+        painter->setPen(m_selectedPen);
+        painter->setBrush(m_selectedBrush);
+    } else {
+        painter->setPen(m_normalPen);
+        painter->setBrush(m_normalBrush);
+    }
+
+    // Draw the vacuum circle
+    painter->drawEllipse(rect());
+
+    // Draw the direction indicator (vacuum front)
+    QPointF center = rect().center();
+    QPointF front(center.x(), center.y() - rect().height() * 0.4);
+
+    if (isSelected()) {
+        painter->setPen(QPen(Qt::blue, 3));
+    } else {
+        painter->setPen(QPen(Qt::black, 3));
+    }
+    painter->drawLine(center, front);
+}
+
+void DragVacuum::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::ClosedHandCursor);
+    QGraphicsEllipseItem::mousePressEvent(event);
+}
+
+void DragVacuum::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    // Standard move behavior
+    QGraphicsEllipseItem::mouseMoveEvent(event);
+}
+
+void DragVacuum::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
+
+    // Get the current position in scene coordinates
+    QRectF sceneCircle = mapToScene(rect()).boundingRect();
+
+    // Update the vacuum's position in the data model
+    if (m_house && m_vacuum) {
+        // Assuming Vacuum class has appropriate setters
+        m_vacuum->set_center(sceneCircle.center());
+        // Note: We're not changing the radius since resizing is disabled
+    }
+
+    QGraphicsEllipseItem::mouseReleaseEvent(event);
+}
+
 DragRoom::DragRoom(const QRectF &rect, QGraphicsScene *scene, House *house, Room *room, long id)
     : QGraphicsRectItem(rect)
 {

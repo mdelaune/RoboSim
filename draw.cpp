@@ -150,3 +150,27 @@ void Draw::changeFlooring()
         m_house->setFloorCovering("frieze_cut");
     }
 }
+
+void Draw::addVacuum()
+{
+    QPointF center(0,50);
+    int radius = 15;
+    HouseVacuum *vacuum = new HouseVacuum(center, radius);
+
+    // Add the vacuum to your house model
+    m_house->vacuum = vacuum; // Assuming such a method exists
+
+    // Create a rectangle with the center point and radius
+    QRectF circleRect(
+        center.x() - radius,
+        center.y() - radius,
+        radius * 2,
+        radius * 2
+        );
+
+    // Create the draggable vacuum object
+    DragVacuum *dragVacuum = new DragVacuum(circleRect, m_house, vacuum);
+
+    // Add it to the scene
+    m_scene->addItem(dragVacuum);
+}

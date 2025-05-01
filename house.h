@@ -120,6 +120,26 @@ private:
 //---------------------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------
 
+class HouseVacuum
+{
+public:
+    HouseVacuum(QPointF center, int radius)
+        : m_center(center), m_radius(radius)
+    {
+    }
+
+    void set_center(QPointF center){m_center = center;}
+    QPointF get_center(){return m_center;}
+    void set_radius(int radius){m_radius = radius;}
+    int get_radius(){return m_radius;}
+
+private:
+    QPointF m_center;
+    int m_radius;
+};
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------
 class House : public QObject
 {
     Q_OBJECT
@@ -174,6 +194,7 @@ public:
     QVector<Door> doors;
     QVector<Obstruction> obstructions;
     QString flooring;
+    HouseVacuum *vacuum;
 
     Room* getRoomById(long id);
 

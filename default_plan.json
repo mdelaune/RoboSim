@@ -1,6 +1,11 @@
 {
     "floorplan_id": 1,
     "flooring": "hard_floor",
+    "vacuum_pos":
+    {
+        "vacuumX": 67,
+        "vacuumY": 192
+    },
     "rooms":
     [
         {

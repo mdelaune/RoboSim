@@ -549,9 +549,6 @@ void House::loadPlan(QString plan)
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
 
-
-
-    getCoveredArea();
 }
 
 void House::loadNonInteractivePlan(QString plan)
@@ -593,7 +590,6 @@ void House::loadNonInteractivePlan(QString plan)
     setRoomFillColor(floor_covering);
     m_scene->update(m_scene->sceneRect());
 
-    getCoveredArea();
 }
 
 void House::createNewFloorplan()
@@ -619,6 +615,13 @@ QJsonDocument House::toJson()
     QJsonArray roomsArray = QJsonArray();
     QJsonArray obstructionsArray = QJsonArray();
     QJsonArray doorsArray = QJsonArray();
+
+
+    QJsonObject vacuumPos
+    {
+        {"vacuumX", vacuum->get_center().x()},
+        {"vacuumY", vacuum->get_center().y()},
+    };
 
     for(int i = 0; i < rooms.size(); i++)
     {
@@ -669,6 +672,7 @@ QJsonDocument House::toJson()
 
     QJsonObject root
         {
+            {"vacuum_pos", vacuumPos},
             {"floorplan_id", floorplan_id},
             {"flooring", floor_covering},
             {"doors", doorsArray},
@@ -789,6 +793,7 @@ void House::setRoomFillColor(QString flooring)
 int House::getOpenArea()
 {
     int coveredArea = 0;
+    int totalArea = 0;
     for (Obstruction& obstruction : obstructions) {
         coveredArea += static_cast<int>(obstruction.get_floorCoverage());
     }
@@ -830,7 +835,6 @@ void House::clear()
     obstructions.clear();
     scene_object_id = 1;
     m_scene->update(m_scene->sceneRect());
-    //floorplan_name = "";
 }
 
 void House::deleteItem()
@@ -941,7 +945,6 @@ void House::deleteItem()
     m_scene->update(m_scene->sceneRect());
     qDebug() << "DELETE COMPLETE";
 }
-
 
 void House::rotate()
 {

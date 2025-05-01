@@ -133,6 +133,34 @@ private:
     void setSizeConstraints();
 };
 
+class DragVacuum : public QGraphicsEllipseItem
+{
+public:
+    DragVacuum(const QRectF &circle, House *house, HouseVacuum *vacuum);
+    ~DragVacuum() = default;
+
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+
+private:
+    QRectF m_circle;
+
+    // Data model references
+    House *m_house;
+    HouseVacuum *m_vacuum;
+
+    // Visual styling
+    QPen m_normalPen;
+    QPen m_selectedPen;
+    QBrush m_normalBrush;
+    QBrush m_selectedBrush;
+};
+
 class DragRoom : public QObject, public QGraphicsRectItem, protected DragBase
 {
     Q_OBJECT
