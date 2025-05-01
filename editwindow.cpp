@@ -30,8 +30,6 @@ void EditWindow::setupMenu()
     ui->action_Save->setIcon(QIcon::fromTheme("document-save"));
     ui->action_SaveAs->setIcon(QIcon::fromTheme("document-save-as"));
     ui->action_Quit->setIcon(QIcon::fromTheme("application-exit"));
-    //ui->action_Undo->setIcon(QIcon::fromTheme("edit-undo"));
-    //ui->action_Redo->setIcon(QIcon::fromTheme("edit-redo"));
     ui->action_About->setIcon(QIcon::fromTheme("help-about"));
 
 
@@ -41,9 +39,8 @@ void EditWindow::setupMenu()
     connect(ui->action_Save, &QAction::triggered, m_menu, &Menu::menuSave);
     connect(ui->action_SaveAs, &QAction::triggered, m_menu, &Menu::menuSaveAs);
     connect(ui->action_Quit, &QAction::triggered, m_menu, &Menu::menuQuit);
-    //connect(ui->action_Undo, &QAction::triggered, m_menu, &Menu::menuUndo);
-    //connect(ui->action_Redo, &QAction::triggered, m_menu, &Menu::menuRedo);
-    connect(ui->action_About, &QAction::triggered, m_menu, &Menu::menuQuit);
+    connect(ui->action_About, &QAction::triggered, m_menu, &Menu::menuAbout);
+
 }
 
 void EditWindow::setupScene()
@@ -51,7 +48,6 @@ void EditWindow::setupScene()
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     house = new House(scene);
-    house->setScene(scene);
     QString default_plan = ":/Default/default_plan.json";
     house->loadPlan(default_plan);
     house->setNewID();
@@ -83,11 +79,12 @@ bool EditWindow::setupSceneFromFile(){
 
 void EditWindow::setupToolButtons()
 {
-    //QIcon square = ;
+
     ui->btn_squareRoom->setIcon(QIcon(":/Images/Images/square.png"));
     ui->btn_rectangleRoom->setIcon(QIcon(":/Images/Images/rectangle.png"));
-    //ui->btn_lShapeRoom->setIcon(QIcon(":/Images/Images/lshape.png"));
     ui->btn_door->setIcon(QIcon(":/Images/Images/door.png"));
+    ui->btn_vacuum->setIcon(QIcon(":/Images/Images/vacuum.png"));
+
 
     ui->btn_Chest->setIcon(QIcon(":/Images/Images/chest.png"));
     ui->btn_Table->setIcon(QIcon(":/Images/Images/table.png"));
@@ -100,8 +97,8 @@ void EditWindow::setupToolButtons()
 
     ui->btn_squareRoom->setIconSize(QSize(32, 32));
     ui->btn_rectangleRoom->setIconSize(QSize(32,32));
-    //ui->btn_lShapeRoom->setIconSize(QSize(32,32));
     ui->btn_door->setIconSize(QSize(32,32));
+    ui->btn_vacuum->setIconSize(QSize(32,32));
 
     ui->btn_Chest->setIconSize(QSize(32,32));
     ui->btn_Table->setIconSize(QSize(32,32));
@@ -115,11 +112,12 @@ void EditWindow::setupToolButtons()
     edit = new Draw(house, scene);
     connect(ui->btn_squareRoom, &QToolButton::clicked, edit, &Draw::addSquareRoom);
     connect(ui->btn_rectangleRoom, &QToolButton::clicked, edit, &Draw::addRectRoom);
-    //connect(ui->btn_lShapeRoom, &QToolButton::clicked, edit, &FloorPlan::addLRoom);
     connect(ui->btn_door, &QToolButton::clicked, edit, &Draw::addDoor);
+    connect(ui->btn_vacuum, &QToolButton::clicked, edit, &Draw::addVacuum);
 
     connect(ui->btn_clear, &QPushButton::clicked, house, &House::clear);
     connect(ui->btn_delete, &QPushButton::clicked, house, &House::deleteItem);
+    connect(ui->btn_rotate, &QPushButton::clicked, house, &House::rotate);
 
     connect(ui->btn_Chest, &QToolButton::clicked, edit, &Draw::addChest);
     connect(ui->btn_Table, &QToolButton::clicked, edit, &Draw::addTable);

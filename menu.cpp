@@ -46,8 +46,6 @@ void Menu::menuOpen()
 
 void Menu::saveToFile(const QString& filename)
 {
-
-
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(nullptr, "Error Opening File",
@@ -56,7 +54,7 @@ void Menu::saveToFile(const QString& filename)
         return;
     }
 
-
+    m_house->set_floorplanName(filename);
 
     QTextStream out(&file);
     out << m_house->toJson().toJson(QJsonDocument::Indented);

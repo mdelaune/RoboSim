@@ -19,6 +19,7 @@ public:
     void addTable();
     void addChair();
     void changeFlooring();
+    void addVacuum();
 
 
 
