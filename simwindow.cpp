@@ -229,13 +229,13 @@ void SimWindow::stopSimulation(){
     QString timeString = time.toString();
     simData->eTime = timeString.split(':');
 
-    writeRun();
     writeReport();
     this->close();
 }
 
 void SimWindow::on_stopButton_clicked()
 {
+    writeRun();
     stopSimulation();
 }
 
