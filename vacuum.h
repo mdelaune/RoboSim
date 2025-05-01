@@ -91,6 +91,7 @@ public:
     Vector2D moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed);
     Vector2D moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed);
 
+    QMap<QString, int> visitCount;
 private:
     const double diameter = 12.8;
     double radius = diameter/2.0;

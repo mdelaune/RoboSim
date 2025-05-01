@@ -644,60 +644,144 @@ Vector2D Vacuum::moveSpiral(Vector2D currentPos, Vector2D& velocity, int speed)
     return next;
 }
 
-
 Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
 {
-    const double shiftDistance = (radius * 2) -1; // * 0.5;
+    constexpr double vacuumRadius = 6.4;
+    constexpr double shiftDistance = vacuumRadius  * 0.5;
+    constexpr int randomFrames = 60; // How many frames random walk lasts
+    constexpr int revisitThreshold = 4;
 
-    bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
-                    currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
+    static QString mode = "snaking";  // or "random"
+    static int modeTimer = 0;
 
-    if (nearWall && QRandomGenerator::global()->bounded(100) < 10) {
+    // Track visits for hybrid decision
+    QPointF rounded(std::round(currentPos.x / 10.0) * 10.0,
+                    std::round(currentPos.y / 10.0) * 10.0);
+    QString key = QString::number(rounded.x()) + "," + QString::number(rounded.y());
+    int visits = visitCount[key];
+
+    // --- Mode switching
+    if (mode == "snaking" && visits >= revisitThreshold) {
+        mode = "random";
+        modeTimer = randomFrames;
+        qDebug() << "Switching to RANDOM mode";
+    }
+    else if (mode == "random") {
+        modeTimer--;
+        if (modeTimer <= 0) {
+            mode = "snaking";
+            qDebug() << "Switching back to SNAKING mode";
+        }
+    }
+
+    // --- RANDOM mode behavior
+    if (mode == "random") {
         return moveRandomly(currentPos, velocity, speed);
     }
 
-    Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
+    // --- SNAKING pattern behavior (same as improved version)
+    Vector2D next = {
+        currentPos.x + velocity.x * speed,
+        currentPos.y + velocity.y * speed
+    };
+
+    bool hitRight = movingRight && (next.x + vacuumRadius >= snakeRightBound);
+    bool hitLeft  = !movingRight && (next.x - vacuumRadius <= snakeLeftBound);
 
     if (!movingUpward) {
-        if (movingRight && (next.x + radius) >= snakeRightBound) {
-            movingRight = false;
-            next.x = snakeRightBound - radius;
-            next.y = currentPos.y + shiftDistance;
-        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
-            movingRight = true;
-            next.x = snakeLeftBound + radius;
+        if (hitRight || hitLeft) {
+            movingRight = !movingRight;
+            next.x = movingRight
+                         ? snakeLeftBound + vacuumRadius
+                         : snakeRightBound - vacuumRadius;
             next.y = currentPos.y + shiftDistance;
         }
 
-        if ((next.y + radius) >= snakeBottomBound) {
-            next.y = snakeBottomBound - radius;
+        if ((next.y + vacuumRadius) >= snakeBottomBound) {
+            next.y = snakeBottomBound - vacuumRadius;
             movingUpward = true;
-            movingDown = false;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
-    } else {
-        if (movingRight && (next.x + radius) >= snakeRightBound) {
-            movingRight = false;
-            next.x = snakeRightBound - radius;
-            next.y = currentPos.y - shiftDistance;
-        } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
-            movingRight = true;
-            next.x = snakeLeftBound + radius;
+    }
+    else {
+        if (hitRight || hitLeft) {
+            movingRight = !movingRight;
+            next.x = movingRight
+                         ? snakeLeftBound + vacuumRadius
+                         : snakeRightBound - vacuumRadius;
             next.y = currentPos.y - shiftDistance;
         }
 
-        if ((next.y - radius) <= snakeTopBound) {
-            next.y = snakeTopBound + radius;
+        if ((next.y - vacuumRadius) <= snakeTopBound) {
+            next.y = snakeTopBound + vacuumRadius;
             movingUpward = false;
-            movingDown = true;
         }
 
         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
     }
 
-    next.x = std::clamp(next.x, snakeLeftBound + radius, snakeRightBound - radius);
-    next.y = std::clamp(next.y, snakeTopBound + radius, snakeBottomBound - radius);
+    // Clamp to room bounds
+    next.x = std::clamp(next.x, snakeLeftBound + vacuumRadius, snakeRightBound - vacuumRadius);
+    next.y = std::clamp(next.y, snakeTopBound + vacuumRadius, snakeBottomBound - vacuumRadius);
 
     return next;
 }
+
+
+// Vector2D Vacuum::moveSnaking(Vector2D currentPos, Vector2D& velocity, int speed)
+// {
+//     const double shiftDistance = (radius * 2) -1; // * 0.5;
+
+//     bool nearWall = currentPos.x - snakeLeftBound < 10 || snakeRightBound - currentPos.x < 10 ||
+//                     currentPos.y - snakeTopBound < 10 || snakeBottomBound - currentPos.y < 10;
+
+//     if (nearWall && QRandomGenerator::global()->bounded(100) < 10) {
+//         return moveRandomly(currentPos, velocity, speed);
+//     }
+
+//     Vector2D next = { currentPos.x + velocity.x * speed, currentPos.y + velocity.y * speed };
+
+//     if (!movingUpward) {
+//         if (movingRight && (next.x + radius) >= snakeRightBound) {
+//             movingRight = false;
+//             next.x = snakeRightBound - radius;
+//             next.y = currentPos.y + shiftDistance;
+//         } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
+//             movingRight = true;
+//             next.x = snakeLeftBound + radius;
+//             next.y = currentPos.y + shiftDistance;
+//         }
+
+//         if ((next.y + radius) >= snakeBottomBound) {
+//             next.y = snakeBottomBound - radius;
+//             movingUpward = true;
+//             movingDown = false;
+//         }
+
+//         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
+//     } else {
+//         if (movingRight && (next.x + radius) >= snakeRightBound) {
+//             movingRight = false;
+//             next.x = snakeRightBound - radius;
+//             next.y = currentPos.y - shiftDistance;
+//         } else if (!movingRight && (next.x - radius) <= snakeLeftBound) {
+//             movingRight = true;
+//             next.x = snakeLeftBound + radius;
+//             next.y = currentPos.y - shiftDistance;
+//         }
+
+//         if ((next.y - radius) <= snakeTopBound) {
+//             next.y = snakeTopBound + radius;
+//             movingUpward = false;
+//             movingDown = true;
+//         }
+
+//         velocity = { movingRight ? 1.0 : -1.0, 0.0 };
+//     }
+
+//     next.x = std::clamp(next.x, snakeLeftBound + radius, snakeRightBound - radius);
+//     next.y = std::clamp(next.y, snakeTopBound + radius, snakeBottomBound - radius);
+
+//     return next;
+// }
