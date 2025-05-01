@@ -360,7 +360,7 @@ int House::getTotalArea()
     //     }
     // }
 
-    return total_area;
+    return total_area / 280;
 }
 
 QString House::getFloorCovering()
@@ -879,7 +879,7 @@ int House::getOpenArea()
         coveredArea += static_cast<int>(obstruction.get_floorCoverage());
     }
 
-    coveredArea /= 23.3;
+    coveredArea /= 280;
 
     for (int i = 0; i < rooms.size(); ++i) {
         Room& currentRoom = rooms[i];
@@ -907,7 +907,7 @@ int House::getOpenArea()
     }
     total_area = totalArea;
 
-    totalArea /= 23.3;
+    totalArea /= 280;
 
     return totalArea - coveredArea;
 }
@@ -1110,7 +1110,7 @@ int House::validateTotalAreaBeforeSave()
 
     // Define your acceptable area range
 
-
+    totalArea /= 280;
     qDebug() << "Total room area (excluding contained rooms):" << totalArea;
 
     if (totalArea < MIN_TOTAL_AREA) {

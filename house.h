@@ -153,8 +153,8 @@ public:
     House(QGraphicsScene *scene);
 
     static House* instance;
-    const double MIN_TOTAL_AREA = 200000.0;
-    const double MAX_TOTAL_AREA = 800000.0;
+    const double MIN_TOTAL_AREA = 56000.0;
+    const double MAX_TOTAL_AREA = 2240000.0;
 
     void loadPlan(QString plan);
 

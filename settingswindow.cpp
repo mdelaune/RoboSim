@@ -3,6 +3,7 @@
 
 #include <QCheckBox>
 #include<QMessageBox>
+#include <QDebug>
 
 SettingsWindow::SettingsWindow(QWidget *parent)
     : QMainWindow(parent)
