@@ -231,6 +231,7 @@ public:
     int getOpenArea();
     int getTotalArea();
     void loadNonInteractivePlan(QString plan);
+    bool isVacuumPositionValid();
 
 private:
     void loadRooms(QJsonArray roomsArray);
